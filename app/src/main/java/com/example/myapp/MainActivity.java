@@ -228,7 +228,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    //检查是否有更新的版本
+    //检查是否有更新的版本,,
     public void updateApp(){
         Log.i("函数","更新版本的函数执行了");
        new Thread(new Runnable() {
