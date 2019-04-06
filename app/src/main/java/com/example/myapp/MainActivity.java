@@ -257,6 +257,8 @@ public class MainActivity extends Activity {
 
 
 
+
+
 //android6.0以上需要动态申请权限
     public static void verifyStoragePermissions(Activity activity) {
 
