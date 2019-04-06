@@ -545,10 +545,10 @@ public class MainActivity extends Activity {
                         intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
                     }
                     notificationManager.notify(210,builder.build());
-                    startActivity(intent);
-//                    PendingIntent pi = PendingIntent.getActivity(MainActivity.this,0,intent,0);
-//                    builder.setContentIntent(pi);
-//                    notificationManager.notify(210,builder.build());
+//                    startActivity(intent);
+                    PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    builder.setContentIntent(pi);
+                    notificationManager.notify(210,builder.build());
                 }
             }
         }
