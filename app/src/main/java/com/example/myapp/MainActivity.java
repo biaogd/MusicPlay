@@ -7,6 +7,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,6 +18,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,6 +26,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -42,6 +45,8 @@ import android.widget.Toast;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
+import com.example.myapp.self.MyApp;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -98,7 +103,7 @@ public class MainActivity extends Activity {
     private List<Music> musicList;
     private ListView listView;
     private MyAdapter2 adapter2;
-
+    private Gson gson=new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -237,15 +242,23 @@ public class MainActivity extends Activity {
                try {
                    Log.i("检查更新","程序执行了检查更新");
                    OkHttpClient client=new OkHttpClient();
-                   Request req = new Request.Builder().url("http://www.mybiao.top:8080/checkUpdate").build();
+                   Request req = new Request.Builder().url("http://www.mybiao.top:8000/checkUpdate?code="+versionCode).build();
                    Response res = client.newCall(req).execute();
                    if(res.isSuccessful()){
-                       isNew = Integer.parseInt(res.body().string());
+                       String body = res.body().string();
                        System.out.println("成功"+"检查新版本成功"+isNew);
-                       if(isNew>(int)(MUSIC_V*10)) {
-                           System.out.println("正在执行更新程序");
-                           handler.sendEmptyMessage(10);
+                       MyApp myApp = gson.fromJson(body, MyApp.class);
+                       if(myApp.getStatus().equals("ok")){
+                           Log.i("有新版本",myApp.getName());
+                           Message message=new Message();
+                           message.what=10;
+                           message.obj = myApp;
+                           handler.sendMessage(message);
                        }
+//                       if(isNew>(int)(MUSIC_V*10)) {
+//                           System.out.println("正在执行更新程序");
+//                           handler.sendEmptyMessage(10);
+//                       }
                    }
                }catch (Exception e){
                    e.printStackTrace();
@@ -431,7 +444,7 @@ public class MainActivity extends Activity {
             public void run() {
                 OkHttpClient client=new OkHttpClient();
                 try{
-                    Request request=new Request.Builder().url("http://www.mybiao.top:8080/app").addHeader("Accept-Encoding","identity").build();
+                    Request request=new Request.Builder().url("http://www.mybiao.top:8000/downloadApp").addHeader("Accept-Encoding","identity").build();
                     Response response=client.newCall(request).execute();
                     if(response.isSuccessful()){
                         String handers = response.header("Content-Disposition");
@@ -449,15 +462,17 @@ public class MainActivity extends Activity {
                             file.createNewFile();
                         }
                         FileOutputStream out=new FileOutputStream(file);
-                        byte []bytes=new byte[4096];
+                        byte []bytes=new byte[1024];
                         int i=0;
                         int j=0;
                         while ((i = inputStream.read(bytes))!=-1){
                             out.write(bytes,0,i);
                             j +=i;
+//                            Log.i("j的值为",""+j);
                             Message message=new Message();
                             message.what=105;
-                            message.arg1 = (int)(j/allSize*100);
+                            message.arg1 = (int)(j*100/allSize);
+                            message.obj = fileName;
                             handler.sendMessage(message);
                         }
                         out.close();
@@ -474,7 +489,7 @@ public class MainActivity extends Activity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if(msg.what==10){
-
+                MyApp app=(MyApp) msg.obj;
                 Toast.makeText(MainActivity.this,"有新版本可以更新",Toast.LENGTH_LONG).show();
                 AlertDialog dialog=new AlertDialog.Builder(MainActivity.this).create();
                 dialog.setTitle("版本更新");
@@ -507,9 +522,34 @@ public class MainActivity extends Activity {
                 dialog.show();
             }
             if(msg.what==105){
+
                 builder.setProgress(100,msg.arg1,false);
                 builder.setContentText("下载进度:"+msg.arg1+"%");
+//                Log.i("下载进度",msg.arg1+"");
                 notificationManager.notify(210,builder.build());
+                if(msg.arg1==100){
+                    Log.i("进度数",""+msg.arg1);
+                    builder.setContentTitle("下载完毕，点击安装");
+                    builder.setProgress(0,0,true);
+                    Intent intent=new Intent();
+                    intent.setAction(Intent.ACTION_VIEW);
+                    File file=new File(Environment.getExternalStorageDirectory().getAbsolutePath(),(String)msg.obj);
+                    System.out.println(file.getName());
+                    if(Build.VERSION.SDK_INT>=24){
+                        Uri apkuri = FileProvider.getUriForFile(MainActivity.this,"com.example.myapp.fileprovider",file);
+                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        intent.setDataAndType(apkuri,"application/vnd.android.package-archive");
+                        System.out.println("版本大雨7");
+                    }else {
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
+                    }
+                    notificationManager.notify(210,builder.build());
+                    startActivity(intent);
+//                    PendingIntent pi = PendingIntent.getActivity(MainActivity.this,0,intent,0);
+//                    builder.setContentIntent(pi);
+//                    notificationManager.notify(210,builder.build());
+                }
             }
         }
     }

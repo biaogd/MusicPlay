@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.myapp"
-    android:versionCode="2"
+    android:versionCode="1"
     android:versionName="1.0" >
 
     <uses-sdk
@@ -43,6 +43,15 @@
             android:name="android.max_aspect"
             android:value="2.1" />
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.myapp.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <provider
             android:name="com.android.tools.ir.server.InstantRunContentProvider"
             android:authorities="com.example.myapp.com.android.tools.ir.server.InstantRunContentProvider"
