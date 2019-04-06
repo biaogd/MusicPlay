@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/scanner_local_music" android:title="扫描本地音乐"/>
+</menu>

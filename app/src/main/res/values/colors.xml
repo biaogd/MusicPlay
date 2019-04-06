@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="color1">#000</color>
+    <color name="tab_color">#000000</color>
+    <color name="beautiful">#2ecc71</color>
+    <color name="back1">#FFFBF0</color>
+    <color name="base_color">#FFFFFF</color>
+    <color name="gray">#cccccc</color>
+    <color name="black">#333333</color>
+    <color name="touming">#00000000</color>
+    <color name="bantm">#80000000</color>
+    <color name="menu_list_color">#F02f363d</color>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="musiclist">
+        <item>美丽的神话</item>
+        <item>寂寞才说爱</item>
+        <item>昨日青空</item>
+        <item>越来越不懂</item>
+        <item>光明</item>
+        <item>红色高跟鞋</item>
+        <item>猜不透</item>
+        <item>往后余生</item>
+        <item>爱的故事下级</item>
+        <item>魔鬼中的天使</item>
+        <item>后来的我们</item>
+        <item>对不起，我还爱你</item>
+        <item>对不起，我爱你</item>
+        <item>我喜欢上你时的内心活动</item>
+    </string-array>
+    <string-array name="nearlist">
+        <item>亲爱的那不是爱情</item>
+        <item>知否知否</item>
+        <item>我的一个道姑朋友</item>
+        <item>花桥流水</item>
+        <item>那些年你很冒险的梦</item>
+        <item>再见只是陌生人</item>
+        <item>光明</item>
+    </string-array>
+</resources>

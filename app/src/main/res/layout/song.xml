@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:descendantFocusability="blocksDescendants"
+    android:paddingVertical="10dp"
+    >
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/ic_heart_48"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerInside"
+        android:background="@color/touming"
+        android:id="@+id/loveImageButton"
+        />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="10dp"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/songName"
+            android:textSize="@dimen/song_name"
+            android:textColor="@color/color1"
+            android:text="寂寞才说爱"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/songAuthor"
+            android:textColor="@color/black"
+            android:textSize="@dimen/song_author"
+            android:text="凤凰传奇"/>
+
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ic_more_48"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:scaleType="centerInside"
+            android:background="@color/touming"
+            android:id="@+id/moreImageButton"
+        />
+    </RelativeLayout>
+</LinearLayout>
