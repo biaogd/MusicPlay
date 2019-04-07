@@ -163,7 +163,8 @@ public class SearchFragment extends Fragment {
                         Response res= client.newCall(req).execute();
                         if(res.isSuccessful()) {
                             String mulist = res.body().string();
-                            if (mulist != null) {
+                            if (!mulist.equals("null")) {
+                                Log.i("muList",mulist);
                                 JsonParser jsonParser = new JsonParser();
                                 JsonArray jsonElements = jsonParser.parse(mulist).getAsJsonArray();
                                 for (JsonElement element : jsonElements) {

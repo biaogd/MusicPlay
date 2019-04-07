@@ -530,13 +530,13 @@ public class MainActivity extends Activity {
                 if(msg.arg1==100){
                     Log.i("进度数",""+msg.arg1);
                     builder.setContentTitle("下载完毕，点击安装");
-                    builder.setProgress(0,0,true);
+                    builder.setProgress(0,0,false);
                     Intent intent=new Intent();
                     intent.setAction(Intent.ACTION_VIEW);
                     File file=new File(Environment.getExternalStorageDirectory().getAbsolutePath(),(String)msg.obj);
                     System.out.println(file.getName());
                     if(Build.VERSION.SDK_INT>=24){
-                        Uri apkuri = FileProvider.getUriForFile(MainActivity.this,"com.example.myapp.fileprovider",file);
+                        Uri apkuri = FileProvider.getUriForFile(getApplicationContext(),"com.example.myapp.fileprovider",file);
                         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         intent.setDataAndType(apkuri,"application/vnd.android.package-archive");
                         System.out.println("版本大雨7");
@@ -546,9 +546,10 @@ public class MainActivity extends Activity {
                     }
                     notificationManager.notify(210,builder.build());
 //                    startActivity(intent);
-                    PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-                    builder.setContentIntent(pi);
-                    notificationManager.notify(210,builder.build());
+//                    PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+//                    builder.setContentIntent(pi);
+//                    notificationManager.notify(210,builder.build());
+                    startActivity(intent);
                 }
             }
         }
