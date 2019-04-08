@@ -1090,6 +1090,7 @@ id async
 id auto
 id backButton
 id back_search_btn
+id back_update
 id barrier
 id beginning
 id blocking
@@ -1333,6 +1334,8 @@ id transition_transform
 id uniform
 id unlabeled
 id up
+id update_btn
+id update_content
 id useLogo
 id view_offset_helper
 id visible
@@ -1441,6 +1444,7 @@ layout song
 layout song_manager
 layout support_simple_spinner_dropdown_item
 layout tab
+layout update_app
 menu local_music_menu
 menu near_music_menu
 mipmap app_icon_96

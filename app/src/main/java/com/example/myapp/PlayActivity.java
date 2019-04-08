@@ -305,6 +305,9 @@ public class PlayActivity extends Activity {
                 allTime.setText(String.valueOf(transforTime(all_time)));
                 nowTime.setText(String.valueOf(transforTime(nowPosition)));
                 seekBar.setProgress(nowPosition);
+                if(bundle.getInt("cacheFlag")==1){
+                    seekBar.setSecondaryProgress(seekBar.getMax());
+                }
             }
             if (intent.getAction().equals("currentpositionper")) {
                 if (lrcBeanList != null) {
@@ -350,6 +353,9 @@ public class PlayActivity extends Activity {
                 songAuthor.setText(music.getSongAuthor());
                 allTime.setText(String.valueOf(transforTime(music.getAlltime())));
                 seekBar.setMax(music.getAlltime());
+                //重置进度条的进度数
+                seekBar.setProgress(0);
+                seekBar.setSecondaryProgress(0);
                 if(music.getFlag()==0){
                     seekBar.setSecondaryProgress(music.getAlltime());
                 }
@@ -428,8 +434,8 @@ public class PlayActivity extends Activity {
             }
             if(intent.getAction().equals("getBufferProgress")){
                 int bufferPos = intent.getIntExtra("bufferPos",-1);
-                if(bufferPos!=-1){
-                    seekBar.setSecondaryProgress(bufferPos);
+                    if (bufferPos != -1) {
+                        seekBar.setSecondaryProgress(bufferPos);
                 }
             }
         }

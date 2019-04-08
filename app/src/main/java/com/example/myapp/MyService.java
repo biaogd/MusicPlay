@@ -1,5 +1,6 @@
 package com.example.myapp;
 
+import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,14 +13,19 @@ import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 
+import com.danikula.videocache.CacheListener;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.example.myapp.self.Music;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -53,6 +59,9 @@ public class MyService extends Service {
     private RemoteViews remoteViews;
 
     private int bufferFlag=0;
+    private int cacheFlag=0;
+    private App app;
+
     public MyService() {
     }
 
@@ -118,8 +127,20 @@ public class MyService extends Service {
     //播放音乐
     public void play(){
         try {
-            player.setDataSource(music.getPath());
+            app.getProxy().unregisterCacheListener(cacheListener);
+            app.getProxy().registerCacheListener(cacheListener,music.getPath());
             bufferFlag =0;
+            cacheFlag = 0;
+            if(music.getFlag() == 0) {
+                player.setDataSource(music.getPath());
+            }
+            if(music.getFlag()==1) {
+                String proxyUrl = app.getProxy().getProxyUrl(music.getPath());
+                player.setDataSource(proxyUrl);
+            }
+            if(music.getFlag()==1&&app.getProxy().isCached(music.getPath())){
+                cacheFlag = 1;
+            }
 //          异步加载网络歌曲
             player.prepareAsync();
             player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -157,6 +178,7 @@ public class MyService extends Service {
 //                    Log.i("music总时间",""+music.getAlltime());
                     bundle.putInt("alltime", music.getAlltime());
                     bundle.putInt("position", player.getCurrentPosition());
+                    bundle.putInt("cacheFlag",cacheFlag);
                     myIntent.putExtra("current", bundle);
                     myIntent.setAction("currentposition");
                     sendBroadcast(myIntent);
@@ -205,6 +227,17 @@ public class MyService extends Service {
         manager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         player=new MediaPlayer();
 //        Log.i("服务中oncreate方法","执行了");
+        app = new App();
+    }
+
+    public class App{
+        private HttpProxyCacheServer proxyCacheServer;
+        private HttpProxyCacheServer getProxy() {
+            if (proxyCacheServer == null) {
+                proxyCacheServer=new HttpProxyCacheServer.Builder(MyService.this).maxCacheFilesCount(200).build();
+            }
+            return proxyCacheServer;
+        }
     }
 
     @Override
@@ -220,24 +253,21 @@ public class MyService extends Service {
             initNotification();
             startForeground(123,builder.build());
         }
-//        play();
-        player.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
-            @Override
-            public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                Intent intent1=new Intent();
-                intent1.setAction("getBufferProgress");
-                if(music.getFlag()==1){
-                    intent1.putExtra("bufferPos",percent*music.getAlltime()/100);
-                }else {
-                    intent1.putExtra("bufferPos",music.getAlltime());
-                }
-                sendBroadcast(intent1);
-            }
-        });
+
         player.setOnCompletionListener(completionListener);
         return super.onStartCommand(intent, flags, startId);
     }
 
+    public CacheListener cacheListener=new CacheListener() {
+        @Override
+        public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
+            Intent intent=new Intent();
+            intent.setAction("getBufferProgress");
+            intent.putExtra("bufferPos",percentsAvailable*music.getAlltime()/100);
+            sendBroadcast(intent);
+            Log.i("缓冲百分比",percentsAvailable+"");
+        }
+    };
     private void initNotification(){
         remoteViews = new RemoteViews(getPackageName(),R.layout.notification_layout);
         //播放暂停按钮的点击事件

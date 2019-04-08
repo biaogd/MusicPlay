@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@color/back1"
+    android:layout_height="wrap_content">
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:src="@mipmap/ic_out_48"
+        android:background="@color/touming"
+        android:id="@+id/back_update"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:textSize="18sp"
+        android:text="dsdadasd"
+        android:layout_marginHorizontal="10dp"
+        android:layout_below="@id/back_update"
+        android:id="@+id/update_content"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/update_content"
+        android:background="@color/beautiful"
+        android:id="@+id/update_btn"
+        android:text="现在更新"/>
+</RelativeLayout>

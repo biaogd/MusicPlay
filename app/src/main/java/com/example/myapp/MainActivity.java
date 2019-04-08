@@ -18,6 +18,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,10 +28,12 @@ import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -484,24 +487,46 @@ public class MainActivity extends Activity {
             }
         }).start();
     }
+
+
     public class MyHandler extends Handler{
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if(msg.what==10){
                 MyApp app=(MyApp) msg.obj;
-                Toast.makeText(MainActivity.this,"有新版本可以更新",Toast.LENGTH_LONG).show();
-                AlertDialog dialog=new AlertDialog.Builder(MainActivity.this).create();
-                dialog.setTitle("版本更新");
-                dialog.setMessage("检测到新版本，是否更新?");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "立即更新", new DialogInterface.OnClickListener() {
+                View view=LayoutInflater.from(MainActivity.this).inflate(R.layout.update_app,null);
+                TextView content = (TextView)view.findViewById(R.id.update_content);
+                content.setText("\n"+app.getContent());
+
+                WindowManager wm = getWindowManager();
+                DisplayMetrics metrics=new DisplayMetrics();
+                wm.getDefaultDisplay().getMetrics(metrics);
+                int width = metrics.widthPixels;
+                final PopupWindow popupWindow=new PopupWindow(view,(int)(width*2/3),WindowManager.LayoutParams.WRAP_CONTENT);
+//                popupWindow.setFocusable(true);
+//                popupWindow.setTouchable(true);
+                popupWindow.setTouchInterceptor(new View.OnTouchListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //有新版本时调用浏览器进行下载
-//                        Intent intent1=new Intent();
-//                        intent1.setAction(Intent.ACTION_VIEW);
-//                        intent1.setData(Uri.parse("http://www.mybiao.top:8080/app"));
-//                        startActivity(intent1);
+                    public boolean onTouch(View v, MotionEvent event) {
+                        if(event.getAction()==MotionEvent.ACTION_OUTSIDE) {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                popupWindow.showAtLocation(nameTv,Gravity.CENTER,0,0);
+                ImageButton backBtn = (ImageButton)view.findViewById(R.id.back_update);
+                backBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                    popupWindow.dismiss();
+                    }
+                });
+                Button updateBtn = (Button)view.findViewById(R.id.update_btn);
+                updateBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
                         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
                             NotificationChannel channel=new NotificationChannel("update_app","myapp",NotificationManager.IMPORTANCE_LOW);
                             initNotification();
@@ -511,25 +536,17 @@ public class MainActivity extends Activity {
                         }
                         notificationManager.notify(210,builder.build());
                         downloadUpdate();
+                        popupWindow.dismiss();
                     }
                 });
-                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "暂不更新", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(MainActivity.this,"已取消更新",Toast.LENGTH_SHORT).show();
-                    }
-                });
-                dialog.show();
             }
             if(msg.what==105){
 
                 builder.setProgress(100,msg.arg1,false);
                 builder.setContentText("下载进度:"+msg.arg1+"%");
-//                Log.i("下载进度",msg.arg1+"");
                 notificationManager.notify(210,builder.build());
                 if(msg.arg1==100){
-                    Log.i("进度数",""+msg.arg1);
-                    builder.setContentTitle("下载完毕，点击安装");
+                    builder.setContentTitle("下载完毕");
                     builder.setProgress(0,0,false);
                     Intent intent=new Intent();
                     intent.setAction(Intent.ACTION_VIEW);
@@ -539,12 +556,12 @@ public class MainActivity extends Activity {
                         Uri apkuri = FileProvider.getUriForFile(getApplicationContext(),"com.example.myapp.fileprovider",file);
                         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         intent.setDataAndType(apkuri,"application/vnd.android.package-archive");
-                        System.out.println("版本大雨7");
                     }else {
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
                     }
                     notificationManager.notify(210,builder.build());
+//                    notificationManager.cancel(210);
 //                    startActivity(intent);
 //                    PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 //                    builder.setContentIntent(pi);
