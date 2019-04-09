@@ -452,7 +452,9 @@ public class PlayActivity extends Activity {
     private int getLrcY(int line) {
         Rect rect = new Rect();
         Layout layout = lrcTextView.getLayout();
-        layout.getLineBounds(line, rect);
+        if(line>=0&&line<=layout.getLineCount()) {
+            layout.getLineBounds(line, rect);
+        }
         int top = rect.centerY();
         return top;
     }

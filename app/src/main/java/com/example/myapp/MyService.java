@@ -10,6 +10,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
+import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -61,6 +65,9 @@ public class MyService extends Service {
     private int bufferFlag=0;
     private int cacheFlag=0;
     private App app;
+    private AudioManager audioManager;
+    private AudioAttributes audioAttributes;
+    private AudioFocusRequest focusRequest;
 
     public MyService() {
     }
@@ -228,6 +235,21 @@ public class MyService extends Service {
         player=new MediaPlayer();
 //        Log.i("服务中oncreate方法","执行了");
         app = new App();
+        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        if(Build.VERSION.SDK_INT>=26) {
+            audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+            focusRequest =new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(audioAttributes)
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(focusChangeListener)
+                    .build();
+            audioManager.requestAudioFocus(focusRequest);
+        }else{
+            audioManager.requestAudioFocus(focusChangeListener,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN);
+        }
     }
 
     public class App{
@@ -268,6 +290,35 @@ public class MyService extends Service {
             Log.i("缓冲百分比",percentsAvailable+"");
         }
     };
+    //监听声音焦点
+    private OnAudioFocusChangeListener focusChangeListener=new OnAudioFocusChangeListener(){
+
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            switch (focusChange){
+                case AudioManager.AUDIOFOCUS_LOSS:      //长时间的失去焦点
+                    if(player.isPlaying()) {
+                        pauseMusic();
+                    }
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN:      //重新得到声音焦点
+                    if(player!=null&&music!=null&&!player.isPlaying()){
+                        startMusic(player);
+                    }
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:    //短暂失去焦点
+                    if(player.isPlaying()) {
+                        pauseMusic();
+                    }
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    break;
+
+            }
+        }
+    };
+
+
     private void initNotification(){
         remoteViews = new RemoteViews(getPackageName(),R.layout.notification_layout);
         //播放暂停按钮的点击事件
@@ -331,6 +382,11 @@ public class MyService extends Service {
     //从暂停的地方继续播放音乐
     public void startMusic(MediaPlayer player){
         if (player!=null&&!player.isPlaying()){
+            if(Build.VERSION.SDK_INT>=26){
+                audioManager.requestAudioFocus(focusRequest);
+            }else{
+                audioManager.requestAudioFocus(focusChangeListener,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN);
+            }
             Intent intent1=new Intent();
             intent1.setAction("startorpause");
             intent1.putExtra("flags",1);
@@ -353,6 +409,11 @@ public class MyService extends Service {
             stopForeground(true);
         }else {
             stopForeground(true);
+        }
+        if(Build.VERSION.SDK_INT>=26) {
+            audioManager.abandonAudioFocusRequest(focusRequest);
+        }else {
+            audioManager.abandonAudioFocus(focusChangeListener);
         }
     }
     public class PlayBroadcast extends BroadcastReceiver{
