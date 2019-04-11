@@ -16,6 +16,6 @@
             android:dividerHeight="0.1dp"
             android:id="@+id/download_list_view"
             android:layout_marginHorizontal="10dp"
-            ></ListView>
+            />
     </LinearLayout>
 </FrameLayout>

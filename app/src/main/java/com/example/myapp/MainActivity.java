@@ -1,16 +1,13 @@
 package com.example.myapp;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -18,7 +15,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,7 +40,6 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
@@ -53,6 +48,7 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -141,6 +137,13 @@ public class MainActivity extends Activity {
         editor=getSharedPreferences("isFirst",MODE_PRIVATE).edit();
         editor.putInt("count",count);
         editor.commit();
+
+        //创建程序目录
+        File file=new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/downloadMusic");
+        if(!file.exists()){
+            file.mkdir();
+        }
+
         FragmentManager manager=getFragmentManager();
         FragmentTransaction transaction=manager.beginTransaction();
         if(mainFragment == null){

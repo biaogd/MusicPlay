@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -54,6 +55,8 @@ public class NearPlayListFragment extends BaseFragment{
                 showPopupMenu();
             }
         });
+        Button downloadingBtn = (Button)myview.findViewById(R.id.downloading_btn);
+        downloadingBtn.setVisibility(View.GONE);
         return this.myview;
     }
 

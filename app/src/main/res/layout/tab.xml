@@ -9,8 +9,8 @@
         android:src="@mipmap/ic_left_64"
         android:background="@color/touming"
         android:id="@+id/backButton"
+        android:layout_marginRight="10dp"
         android:layout_gravity="center_vertical"
-        android:layout_weight="1"
         />
     <TextView
         android:layout_width="wrap_content"
@@ -18,18 +18,29 @@
         android:gravity="center"
         android:text="本地音乐"
         android:layout_gravity="center_vertical"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:id="@+id/list_title"
         android:textColor="@color/color1"
-        android:layout_weight="20"
         />
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@mipmap/ic_menu_48"
-        android:layout_gravity="center_vertical"
-        android:background="@color/touming"
-        android:layout_weight="1"
-        android:id="@+id/options"
-        />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:gravity="center_vertical"
+        android:layout_height="match_parent">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/options"
+            android:text="正在下载"
+            android:id="@+id/downloading_btn"
+            android:background="@color/touming"
+            />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@mipmap/ic_menu_48"
+            android:background="@color/touming"
+            android:layout_alignParentRight="true"
+            android:id="@+id/options"
+            />
+    </RelativeLayout>
 </LinearLayout>

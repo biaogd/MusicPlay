@@ -1,12 +1,14 @@
 package com.example.myapp;
 
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -15,13 +17,14 @@ import java.util.ArrayList;
 
 
 /**
- * A simple {@link Fragment} subclass.
  */
 public class DownloadMusicFragment extends BaseFragment {
 
 
     private static final long serialVersionUID = -7567294083898084613L;
 
+    private Button downloadBtn;
+    private Fragment fragment;
     public DownloadMusicFragment() {
         // Required empty public constructor
     }
@@ -47,6 +50,22 @@ public class DownloadMusicFragment extends BaseFragment {
         adapter=new MyAdapter(getActivity(),musicList,DownloadMusicFragment.this);
         listView.setAdapter(adapter);
         ((TextView)(this.myview.findViewById(R.id.list_title))).setText("下载管理("+musicList.size()+")");
+        downloadBtn = (Button)myview.findViewById(R.id.downloading_btn);
+        downloadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager manager=getFragmentManager();
+                FragmentTransaction transaction=manager.beginTransaction();
+                if(fragment==null){
+                    fragment =new DownloadFragment();
+//                    transaction.add(fragment,"downloading");
+                }
+//                transaction.hide(DownloadMusicFragment.this);
+//                transaction.show(fragment);
+                transaction.replace(R.id.other_frag,fragment);
+                transaction.commit();
+            }
+        });
         return this.myview;
     }
 

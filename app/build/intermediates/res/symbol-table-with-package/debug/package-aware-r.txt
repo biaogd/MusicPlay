@@ -922,6 +922,7 @@ dimen subtitle_outline_width
 dimen subtitle_shadow_offset
 dimen subtitle_shadow_radius
 dimen tab_size
+dimen text_margin
 dimen tooltip_corner_radius
 dimen tooltip_horizontal_padding
 dimen tooltip_margin
@@ -1132,7 +1133,9 @@ id disableHome
 id downBtn
 id downBtns
 id download_list_view
+id download_music
 id downloadfragment
+id downloading_btn
 id downloadlist
 id downloadlisttv
 id edit_query
@@ -1237,6 +1240,8 @@ id parent_matrix
 id pause_music
 id percent
 id pin
+id play_love_btn
+id play_lrc_btn
 id play_menu
 id play_pause_45
 id play_sort
@@ -1406,6 +1411,7 @@ layout design_navigation_item_subheader
 layout design_navigation_menu
 layout design_navigation_menu_item
 layout design_text_input_password_icon
+layout fragment_download
 layout fragment_download_music
 layout fragment_left
 layout fragment_local_music_list

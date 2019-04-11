@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -46,6 +47,8 @@ public class LoveMusicFragment extends BaseFragment {
         adapter=new MyAdapter(getActivity(),musicList,LoveMusicFragment.this);
         listView.setAdapter(adapter);
         ((TextView)(this.myview.findViewById(R.id.list_title))).setText("我喜欢("+musicList.size()+")");
+        Button downloadingBtn = (Button)myview.findViewById(R.id.downloading_btn);
+        downloadingBtn.setVisibility(View.GONE);
         return this.myview;
     }
 

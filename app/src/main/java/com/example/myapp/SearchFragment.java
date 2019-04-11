@@ -29,6 +29,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.NetMusicBean;
 import com.google.gson.Gson;
@@ -195,8 +196,14 @@ public class SearchFragment extends Fragment {
 //                place.addView(listView);
                 musicList.clear();
                 List<NetMusicBean> list=(ArrayList<NetMusicBean>)msg.obj;
+                List<Music> musicLists = new MyDao(getActivity()).findAll("love_music_list");
                 for (NetMusicBean bean:list){
                     Music mu=new Music(bean.getSongName(),bean.getSongAuthor(),bean.getAllTime(),"http://www.mybiao.top:8000/song?id="+bean.getId(),bean.getSongSize());
+                    for(Music m:musicLists){
+                        if(m.getPath().equals(mu.getPath())){
+                            mu.setLove(1);
+                        }
+                    }
                     mu.setFlag(1);
                     musicList.add(mu);
                 }

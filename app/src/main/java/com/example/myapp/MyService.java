@@ -230,6 +230,7 @@ public class MyService extends Service {
         filter.addAction("deleteMusicFromList");
         filter.addAction("playMusicOnList");
         filter.addAction("play_net_music");
+        filter.addAction("updatelove");
         registerReceiver(broadcast,filter);
         manager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         player=new MediaPlayer();
@@ -584,6 +585,13 @@ public class MyService extends Service {
                 int pos = intent.getIntExtra("what_play_index",-1);
                 if(pos!=-1){
                     playByIndex(pos);
+                }
+            }
+            if(intent.getAction().equals("updatelove")){
+                if(music!=null) {
+                    int i = music.getLove();
+                    int j = i == 0 ? 1 : 0;
+                    music.setLove(j);
                 }
             }
         }

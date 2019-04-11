@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyDao {
-    private static Context context;
+    private Context context;
     private SQLiteDatabase db;
     private static MyDao dao;
     public MyDao(Context context){
         this.context = context;
     }
-    public static MyDao getInstance(){
+    public MyDao getInstance(){
         if(dao == null){
             dao = new MyDao(context);
             return dao;

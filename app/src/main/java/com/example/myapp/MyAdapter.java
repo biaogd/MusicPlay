@@ -59,17 +59,17 @@ public class MyAdapter extends BaseAdapter {
         SQLiteDatabase db = getSQLiteDB();
         Cursor cursor=db.query(tableName,new String[]{"love"},"path=?",new String[]{music.getPath()},null,null,null);
         int size = cursor.getCount();
-        Log.i("在selectPath中","size = "+size);
         int love=0;
         if(size >0) {
             cursor.moveToFirst();
             love = cursor.getInt(cursor.getColumnIndexOrThrow("love"));
         }
-        db.close();
+        if(db.isOpen()) {
+            db.close();
+        }
         if(size==0){
             return -1;
         }
-        Log.i("在selectPath中","love="+love);
         return love;
     }
 
@@ -84,12 +84,13 @@ public class MyAdapter extends BaseAdapter {
         int j=0;
         if(i>-1) {
             j = i>0?0:1;
-            Log.i("进入了if语句中","j = "+j);
             ContentValues values = new ContentValues();
             values.put("love",j);
             db.update(tableName,values,"path=?",new String[]{music.getPath()} );
         }
-        db.close();
+        if(db.isOpen()) {
+            db.close();
+        }
         return j;
     }
 
@@ -159,9 +160,12 @@ public class MyAdapter extends BaseAdapter {
             author.setTextColor(context.getResources().getColor(R.color.black));
         }
         if(m!=null && m.getId() == -1){
-            Log.i("id等于-1","找到了");
             name.setTextColor(context.getResources().getColor(R.color.color1));
             author.setTextColor(context.getResources().getColor(R.color.black));
+        }
+        //在我喜欢的音乐列表中隐藏按钮
+        if(fragment instanceof LoveMusicFragment){
+            loveBtn.setVisibility(View.GONE);
         }
         loveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -229,9 +233,7 @@ public class MyAdapter extends BaseAdapter {
                 TextView nameAuthor = (TextView)view.findViewById(R.id.name_author);
                 nameAuthor.setText(m.getSongName()+" - "+m.getSongAuthor());
                 final Button deleteBtn=(Button)view.findViewById(R.id.delete_btn);
-                if(fragment instanceof LoveMusicFragment){
-                    deleteBtn.setEnabled(false);
-                }
+
                 deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -240,21 +242,28 @@ public class MyAdapter extends BaseAdapter {
                             popupWindow.dismiss();
                             mList.remove(position);
                             notifyDataSetChanged();
-                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT);
+                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
                         }else if(fragment instanceof NearPlayListFragment){
                             deleteLove(m,near_stable);
                             popupWindow.dismiss();
                             mList.remove(position);
                             notifyDataSetChanged();
-                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT);
+                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
                         }else if(fragment instanceof DownloadMusicFragment){
                             deleteLove(m,download_stable);
                             popupWindow.dismiss();
                             mList.remove(position);
                             notifyDataSetChanged();
-                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT);
+                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
                         }else {
-
+                            popupWindow.dismiss();
+                            updateLove(m,near_stable);
+                            deleteLove(m,love_stable);
+                            updateLove(m,local_stable);
+                            updateLove(m,download_stable);
+                            mList.remove(position);
+                            notifyDataSetChanged();
+                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
                         }
                     }
                 });

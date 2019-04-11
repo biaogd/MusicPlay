@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -68,6 +69,8 @@ public class LocalMusicListFragment extends BaseFragment {
         adapter=new MyAdapter(getActivity(),musicList,LocalMusicListFragment.this);
         listView.setAdapter(adapter);
         ((TextView)(this.myview.findViewById(R.id.list_title))).setText("本地列表("+musicList.size()+")");
+        Button downloadingBtn = (Button)myview.findViewById(R.id.downloading_btn);
+        downloadingBtn.setVisibility(View.GONE);
         return this.myview;
     }
 

@@ -2,9 +2,12 @@ package com.example.myapp;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +28,7 @@ import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.DealLrc;
 import com.example.myapp.self.LrcBean;
 import com.example.myapp.self.Music;
@@ -68,6 +72,11 @@ public class PlayActivity extends Activity {
 
     private MyHandlers handler;
 
+    private ImageButton loveBtn;
+
+    private MyDao myDao;
+
+    private int []images=new int[]{R.mipmap.ic_heart_48,R.mipmap.ic_heart_red_48};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -97,6 +106,8 @@ public class PlayActivity extends Activity {
             @Override
             public void onClick(View v) {
                 finish();
+//                Intent intent=new Intent(PlayActivity.this,MainActivity.class);
+//                startActivity(intent);
             }
         });
         songName = (TextView) findViewById(R.id.this_song_title);
@@ -217,6 +228,130 @@ public class PlayActivity extends Activity {
             });
         } else {
             getMusicLrc();
+        }
+        myDao=new MyDao(this);
+        loveBtn = (ImageButton)findViewById(R.id.play_love_btn);
+        if(music.getLove() == 1){
+            loveBtn.setImageResource(images[1]);
+        }
+        loveBtn.setImageResource(images[0]);
+        List<Music> musicList=myDao.findAll("love_music_list");
+        for(Music m:musicList){
+            if(m.getPath().equals(music.getPath())){
+                loveBtn.setImageResource(images[1]);
+                break;
+            }
+        }
+        loveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(music.getFlag()==0){         //本地歌曲或已经下载的歌曲
+
+                    updateLove(music,"local_music_list");
+                    updateLove(music,"near_music_list");
+                    updateLove(music,"download_music_list");
+                    if(music.getLove()==1){
+                        deleteLove(music,"love_music_list");
+                    }else {
+                        insertMusic(music,"love_music_list");
+                    }
+//                    Intent intent1=new Intent();
+//                    intent1.setAction("updatelove");
+//                    sendBroadcast(intent1);
+                }else { //播放的是网络歌曲
+                    updateLove(music,"near_music_list");
+                    if(music.getLove()==1){
+                        deleteLove(music,"love_music_list");
+                    }else {
+                        insertMusic(music,"love_music_list");
+                    }
+                }
+                Intent intent1=new Intent();
+                intent1.setAction("updatelove");
+                sendBroadcast(intent1);
+                int i = music.getLove();
+                Log.i("i的值",i+"");
+                int j = i==0?1:0;
+                Log.i("j的值",j+"");
+                music.setLove(j);
+                loveBtn.setImageResource(images[j]);
+            }
+        });
+    }
+    private SQLiteDatabase getSQLiteDB(){
+        return this.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
+    }
+
+    /**
+     * 获取一个数据库当中是否包含正在操作的歌曲
+     * @param music 正在操作的歌曲对象
+     * @param tableName 要查询的数据库
+     * @return  -1，数据库中不包含这个歌曲；0，包含，但该歌曲不是我喜欢的；1，这个歌曲在，并且是我喜欢的
+     */
+    private int selectByPath(Music music,String tableName){
+        SQLiteDatabase db = getSQLiteDB();
+        Cursor cursor=db.query(tableName,new String[]{"love"},"path=?",new String[]{music.getPath()},null,null,null);
+        int size = cursor.getCount();
+        Log.i(tableName,"size = "+size);
+        int love=0;
+        if(size >0) {
+            cursor.moveToFirst();
+            love = cursor.getInt(cursor.getColumnIndexOrThrow("love"));
+        }
+        if(db.isOpen()) {
+            db.close();
+        }
+        if(size==0){
+            return -1;
+        }
+        Log.i(tableName,"love="+love);
+        return love;
+    }
+
+    /**
+     * 更新一个数据库中的love列，并且在喜欢和不喜欢之间自由转化
+     * @param music 要更新的歌曲
+     * @param tableName 数据库表名
+     */
+    private int updateLove(Music music,String tableName){
+        SQLiteDatabase db = getSQLiteDB();
+        int i=selectByPath(music,tableName);
+        int j=0;
+        if(i>-1) {
+            j = i>0?0:1;
+            Log.i(tableName,""+j);
+            ContentValues values = new ContentValues();
+            values.put("love",j);
+            db.update(tableName,values,"path=?",new String[]{music.getPath()} );
+        }
+        if(db.isOpen()) {
+            db.close();
+        }
+        return j;
+    }
+
+    protected long insertMusic(Music music,String tableName){
+        SQLiteDatabase db = getSQLiteDB();
+        ContentValues values=new ContentValues();
+        values.put("song_name",music.getSongName());
+        values.put("song_author",music.getSongAuthor());
+        values.put("all_time",music.getAlltime());
+        values.put("path",music.getPath());
+        values.put("song_size",music.getSongSize());
+        values.put("flag",music.getFlag());
+        values.put("love",1);
+        long i=db.insert(tableName,null,values);
+        if(db.isOpen()){
+            db.close();
+        }
+        return i;
+    }
+
+    private void deleteLove(Music music,String tableName){
+        SQLiteDatabase db=getSQLiteDB();
+        db.delete(tableName,"path=?",new String[]{music.getPath()});
+        if(db.isOpen()){
+            db.close();
         }
     }
     public void getMusicLrc(){

@@ -39,6 +39,19 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="下载"
+        android:textColor="@color/base_color"
+        android:background="@color/touming"
+        android:id="@+id/download_music"
+        />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/gray">
+    </View>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="取消"
         android:textColor="@color/base_color"
         android:id="@+id/cancel_btn_net"
