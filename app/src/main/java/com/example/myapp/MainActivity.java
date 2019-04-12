@@ -202,6 +202,10 @@ public class MainActivity extends Activity {
         Intent intent1=new Intent(this,MyService.class);
         startService(intent1);
 
+
+        //启动下载服务
+        Intent intent=new Intent(this,DownloadService.class);
+        startService(intent);
         musicList = new ArrayList<>();
         ImageButton musicListBtn=(ImageButton)findViewById(R.id.music_list_menu);
         musicListBtn.setOnClickListener(new View.OnClickListener() {

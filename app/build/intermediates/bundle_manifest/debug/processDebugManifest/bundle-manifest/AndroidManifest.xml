@@ -24,6 +24,11 @@
         android:testOnly="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true" >
+        <service
+            android:name="com.example.myapp.DownloadService"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity
             android:name="com.example.myapp.PlayActivity"
             android:parentActivityName="com.example.myapp.MainActivity" />

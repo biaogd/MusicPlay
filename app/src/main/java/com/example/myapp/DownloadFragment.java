@@ -86,10 +86,13 @@ public class DownloadFragment extends Fragment {
         broadcast=new DownloadBroadcast();
         IntentFilter filter=new IntentFilter();
         filter.addAction("update_dw_progress");
+        filter.addAction("return_download_list");
         getActivity().registerReceiver(broadcast,filter);
         listView=(ListView)myview.findViewById(R.id.dwing_music_list);
         adapter=new DownloadAdapter(getActivity(),dList);
         listView.setAdapter(adapter);
+        Intent intent=new Intent("get_download_list");
+        getActivity().sendBroadcast(intent);
         return myview;
     }
     public class DownloadBroadcast extends BroadcastReceiver{
@@ -100,13 +103,25 @@ public class DownloadFragment extends Fragment {
                 int progress = intent.getIntExtra("progress",0);
                 Music m=(Music)intent.getSerializableExtra("music");
                 int i=0;
-                for (i=0;i<dList.size();i++){
+                int size = dList.size();
+                for (i=0;i<size;i++){
                     if(dList.get(i).getMusic().getPath().equals(m.getPath())){
                         dList.get(i).setProgress(progress);
+                        if(progress==100){
+                            dList.remove(i);
+                        }
                         break;
                     }
                 }
-                if(i>=dList.size()){
+//                if(i>=size){
+//                    DownloadBean bean=new DownloadBean(m,0);
+//                    dList.add(bean);
+//                }
+                adapter.notifyDataSetChanged();
+            }
+            if(intent.getAction().equals("return_download_list")){
+                List<Music> musicList=(ArrayList)intent.getSerializableExtra("list");
+                for (Music m:musicList){
                     DownloadBean bean=new DownloadBean(m,0);
                     dList.add(bean);
                 }

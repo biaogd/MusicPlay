@@ -127,10 +127,14 @@ public class MyNetAdapter extends BaseAdapter {
                 downloadBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        String songPath = music.getPath();
-                        downloadMusic(music,songPath);
-                        String[] strs=songPath.split("song");
-                        downloadMusic(music,strs[0]+"lrc"+strs[1]);
+                        Intent intent=new Intent("download_music");
+                        intent.putExtra("music",music);
+                        context.sendBroadcast(intent);
+
+//                        String songPath = music.getPath();
+//                        downloadMusic(music,songPath);
+//                        String[] strs=songPath.split("song");
+//                        downloadMusic(music,strs[0]+"lrc"+strs[1]);
                         popupWindow.dismiss();
                     }
                 });
