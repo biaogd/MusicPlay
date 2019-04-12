@@ -1092,6 +1092,7 @@ id auto
 id backButton
 id back_search_btn
 id back_update
+id backbtns
 id barrier
 id beginning
 id blocking
@@ -1138,6 +1139,8 @@ id downloadfragment
 id downloading_btn
 id downloadlist
 id downloadlisttv
+id dw_progress
+id dwing_music_list
 id edit_query
 id end
 id end_padder
@@ -1293,7 +1296,9 @@ id song_about_author
 id song_about_name
 id song_author_net
 id song_delete_button
+id song_intro
 id song_name_net
+id song_size_tv
 id spacer
 id split_action_bar
 id spread
@@ -1411,6 +1416,7 @@ layout design_navigation_item_subheader
 layout design_navigation_menu
 layout design_navigation_menu_item
 layout design_text_input_password_icon
+layout download
 layout fragment_download
 layout fragment_download_music
 layout fragment_left

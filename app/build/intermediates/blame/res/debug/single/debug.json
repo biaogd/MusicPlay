@@ -1360,6 +1360,10 @@
         "source": "/home/biao/.gradle/caches/transforms-1/files-1.1/appcompat-v7-28.0.0.aar/c2603740c2c788e2703cd1de74a0ab4c/res/drawable-xhdpi-v4/abc_ic_star_half_black_16dp.png"
     },
     {
+        "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/layout_download.xml.flat",
+        "source": "/home/biao/AndroidStudioProjects/Myapp2/app/src/main/res/layout/download.xml"
+    },
+    {
         "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/drawable_abc_list_divider_material.xml.flat",
         "source": "/home/biao/.gradle/caches/transforms-1/files-1.1/appcompat-v7-28.0.0.aar/c2603740c2c788e2703cd1de74a0ab4c/res/drawable/abc_list_divider_material.xml"
     },

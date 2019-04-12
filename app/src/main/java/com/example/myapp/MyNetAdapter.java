@@ -128,9 +128,9 @@ public class MyNetAdapter extends BaseAdapter {
                     @Override
                     public void onClick(View v) {
                         String songPath = music.getPath();
-                        downloadMusic(songPath);
+                        downloadMusic(music,songPath);
                         String[] strs=songPath.split("song");
-                        downloadMusic(strs[0]+"lrc"+strs[1]);
+                        downloadMusic(music,strs[0]+"lrc"+strs[1]);
                         popupWindow.dismiss();
                     }
                 });
@@ -191,7 +191,7 @@ public class MyNetAdapter extends BaseAdapter {
         return j;
     }
     //开启一个线程下载音乐
-    public void downloadMusic(final String url){
+    public void downloadMusic(final Music music, final String url){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -201,8 +201,12 @@ public class MyNetAdapter extends BaseAdapter {
                 try {
                     Response response=client.newCall(request).execute();
                     if(response.isSuccessful()) {
+                        Intent intent1=new Intent("what_download");
+                        intent1.putExtra("music",music);
+                        context.sendBroadcast(intent1);
                         InputStream inputStream = response.body().byteStream();
                         String name = response.header("Content-Disposition");
+                        long size = response.body().contentLength();
                         String []strs = name.split("=");
                         String fileName="";
                         if(strs.length>1){
@@ -210,10 +214,15 @@ public class MyNetAdapter extends BaseAdapter {
                         }
                         Log.i("文件名",fileName);
                         FileOutputStream out=new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath()+"/downloadMusic/"+fileName);
-                        int i=0;
+                        int i=0,j=0;
                         byte[] bytes=new byte[1024];
                         while ((i = inputStream.read(bytes))!=-1){
                             out.write(bytes,0,i);
+                            j = j+i;
+                            Intent intent=new Intent("update_dw_progress");
+                            intent.putExtra("progress",(int)(j*100/size));
+                            intent.putExtra("music",music);
+                            context.sendBroadcast(intent);
                         }
                         Log.i("音乐"+fileName,"下载完毕");
                     }

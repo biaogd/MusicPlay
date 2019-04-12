@@ -17,6 +17,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@mipmap/ic_left_64"
+                android:id="@+id/backbtns"
                 android:background="@color/touming"/>
             <TextView
                 android:layout_width="wrap_content"
@@ -29,6 +30,9 @@
         </RelativeLayout>
         <ListView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:divider="@color/gray"
+            android:dividerHeight="0.1dp"
+            android:id="@+id/dwing_music_list"/>
     </LinearLayout>
 </FrameLayout>
