@@ -46,15 +46,4 @@ public class DealLrc {
         }
         return this.list;
     }
-
-//    public static void main(String[] args) {
-//        String lrc = "[00:12.22]你最近过的还好吗";
-//        String []lrcs=lrc.split("\\]");
-//        String time = lrcs[0].split("\\[")[1];
-//        System.out.println(time);
-//        String mintue = time.split(":")[0];
-//        String million = time.split(":")[1];
-//        int allTime = Integer.parseInt(mintue)*60*1000+(int)Double.parseDouble(million)*1000;
-//        System.out.println(allTime);
-//    }
 }

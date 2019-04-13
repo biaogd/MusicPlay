@@ -28,7 +28,7 @@ public class DownloadService extends Service {
     private BroadcastReceiver broadcast;
     private List<Music> downloadList;
     private Queue<Music> downQueue=new ArrayBlockingQueue<Music>(200);
-    private Thread t1,t2,t3;
+    private Thread t1;
     public DownloadService() {
     }
 
@@ -57,11 +57,13 @@ public class DownloadService extends Service {
             if(intent.getAction().equals("download_music")) {
                 Music music = (Music) intent.getSerializableExtra("music");
                 downloadList.add(music);
+                Log.i("DownloadService","添加新的歌曲到下载列表中"+music.getSongName());
             }
             if(intent.getAction().equals("get_download_list")){
                 Intent intent1=new Intent("return_download_list");
                 intent1.putExtra("list",(ArrayList)downloadList);
                 sendBroadcast(intent1);
+                Log.i("获取下载列表的广播","已发送");
             }
         }
     }
@@ -85,16 +87,21 @@ public class DownloadService extends Service {
                             t1.start();
                             flag = 1;
                         }
+                    }else {
+                        flag=0;
                     }
                 }
             }
         }).start();
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcast);
+        Intent intent=new Intent(getApplicationContext(),DownloadService.class);
+        startService(intent);
     }
     public class MyThread extends Thread{
         private Music music;
@@ -119,7 +126,9 @@ public class DownloadService extends Service {
                         fileName = strs[1];
                     }
                     Log.i("文件名",fileName);
-                    FileOutputStream out=new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath()+"/downloadMusic/"+fileName);
+                    //文件保存的路径
+                    String newPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/downloadMusic/"+fileName;
+                    FileOutputStream out=new FileOutputStream(newPath);
                     int i=0,j=0;
                     byte[] bytes=new byte[1024];
                     while ((i = inputStream.read(bytes))!=-1){
@@ -128,6 +137,7 @@ public class DownloadService extends Service {
                         Intent intent=new Intent("update_dw_progress");
                         intent.putExtra("progress",(int)(j*100/size));
                         intent.putExtra("music",music);
+                        intent.putExtra("newPath",newPath);
                         sendBroadcast(intent);
                     }
                     Log.i("音乐"+fileName,"下载完毕");

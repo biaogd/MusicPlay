@@ -130,11 +130,6 @@ public class MyNetAdapter extends BaseAdapter {
                         Intent intent=new Intent("download_music");
                         intent.putExtra("music",music);
                         context.sendBroadcast(intent);
-
-//                        String songPath = music.getPath();
-//                        downloadMusic(music,songPath);
-//                        String[] strs=songPath.split("song");
-//                        downloadMusic(music,strs[0]+"lrc"+strs[1]);
                         popupWindow.dismiss();
                     }
                 });

@@ -192,10 +192,6 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, PlayActivity.class);
                 if (nowMusic != null) {
-//                    Bundle bundle =new Bundle();
-//                    bundle.putSerializable("playMusic",nowMusic);
-//                    bundle.putBoolean("playing",playing);
-//                    intent.putExtra("playIntent",bundle);
                     startActivity(intent);
                 }
             }
@@ -514,8 +510,6 @@ public class MainActivity extends Activity {
                 wm.getDefaultDisplay().getMetrics(metrics);
                 int width = metrics.widthPixels;
                 final PopupWindow popupWindow=new PopupWindow(view,(int)(width*2/3),WindowManager.LayoutParams.WRAP_CONTENT);
-//                popupWindow.setFocusable(true);
-//                popupWindow.setTouchable(true);
                 popupWindow.setTouchInterceptor(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -571,11 +565,6 @@ public class MainActivity extends Activity {
                         intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
                     }
                     notificationManager.notify(210,builder.build());
-//                    notificationManager.cancel(210);
-//                    startActivity(intent);
-//                    PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-//                    builder.setContentIntent(pi);
-//                    notificationManager.notify(210,builder.build());
                     startActivity(intent);
                 }
             }

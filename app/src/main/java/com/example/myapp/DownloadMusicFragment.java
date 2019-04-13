@@ -4,6 +4,10 @@ package com.example.myapp;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,10 +62,7 @@ public class DownloadMusicFragment extends BaseFragment {
                 FragmentTransaction transaction=manager.beginTransaction();
                 if(fragment==null){
                     fragment =new DownloadFragment();
-//                    transaction.add(fragment,"downloading");
                 }
-//                transaction.hide(DownloadMusicFragment.this);
-//                transaction.show(fragment);
                 transaction.replace(R.id.other_frag,fragment);
                 transaction.commit();
             }
@@ -69,4 +70,13 @@ public class DownloadMusicFragment extends BaseFragment {
         return this.myview;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        musicList.clear();
+        musicList = findAll(download_stable);
+        adapter=new MyAdapter(getActivity(),musicList,DownloadMusicFragment.this);
+        listView.setAdapter(adapter);
+        ((TextView)(this.myview.findViewById(R.id.list_title))).setText("下载管理("+musicList.size()+")");
+    }
 }

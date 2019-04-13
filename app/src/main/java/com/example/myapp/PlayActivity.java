@@ -32,6 +32,11 @@ import com.example.myapp.database.MyDao;
 import com.example.myapp.self.DealLrc;
 import com.example.myapp.self.LrcBean;
 import com.example.myapp.self.Music;
+import com.example.myapp.self.NetMusicBean;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -78,7 +83,7 @@ public class PlayActivity extends Activity {
     private ImageButton loveBtn;
 
     private MyDao myDao;
-
+    private Gson gson;
     private int []images=new int[]{R.mipmap.ic_heart_48,R.mipmap.ic_heart_red_48};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,36 +107,22 @@ public class PlayActivity extends Activity {
         filter.addAction("getMusic");
         registerReceiver(broadcast, filter);
 
-//        Intent intent = getIntent();
-//        Bundle bundle1 = intent.getBundleExtra("playIntent");
-//        music = (Music) bundle1.getSerializable("playMusic");
-//        boolean playing = bundle1.getBoolean("playing");
-
         //发送广播到 service，获取音乐播放信息
         Intent intent=new Intent("update_play_message");
         sendBroadcast(intent);
-
+        gson=new Gson();
         ImageButton downBtn = (ImageButton) findViewById(R.id.downBtn);
         downBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
-//                Intent intent=new Intent(PlayActivity.this,MainActivity.class);
-//                startActivity(intent);
             }
         });
         songName = (TextView) findViewById(R.id.this_song_title);
-//        songName.setText(music.getSongName());
         songAuthor = (TextView) findViewById(R.id.this_song_author);
-//        songAuthor.setText(music.getSongAuthor());
         nowTime = (TextView) findViewById(R.id.now_time);
         allTime = (TextView) findViewById(R.id.all_time);
-//        allTime.setText(String.valueOf(transforTime(music.getAlltime())));
         seekBar = (SeekBar) findViewById(R.id.seek_bar);
-//        seekBar.setMax(music.getAlltime());
-//        if(music.getFlag()==0){
-//            seekBar.setSecondaryProgress(music.getAlltime());
-//        }
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -151,9 +142,7 @@ public class PlayActivity extends Activity {
             }
         });
         playPause = (ImageButton) findViewById(R.id.play_pause_45);
-//        if (playing) {
-//            playPause.setImageResource(R.mipmap.ic_pause_88);
-//        }
+
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -221,37 +210,9 @@ public class PlayActivity extends Activity {
 
         handler = new MyHandlers();
 
-//        lrcBeanList = new DealLrc().getLrcList(music);
-//        if (lrcBeanList != null) {
-//            String lrc = "";
-//            lrc = lrc + "\n\n\n\n";
-//            for (LrcBean bean : lrcBeanList) {
-//                lrc = lrc + bean.getLrc() + "\n";
-//            }
-//            lrc = lrc + "\n\n\n\n";
-//            lrcTextView.setText(lrc);
-//            scrollView.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    scrollView.scrollTo(0, line);
-//                }
-//            });
-//        } else {
-//            getMusicLrc();
-//        }
         myDao=new MyDao(this);
         loveBtn = (ImageButton)findViewById(R.id.play_love_btn);
-//        if(music.getLove() == 1){
-//            loveBtn.setImageResource(images[1]);
-//        }
-//        loveBtn.setImageResource(images[0]);
-//        List<Music> musicList=myDao.findAll("love_music_list");
-//        for(Music m:musicList){
-//            if(m.getPath().equals(music.getPath())){
-//                loveBtn.setImageResource(images[1]);
-//                break;
-//            }
-//        }
+
         loveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -361,16 +322,47 @@ public class PlayActivity extends Activity {
             db.close();
         }
     }
+
     public void getMusicLrc(){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 OkHttpClient client = new OkHttpClient();
-                String[] strs = music.getPath().split("=");
+                String url="";
+                if(music.getFlag()==1){
+                    String[] strs = music.getPath().split("=");
+                    url = "http://www.mybiao.top:8000/lrc?id=" + strs[1];
+                }else {
+                    List<NetMusicBean> netMusicBeans=new ArrayList<>();
+                    Request req = new Request.Builder().url("http://www.mybiao.top:8000/search?word=" + music.getSongAuthor()+" - "+music.getSongName()).build();
+                    try {
+                        Response res= client.newCall(req).execute();
+                        if(res.isSuccessful()) {
+                            String mulist = res.body().string();
+                            if (!mulist.equals("null")) {
+                                Log.i("muList",mulist);
+                                JsonParser jsonParser = new JsonParser();
+                                JsonArray jsonElements = jsonParser.parse(mulist).getAsJsonArray();
+                                for (JsonElement element : jsonElements) {
+                                    NetMusicBean bean = gson.fromJson(element, NetMusicBean.class);
+                                    Log.i("搜索到",bean.toString());
+                                    netMusicBeans.add(bean);
+                                }
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if(netMusicBeans.size()==1){
+                        String path = "http://www.mybiao.top:8000/song?id="+netMusicBeans.get(0).getId();
+                        String[] strs = path.split("=");
+                        url = "http://www.mybiao.top:8000/lrc?id=" + strs[1];
+                    }
+                }
                 List<LrcBean> lrcList = new ArrayList<>();
-                Log.i("请求歌词线程","正在运行");
-                if (strs.length >= 2) {
-                    Request request = new Request.Builder().url("http://www.mybiao.top:8000/lrc?id=" + strs[1]).build();
+                if (!url.equals("")) {
+                    Request request = new Request.Builder().url(url).build();
                     try {
                         Response response = client.newCall(request).execute();
                         if (response.isSuccessful()) {
@@ -403,8 +395,11 @@ public class PlayActivity extends Activity {
                             msg.what = 102;
                             handler.sendMessage(msg);
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } catch (Exception e) {
+                        Log.i("在主播放页面","未找到歌词");
+                        Message msg = new Message();
+                        msg.what = 102;
+                        handler.sendMessage(msg);
                     }
                 }
             }
@@ -514,10 +509,7 @@ public class PlayActivity extends Activity {
                     lrc = lrc + "\n\n\n\n";
                     lrcTextView.setText(lrc);
                 } else {
-                    if (music.getFlag()==1) {
                         getMusicLrc();
-                    }
-                    lrcTextView.setText("\n\n\n\n此歌曲暂无歌词");
                 }
 
                 if (adapter2 != null) {

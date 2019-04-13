@@ -1,8 +1,11 @@
 package com.example.myapp;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
@@ -15,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
@@ -58,7 +62,12 @@ public class RightFragment extends Fragment {
         handler = new MyHandler();
         list = new ArrayList<>();
         mList=new ArrayList<>();
-        searchMusic("");
+        if(checkNet(getActivity())){
+            searchMusic("");
+        }else {
+            Toast.makeText(getActivity(),"网络无法连接，稍后重试",Toast.LENGTH_LONG).show();
+            Log.i("网络","无法连接");
+        }
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -76,6 +85,16 @@ public class RightFragment extends Fragment {
         return view;
     }
 
+    public boolean checkNet(Context context){
+        if(context!=null){
+            ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo info=manager.getActiveNetworkInfo();
+            if(info!=null){
+                return info.isConnected();
+            }
+        }
+        return false;
+    }
     public void searchMusic(final String word){
         new Thread(new Runnable() {
             @Override
@@ -98,7 +117,7 @@ public class RightFragment extends Fragment {
                             }
                         }
 
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -117,7 +136,6 @@ public class RightFragment extends Fragment {
                 list = (ArrayList<NetMusicBean>)msg.obj;
                 List<Music> musicLists = new MyDao(getActivity()).findAll("love_music_list");
                 for (NetMusicBean bean:list){
-
                     Music mu=new Music(bean.getSongName(),bean.getSongAuthor(),bean.getAllTime(),"http://www.mybiao.top:8000/song?id="+bean.getId(),bean.getSongSize());
                     for(Music m:musicLists){
                         if(m.getPath().equals(mu.getPath())){

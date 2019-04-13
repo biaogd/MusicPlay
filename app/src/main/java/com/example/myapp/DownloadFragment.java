@@ -18,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.DownloadBean;
 import com.example.myapp.self.Music;
 
@@ -34,6 +35,7 @@ public class DownloadFragment extends Fragment {
     private List<DownloadBean> dList;
     private BroadcastReceiver broadcast;
     private BaseAdapter adapter;
+    private MyDao myDao;
     public DownloadFragment() {
         // Required empty public constructor
     }
@@ -83,6 +85,7 @@ public class DownloadFragment extends Fragment {
             }
         });
         dList=new ArrayList<>();
+        myDao=new MyDao(getActivity());
         broadcast=new DownloadBroadcast();
         IntentFilter filter=new IntentFilter();
         filter.addAction("update_dw_progress");
@@ -102,21 +105,22 @@ public class DownloadFragment extends Fragment {
             if(intent.getAction().equals("update_dw_progress")){
                 int progress = intent.getIntExtra("progress",0);
                 Music m=(Music)intent.getSerializableExtra("music");
+                String newPath=intent.getStringExtra("newPath");
                 int i=0;
                 int size = dList.size();
                 for (i=0;i<size;i++){
                     if(dList.get(i).getMusic().getPath().equals(m.getPath())){
                         dList.get(i).setProgress(progress);
                         if(progress==100){
+                            dList.get(i).getMusic().setPath(newPath);
+                            dList.get(i).getMusic().setFlag(0);
+                            myDao.insertMusic(dList.get(i).getMusic(),"download_music_list");
+                            myDao.insertMusic(dList.get(i).getMusic(),"local_music_list");
                             dList.remove(i);
                         }
                         break;
                     }
                 }
-//                if(i>=size){
-//                    DownloadBean bean=new DownloadBean(m,0);
-//                    dList.add(bean);
-//                }
                 adapter.notifyDataSetChanged();
             }
             if(intent.getAction().equals("return_download_list")){
