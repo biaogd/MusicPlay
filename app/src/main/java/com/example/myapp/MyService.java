@@ -231,6 +231,8 @@ public class MyService extends Service {
         filter.addAction("playMusicOnList");
         filter.addAction("play_net_music");
         filter.addAction("updatelove");
+        filter.addAction("update_play_message");
+        filter.addAction("update_service_love");
         registerReceiver(broadcast,filter);
         manager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         player=new MediaPlayer();
@@ -334,9 +336,13 @@ public class MyService extends Service {
         //停止按钮的点击事件
         PendingIntent pIntent4=PendingIntent.getBroadcast(getApplicationContext(),4,new Intent("exitApp"),PendingIntent.FLAG_UPDATE_CURRENT);
         remoteViews.setOnClickPendingIntent(R.id.exitMusic,pIntent4);
-
-        Intent intent1=new Intent(this,MainActivity.class);
-        intent1.putExtra("notifi_music",music);
+        Intent intent1=new Intent();
+        if(music==null) {
+            intent1.setClass(this,MainActivity.class);
+            intent1.putExtra("notifi_music", music);
+        }else {
+            intent1.setClass(this,PlayActivity.class);
+        }
         PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),0,intent1,PendingIntent.FLAG_UPDATE_CURRENT);
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
             builder = new NotificationCompat.Builder(this, "fore_service");
@@ -417,102 +423,102 @@ public class MyService extends Service {
             audioManager.abandonAudioFocus(focusChangeListener);
         }
     }
-    public class PlayBroadcast extends BroadcastReceiver{
+    public class PlayBroadcast extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals("startMusic")){
-                Bundle bundle=intent.getBundleExtra("mList");
+            if (intent.getAction().equals("startMusic")) {
+                Bundle bundle = intent.getBundleExtra("mList");
                 listp = bundle.getInt("position");
-                mList = (ArrayList<Music>)bundle.getSerializable("musicList");
+                mList = (ArrayList<Music>) bundle.getSerializable("musicList");
                 whichFragment = bundle.getString("whichFragment");
                 music = mList.get(listp);
                 player.reset();
                 play();
             }
-            if(intent.getAction().equals("play_net_music")){
-                whichFragment =null;
-                Bundle bundle=intent.getBundleExtra("music_data");
+            if (intent.getAction().equals("play_net_music")) {
+                whichFragment = null;
+                Bundle bundle = intent.getBundleExtra("music_data");
                 listp = bundle.getInt("pos");
-                mList = (ArrayList<Music>)bundle.getSerializable("musicList");
+                mList = (ArrayList<Music>) bundle.getSerializable("musicList");
                 music = mList.get(listp);
                 player.reset();
                 play();
             }
-            if(intent.getAction().equals("sop")) {
-                if (player.isPlaying()&&bufferFlag==1) {
+            if (intent.getAction().equals("sop")) {
+                if (player.isPlaying() && bufferFlag == 1) {
                     pauseMusic();
                 } else {
                     //music对象不为空，为暂停状态
-                    if (music != null&&bufferFlag==1) {
+                    if (music != null && bufferFlag == 1) {
                         startMusic(player);
                     }
                 }
             }
             //play页面点击上一首下一首，收到这个广播
-            if(intent.getAction().equals("lastAndNext")){
+            if (intent.getAction().equals("lastAndNext")) {
                 String lastNext = intent.getStringExtra("lastnext");
-                if(lastNext.equals("last")){
-                    if(order == list_loop || order == one_loop) {
+                if (lastNext.equals("last")) {
+                    if (order == list_loop || order == one_loop) {
                         last();
-                    }else{
+                    } else {
                         randowPlay();
                     }
                 }
-                if(lastNext.equals("next")){
-                    if(order == random_play){
+                if (lastNext.equals("next")) {
+                    if (order == random_play) {
                         randowPlay();
-                    }else {
+                    } else {
                         next();
                     }
                 }
             }
-            if(intent.getAction().equals("musicOrder")){
-                order = (order+1)%3;
-                Intent intent2=new Intent();
+            if (intent.getAction().equals("musicOrder")) {
+                order = (order + 1) % 3;
+                Intent intent2 = new Intent();
                 intent2.setAction("getOrder");
-                intent2.putExtra("orderKey",order);
+                intent2.putExtra("orderKey", order);
                 sendBroadcast(intent2);
             }
-            if(intent.getAction().equals("status")){
+            if (intent.getAction().equals("status")) {
                 Intent intent1 = new Intent();
                 intent1.setAction("returnOrder");
-                Bundle bundle=new Bundle();
-                bundle.putInt("orderKey",order);
-                bundle.putInt("positions",player.getCurrentPosition());
-                intent1.putExtra("orderKeys",bundle);
+                Bundle bundle = new Bundle();
+                bundle.putInt("orderKey", order);
+                bundle.putInt("positions", player.getCurrentPosition());
+                intent1.putExtra("orderKeys", bundle);
                 sendBroadcast(intent1);
             }
-            if(intent.getAction().equals("pauseMusic")){
+            if (intent.getAction().equals("pauseMusic")) {
                 String keys = intent.getStringExtra("keys");
-                if(keys.equals("pause")) {
-                    if (player.isPlaying()&&bufferFlag==1) {
+                if (keys.equals("pause")) {
+                    if (player.isPlaying() && bufferFlag == 1) {
                         pauseMusic();
                     } else {
                         //music对象不为空，为暂停状态
-                        if (music != null&&bufferFlag==1) {
+                        if (music != null && bufferFlag == 1) {
                             startMusic(player);
                         }
                     }
                 }
-                if(keys.equals("last")){
-                    if(order == random_play){
+                if (keys.equals("last")) {
+                    if (order == random_play) {
                         randowPlay();
-                    }else {
+                    } else {
                         last();
                     }
 
                 }
-                if(keys.equals("next")){
-                    if(order == random_play){
+                if (keys.equals("next")) {
+                    if (order == random_play) {
                         randowPlay();
-                    }else {
+                    } else {
                         next();
                     }
                 }
             }
-            if(intent.getAction().equals("updateActivity")){
-                if (music!=null) {
+            if (intent.getAction().equals("updateActivity")) {
+                if (music != null) {
                     //获取正在播放音乐的信息
                     Intent intent1 = new Intent();
                     intent1.setAction("updateMusic");
@@ -524,16 +530,16 @@ public class MyService extends Service {
                     //获取播放或暂停的播放状态
                     if (player.isPlaying()) {
                         Intent intent3 = new Intent();
-                        intent1.setAction("startorpause");
-                        intent1.putExtra("flags", 1);
-                        sendBroadcast(intent1);
+                        intent3.setAction("startorpause");
+                        intent3.putExtra("flags", 1);
+                        sendBroadcast(intent3);
                     } else {
                         //music对象不为空，为暂停状态
                         if (music != null) {
                             Intent intent2 = new Intent();
-                            intent1.setAction("startorpause");
-                            intent1.putExtra("flags", 0);
-                            sendBroadcast(intent1);
+                            intent2.setAction("startorpause");
+                            intent2.putExtra("flags", 0);
+                            sendBroadcast(intent2);
                         }
                     }
                     //获取进度条的状态
@@ -546,15 +552,15 @@ public class MyService extends Service {
                     sendBroadcast(myIntent);
                 }
             }
-            if(intent.getAction().equals("exitApp")){
+            if (intent.getAction().equals("exitApp")) {
 
             }
-            if(intent.getAction().equals("seekTo")){
-                position = intent.getIntExtra("progress",position);
+            if (intent.getAction().equals("seekTo")) {
+                position = intent.getIntExtra("progress", position);
                 player.seekTo(position);
             }
-            if(intent.getAction().equals("getnowplaymusic")){
-                if(music != null) {
+            if (intent.getAction().equals("getnowplaymusic")) {
+                if (music != null) {
                     Intent intent1 = new Intent();
                     intent1.setAction("updateMusic");
                     Bundle bundle = new Bundle();
@@ -564,34 +570,77 @@ public class MyService extends Service {
                     sendBroadcast(intent1);
                 }
             }
-            if(intent.getAction().equals("getMusicList")){
-                Intent intent1=new Intent();
+            if (intent.getAction().equals("getMusicList")) {
+                Intent intent1 = new Intent();
                 intent1.setAction("musicList");
-                intent1.putExtra("music_list",(ArrayList<Music>)mList);
+                intent1.putExtra("music_list", (ArrayList<Music>) mList);
                 sendBroadcast(intent1);
             }
-            if(intent.getAction().equals("deleteMusicFromList")){
-                Music nowMusic = (Music)intent.getSerializableExtra("delete_music");
-                int i=0;
-                for(i=0;i<mList.size();i++){
-                    if(mList.get(i).getPath().equals(nowMusic.getPath())){
+            if (intent.getAction().equals("deleteMusicFromList")) {
+                Music nowMusic = (Music) intent.getSerializableExtra("delete_music");
+                int i = 0;
+                for (i = 0; i < mList.size(); i++) {
+                    if (mList.get(i).getPath().equals(nowMusic.getPath())) {
                         mList.remove(i);
-                        Log.i("删除歌曲播放列表","成功");
+                        Log.i("删除歌曲播放列表", "成功");
                         break;
                     }
                 }
             }
-            if(intent.getAction().equals("playMusicOnList")){
-                int pos = intent.getIntExtra("what_play_index",-1);
-                if(pos!=-1){
+            if (intent.getAction().equals("playMusicOnList")) {
+                int pos = intent.getIntExtra("what_play_index", -1);
+                if (pos != -1) {
                     playByIndex(pos);
                 }
             }
-            if(intent.getAction().equals("updatelove")){
-                if(music!=null) {
+            if (intent.getAction().equals("updatelove")) {
+                if (music != null) {
                     int i = music.getLove();
                     int j = i == 0 ? 1 : 0;
                     music.setLove(j);
+                    Log.i("在service中", "j=" + j);
+                }
+            }
+            if(intent.getAction().equals("update_service_love")){
+                Log.i("在service","受到广播 update_service_love");
+//                String frag = intent.getStringExtra("fragment");
+                Music ms = (Music) intent.getSerializableExtra("music");
+//                if(frag.equals(whichFragment)){
+                    int i=0;
+                    for(i=0;i<mList.size();i++){
+                        if (mList.get(i).getPath().equals(ms.getPath())){
+                            int mm = music.getLove();
+                            Log.i("mm",mm+"");
+                            int nn = mm == 0 ? 1 : 0;
+                            Log.i("nn",nn+"");
+                            mList.get(i).setLove(nn);
+                            break;
+                        }
+//                    }
+                }
+            }
+            if (intent.getAction().equals("update_play_message")) {
+                if (music != null) {
+                    //获取正在播放音乐的信息
+                    Intent intent1 = new Intent();
+                    intent1.setAction("getMusic");
+                    intent1.putExtra("nowplaymusic", music);
+                    sendBroadcast(intent1);
+                    //获取播放或暂停的播放状态
+                    if (player.isPlaying()) {
+                        Intent intent3 = new Intent();
+                        intent3.setAction("startorpause");
+                        intent3.putExtra("flags", 1);
+                        sendBroadcast(intent3);
+                    } else {
+                        //music对象不为空，为暂停状态
+                        if (music != null) {
+                            Intent intent2 = new Intent();
+                            intent2.setAction("startorpause");
+                            intent2.putExtra("flags", 0);
+                            sendBroadcast(intent2);
+                        }
+                    }
                 }
             }
         }

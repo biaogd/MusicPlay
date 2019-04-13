@@ -2,6 +2,7 @@ package com.example.myapp;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.app.Fragment;
@@ -170,6 +171,7 @@ public class MyAdapter extends BaseAdapter {
         loveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent=new Intent("update_service_love");
                 if(fragment instanceof LoveMusicFragment){
                     updateLove(m,near_stable);
                     deleteLove(m,love_stable);
@@ -182,12 +184,14 @@ public class MyAdapter extends BaseAdapter {
                    loveBtn.setImageResource(images[i]);
                    updateLove(m,near_stable);
                    updateLove(m,download_stable);
+
                    if(i == 0){
                        deleteLove(m,love_stable);
                    }
                    if(i == 1){
                        insertMusic(m,love_stable);
                    }
+//                   intent.putExtra("fragment","localFragment");
                 }else if(fragment instanceof NearPlayListFragment){
                     int i=updateLove(m,near_stable);
                     loveBtn.setImageResource(images[i]);
@@ -199,6 +203,7 @@ public class MyAdapter extends BaseAdapter {
                         insertMusic(m,love_stable);
                     }
                     updateLove(m,local_stable);
+//                    intent.putExtra("fragment","nearFragment");
                 }else {
                     int i=updateLove(m,download_stable);
                     loveBtn.setImageResource(images[i]);
@@ -210,8 +215,10 @@ public class MyAdapter extends BaseAdapter {
                     if(i == 1){
                         insertMusic(m,love_stable);
                     }
+//                    intent.putExtra("fragment","downloadFragment");
                 }
-
+                intent.putExtra("music",m);
+                context.sendBroadcast(intent);
             }
         });
         loveBtn.setImageResource(images[m.getLove()]);
@@ -263,6 +270,9 @@ public class MyAdapter extends BaseAdapter {
                             updateLove(m,download_stable);
                             mList.remove(position);
                             notifyDataSetChanged();
+                            Intent intent=new Intent("update_service_love");
+                            intent.putExtra("music",m);
+                            context.sendBroadcast(intent);
                             Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
                         }
                     }

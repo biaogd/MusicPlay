@@ -103,6 +103,7 @@ public class MainActivity extends Activity {
     private ListView listView;
     private MyAdapter2 adapter2;
     private Gson gson=new Gson();
+    private MyDao myDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +156,7 @@ public class MainActivity extends Activity {
 
         notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         handler = new MyHandler();
+        myDao=new MyDao(this);
 
         updateApp();
         nameTv = (TextView)findViewById(R.id.myname);
@@ -190,10 +192,10 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, PlayActivity.class);
                 if (nowMusic != null) {
-                    Bundle bundle =new Bundle();
-                    bundle.putSerializable("playMusic",nowMusic);
-                    bundle.putBoolean("playing",playing);
-                    intent.putExtra("playIntent",bundle);
+//                    Bundle bundle =new Bundle();
+//                    bundle.putSerializable("playMusic",nowMusic);
+//                    bundle.putBoolean("playing",playing);
+//                    intent.putExtra("playIntent",bundle);
                     startActivity(intent);
                 }
             }
@@ -325,29 +327,30 @@ public class MainActivity extends Activity {
                     for(i=0;i<list1.size();i++){
                         Music m=list1.get(i);
                         if(m.getPath().equals(music.getPath())){      //列表中已经有这个歌曲
-                            new MyDao(MainActivity.this).deleteMusic(music,"near_music_list");     //从数据库中删除
-                            new MyDao(MainActivity.this).insertMusic(music,"near_music_list");
+                            myDao.deleteMusic(music,"near_music_list");     //从数据库中删除
+                            myDao.insertMusic(music,"near_music_list");
                             break;
                         }
                     }
                     if(i>=list1.size()){     //这首歌不再数据库当中，也就是不再最近播放列表中
-                        new MyDao(MainActivity.this).insertMusic(music,"near_music_list");
+                        myDao.insertMusic(music,"near_music_list");
                     }
                 }
                 if(whichFragment!=null&&!whichFragment.equals("nearFragment")){
-                    List<Music> list1=new MyDao(MainActivity.this).findAll("near_music_list");
+                    List<Music> list1=myDao.findAll("near_music_list");
                     int i;
                     for(i=0;i<list1.size();i++){
                         Music m=list1.get(i);
                         if(m.getPath().equals(music.getPath())){      //列表中已经有这个歌曲
-                            new MyDao(MainActivity.this).deleteMusic(music,
+                            Log.i("在MainActivity","updateMusic 之ixng了");
+                            myDao.deleteMusic(music,
                                     "near_music_list");     //从数据库中删除
-                            new MyDao(MainActivity.this).insertMusic(music,"near_music_list");
+                            myDao.insertMusic(music,"near_music_list");
                             break;
                         }
                     }
                     if(i>=list1.size()){     //这首歌不再数据库当中，也就是不再最近播放列表中
-                        new MyDao(MainActivity.this).insertMusic(music,"near_music_list");
+                        myDao.insertMusic(music,"near_music_list");
                     }
                 }
                 if(adapter2!=null) {

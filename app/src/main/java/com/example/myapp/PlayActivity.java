@@ -48,6 +48,9 @@ import okhttp3.Response;
 public class PlayActivity extends Activity {
 
     private Music music;
+
+    private boolean playing;
+
     private MyBroadcast broadcast;
     private SeekBar seekBar;
     private TextView nowTime;
@@ -96,11 +99,18 @@ public class PlayActivity extends Activity {
         filter.addAction("exitApp");
         filter.addAction("musicList");
         filter.addAction("getBufferProgress");
+        filter.addAction("getMusic");
         registerReceiver(broadcast, filter);
-        Intent intent = getIntent();
-        Bundle bundle1 = intent.getBundleExtra("playIntent");
-        music = (Music) bundle1.getSerializable("playMusic");
-        boolean playing = bundle1.getBoolean("playing");
+
+//        Intent intent = getIntent();
+//        Bundle bundle1 = intent.getBundleExtra("playIntent");
+//        music = (Music) bundle1.getSerializable("playMusic");
+//        boolean playing = bundle1.getBoolean("playing");
+
+        //发送广播到 service，获取音乐播放信息
+        Intent intent=new Intent("update_play_message");
+        sendBroadcast(intent);
+
         ImageButton downBtn = (ImageButton) findViewById(R.id.downBtn);
         downBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,17 +121,17 @@ public class PlayActivity extends Activity {
             }
         });
         songName = (TextView) findViewById(R.id.this_song_title);
-        songName.setText(music.getSongName());
+//        songName.setText(music.getSongName());
         songAuthor = (TextView) findViewById(R.id.this_song_author);
-        songAuthor.setText(music.getSongAuthor());
+//        songAuthor.setText(music.getSongAuthor());
         nowTime = (TextView) findViewById(R.id.now_time);
         allTime = (TextView) findViewById(R.id.all_time);
-        allTime.setText(String.valueOf(transforTime(music.getAlltime())));
+//        allTime.setText(String.valueOf(transforTime(music.getAlltime())));
         seekBar = (SeekBar) findViewById(R.id.seek_bar);
-        seekBar.setMax(music.getAlltime());
-        if(music.getFlag()==0){
-            seekBar.setSecondaryProgress(music.getAlltime());
-        }
+//        seekBar.setMax(music.getAlltime());
+//        if(music.getFlag()==0){
+//            seekBar.setSecondaryProgress(music.getAlltime());
+//        }
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -141,9 +151,9 @@ public class PlayActivity extends Activity {
             }
         });
         playPause = (ImageButton) findViewById(R.id.play_pause_45);
-        if (playing) {
-            playPause.setImageResource(R.mipmap.ic_pause_88);
-        }
+//        if (playing) {
+//            playPause.setImageResource(R.mipmap.ic_pause_88);
+//        }
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -211,37 +221,37 @@ public class PlayActivity extends Activity {
 
         handler = new MyHandlers();
 
-        lrcBeanList = new DealLrc().getLrcList(music);
-        if (lrcBeanList != null) {
-            String lrc = "";
-            lrc = lrc + "\n\n\n\n";
-            for (LrcBean bean : lrcBeanList) {
-                lrc = lrc + bean.getLrc() + "\n";
-            }
-            lrc = lrc + "\n\n\n\n";
-            lrcTextView.setText(lrc);
-            scrollView.post(new Runnable() {
-                @Override
-                public void run() {
-                    scrollView.scrollTo(0, line);
-                }
-            });
-        } else {
-            getMusicLrc();
-        }
+//        lrcBeanList = new DealLrc().getLrcList(music);
+//        if (lrcBeanList != null) {
+//            String lrc = "";
+//            lrc = lrc + "\n\n\n\n";
+//            for (LrcBean bean : lrcBeanList) {
+//                lrc = lrc + bean.getLrc() + "\n";
+//            }
+//            lrc = lrc + "\n\n\n\n";
+//            lrcTextView.setText(lrc);
+//            scrollView.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    scrollView.scrollTo(0, line);
+//                }
+//            });
+//        } else {
+//            getMusicLrc();
+//        }
         myDao=new MyDao(this);
         loveBtn = (ImageButton)findViewById(R.id.play_love_btn);
-        if(music.getLove() == 1){
-            loveBtn.setImageResource(images[1]);
-        }
-        loveBtn.setImageResource(images[0]);
-        List<Music> musicList=myDao.findAll("love_music_list");
-        for(Music m:musicList){
-            if(m.getPath().equals(music.getPath())){
-                loveBtn.setImageResource(images[1]);
-                break;
-            }
-        }
+//        if(music.getLove() == 1){
+//            loveBtn.setImageResource(images[1]);
+//        }
+//        loveBtn.setImageResource(images[0]);
+//        List<Music> musicList=myDao.findAll("love_music_list");
+//        for(Music m:musicList){
+//            if(m.getPath().equals(music.getPath())){
+//                loveBtn.setImageResource(images[1]);
+//                break;
+//            }
+//        }
         loveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -255,9 +265,6 @@ public class PlayActivity extends Activity {
                     }else {
                         insertMusic(music,"love_music_list");
                     }
-//                    Intent intent1=new Intent();
-//                    intent1.setAction("updatelove");
-//                    sendBroadcast(intent1);
                 }else { //播放的是网络歌曲
                     updateLove(music,"near_music_list");
                     if(music.getLove()==1){
@@ -432,7 +439,9 @@ public class PlayActivity extends Activity {
             if (intent.getAction().equals("currentposition")) {
                 Bundle bundle = intent.getBundleExtra("current");
                 nowPosition = bundle.getInt("position");
-                int all_time = music.getAlltime();
+                int all_time=0;
+                if(music!=null)
+                all_time = music.getAlltime();
                 if(all_time==0){
                     all_time = bundle.getInt("alltime");
                     seekBar.setMax(all_time);
@@ -571,6 +580,47 @@ public class PlayActivity extends Activity {
                 int bufferPos = intent.getIntExtra("bufferPos",-1);
                     if (bufferPos != -1) {
                         seekBar.setSecondaryProgress(bufferPos);
+                }
+            }
+            if(intent.getAction().equals("getMusic")){
+                music=(Music)intent.getSerializableExtra("nowplaymusic");
+                songName.setText(music.getSongName());
+                songAuthor.setText(music.getSongAuthor());
+                allTime.setText(String.valueOf(transforTime(music.getAlltime())));
+
+                seekBar.setMax(music.getAlltime());
+                if(music.getFlag()==0){
+                    seekBar.setSecondaryProgress(music.getAlltime());
+                }
+                lrcBeanList = new DealLrc().getLrcList(music);
+                if (lrcBeanList != null) {
+                    String lrc = "";
+                    lrc = lrc + "\n\n\n\n";
+                    for (LrcBean bean : lrcBeanList) {
+                        lrc = lrc + bean.getLrc() + "\n";
+                    }
+                    lrc = lrc + "\n\n\n\n";
+                    lrcTextView.setText(lrc);
+                    scrollView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            scrollView.scrollTo(0, line);
+                        }
+                    });
+                } else {
+                    getMusicLrc();
+                }
+
+                if(music.getLove() == 1){
+                    loveBtn.setImageResource(images[1]);
+                }
+                loveBtn.setImageResource(images[0]);
+                List<Music> musicList=myDao.findAll("love_music_list");
+                for(Music m:musicList){
+                    if(m.getPath().equals(music.getPath())){
+                        loveBtn.setImageResource(images[1]);
+                        break;
+                    }
                 }
             }
         }
