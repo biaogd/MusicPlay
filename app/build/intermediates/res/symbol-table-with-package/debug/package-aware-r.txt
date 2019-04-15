@@ -1156,6 +1156,7 @@ id fill_vertical
 id filled
 id fixed
 id forever
+id get_net_lrc
 id ghost_view
 id gone
 id group_divider
@@ -1458,6 +1459,7 @@ layout support_simple_spinner_dropdown_item
 layout tab
 layout update_app
 menu local_music_menu
+menu lrc_menu
 menu near_music_menu
 mipmap app_icon_96
 mipmap girl

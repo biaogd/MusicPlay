@@ -16,6 +16,7 @@ public class DealLrc {
     }
 
     public List<LrcBean> getLrcList(Music mc){
+        this.list.clear();
         String lrcPath = mc.getPath().split("\\.")[0]+".lrc";
         File file=new File(lrcPath);
         if(!file.exists()){

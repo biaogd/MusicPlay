@@ -93,21 +93,22 @@ public class MainFragment extends Fragment {
                 right_textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
                 if(left_fragment == null){
                     left_fragment = new LeftFragment();
-                    transaction.add(R.id.container,left_fragment,"left_fragment");
-
+//                    transaction.add(R.id.container,left_fragment,"left_fragment");
                 }
-                hide(transaction);
-                transaction.show(left_fragment);
+                transaction.replace(R.id.container,left_fragment);
+//                hide(transaction);
+//                transaction.show(left_fragment);
                 break;
             case 1:
                 right_textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
                 left_textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
                 if(right_fragment ==null){
                     right_fragment = new RightFragment();
-                    transaction.add(R.id.container,right_fragment,"right_fragment");
+//                    transaction.add(R.id.container,right_fragment,"right_fragment");
                 }
-                hide(transaction);
-                transaction.show(right_fragment);
+//                hide(transaction);
+//                transaction.show(right_fragment);
+                transaction.replace(R.id.container,right_fragment);
                 break;
             default:break;
 

@@ -11,18 +11,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Layout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
@@ -40,11 +43,22 @@ import com.google.gson.JsonParser;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -83,8 +97,13 @@ public class PlayActivity extends Activity {
     private ImageButton loveBtn;
 
     private MyDao myDao;
+    private DealLrc dealLrc;
     private Gson gson;
     private int []images=new int[]{R.mipmap.ic_heart_48,R.mipmap.ic_heart_red_48};
+
+    private PopupMenu popupMenu;
+    private boolean haveLrc=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -107,10 +126,9 @@ public class PlayActivity extends Activity {
         filter.addAction("getMusic");
         registerReceiver(broadcast, filter);
 
-        //发送广播到 service，获取音乐播放信息
-        Intent intent=new Intent("update_play_message");
-        sendBroadcast(intent);
+
         gson=new Gson();
+        dealLrc=new DealLrc();
         ImageButton downBtn = (ImageButton) findViewById(R.id.downBtn);
         downBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -245,6 +263,33 @@ public class PlayActivity extends Activity {
                 loveBtn.setImageResource(images[j]);
             }
         });
+        final ImageButton lrcMenuBtn=(ImageButton)findViewById(R.id.play_lrc_btn);
+        lrcMenuBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupMenu=new PopupMenu(PlayActivity.this,lrcMenuBtn);
+                popupMenu.getMenuInflater().inflate(R.menu.lrc_menu,popupMenu.getMenu());
+                if(haveLrc){
+                    popupMenu.getMenu().findItem(R.id.get_net_lrc).setEnabled(false);
+                }
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()){
+                            case R.id.get_net_lrc:
+                                lrcTextView.setText("\n\n\n\n正在搜索歌词...");
+                                getMusicLrc();
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
+        //发送广播到 service，获取音乐播放信息
+        Intent intent=new Intent("update_play_message");
+        sendBroadcast(intent);
     }
     private SQLiteDatabase getSQLiteDB(){
         return this.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
@@ -323,83 +368,213 @@ public class PlayActivity extends Activity {
         }
     }
 
-    public void getMusicLrc(){
+    //md5算法加密
+    public String getMD5(String s){
+        String md5s="";
+        try {
+            MessageDigest digest=MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte[] bytes = digest.digest();
+            md5s = new BigInteger(1,bytes).toString(16);
+            for (;md5s.length()<32;md5s = "0"+md5s){
+
+            }
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return md5s;
+    }
+    final String cachePath = Environment.getExternalStorageDirectory().getAbsolutePath()+
+            "/Android/data/com.example.myapp/cache/lrc-cache";
+    //获取本地歌词缓存的文件
+    public void getCacheMusicLrc(){
         new Thread(new Runnable() {
             @Override
             public void run() {
-                OkHttpClient client = new OkHttpClient();
-                String url="";
-                if(music.getFlag()==1){
-                    String[] strs = music.getPath().split("=");
-                    url = "http://www.mybiao.top:8000/lrc?id=" + strs[1];
-                }else {
-                    List<NetMusicBean> netMusicBeans=new ArrayList<>();
-                    Request req = new Request.Builder().url("http://www.mybiao.top:8000/search?word=" + music.getSongAuthor()+" - "+music.getSongName()).build();
+                List<LrcBean> lrcList = new ArrayList<>();
+                //播放网络歌曲 先从缓存中查找歌词
+                String lrcName = music.getSongAuthor()+" - "+music.getSongName()+".lrc";
+                String lrcMd5Name = getMD5(lrcName);
+                Log.i("Md5",lrcMd5Name);
+                File file2=new File(cachePath+"/"+lrcMd5Name);
+                if(file2.exists()){
+                    Log.i("在缓存中查找到歌词","是的");
+                    FileInputStream stream= null;
                     try {
-                        Response res= client.newCall(req).execute();
-                        if(res.isSuccessful()) {
-                            String mulist = res.body().string();
-                            if (!mulist.equals("null")) {
-                                Log.i("muList",mulist);
-                                JsonParser jsonParser = new JsonParser();
-                                JsonArray jsonElements = jsonParser.parse(mulist).getAsJsonArray();
-                                for (JsonElement element : jsonElements) {
-                                    NetMusicBean bean = gson.fromJson(element, NetMusicBean.class);
-                                    Log.i("搜索到",bean.toString());
-                                    netMusicBeans.add(bean);
-                                }
-                            }
-                        }
+                        stream = new FileInputStream(file2);
+                        //gbk编码，中文不会乱码
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "gbk"));
+                        String line;
+                        while ((line = reader.readLine()) != null) {
 
+                            String[] lrcs = line.split("\\]");
+                            if (lrcs.length == 1) {
+                                continue;
+                            }
+                            //获取到歌词
+                            String lrc = lrcs[1];
+                            String time = lrcs[0].split("\\[")[1];
+                            String mintue = time.split(":")[0];
+                            String million = time.split(":")[1];
+                            //转化为毫秒数
+                            int allTime = Integer.parseInt(mintue) * 60 * 1000 + (int) (Double.parseDouble(million) * 1000);
+                            LrcBean lrcBean = new LrcBean(lrc, allTime);
+                            lrcList.add(lrcBean);
+                        }
+                        Message message = new Message();
+                        message.what = 101;
+                        message.obj = lrcList;
+                        handler.sendMessage(message);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if(netMusicBeans.size()==1){
-                        String path = "http://www.mybiao.top:8000/song?id="+netMusicBeans.get(0).getId();
-                        String[] strs = path.split("=");
-                        url = "http://www.mybiao.top:8000/lrc?id=" + strs[1];
-                    }
+                }else {
+                    Message msg = new Message();
+                    msg.what = 102;
+                    handler.sendMessage(msg);
                 }
+            }
+        }).start();
+    }
+    //从服务器查找歌词
+    public void getMusicLrc(){
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
                 List<LrcBean> lrcList = new ArrayList<>();
-                if (!url.equals("")) {
-                    Request request = new Request.Builder().url(url).build();
+//                //播放网络歌曲 先从缓存中查找歌词
+                String lrcName = music.getSongAuthor()+" - "+music.getSongName()+".lrc";
+                String lrcMd5Name = getMD5(lrcName);
+                File file2=new File(cachePath+"/"+lrcMd5Name);
+                if(file2.exists()){
+                    Log.i("在缓存中查找到歌词","是的");
+                    FileInputStream stream= null;
                     try {
-                        Response response = client.newCall(request).execute();
-                        if (response.isSuccessful()) {
-                            Log.i("歌词请求成功","ok");
-                            InputStream inputStream = response.body().byteStream();
-                            //gbk编码，中文不会乱码
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "gbk"));
-                            String line;
-                            while ((line = reader.readLine()) != null) {
-                                String[] lrcs = line.split("\\]");
-                                if (lrcs.length == 1) {
-                                    continue;
-                                }
-                                //获取到歌词
-                                String lrc = lrcs[1];
-                                String time = lrcs[0].split("\\[")[1];
-                                String mintue = time.split(":")[0];
-                                String million = time.split(":")[1];
-                                //转化为毫秒数
-                                int allTime = Integer.parseInt(mintue) * 60 * 1000 + (int) (Double.parseDouble(million) * 1000);
-                                LrcBean lrcBean = new LrcBean(lrc, allTime);
-                                lrcList.add(lrcBean);
+                        stream = new FileInputStream(file2);
+                        //gbk编码，中文不会乱码
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "gbk"));
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+
+                            String[] lrcs = line.split("\\]");
+                            if (lrcs.length == 1) {
+                                continue;
                             }
-                            Message message = new Message();
-                            message.what = 101;
-                            message.obj = lrcList;
-                            handler.sendMessage(message);
-                        } else {
+                            //获取到歌词
+                            String lrc = lrcs[1];
+                            String time = lrcs[0].split("\\[")[1];
+                            String mintue = time.split(":")[0];
+                            String million = time.split(":")[1];
+                            //转化为毫秒数
+                            int allTime = Integer.parseInt(mintue) * 60 * 1000 + (int) (Double.parseDouble(million) * 1000);
+                            LrcBean lrcBean = new LrcBean(lrc, allTime);
+                            lrcList.add(lrcBean);
+                        }
+                        Message message = new Message();
+                        message.what = 101;
+                        message.obj = lrcList;
+                        handler.sendMessage(message);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                }else {
+                    Log.i("在缓存中","没有查找到歌词");
+                    OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
+                    String url = "";
+                    if (music.getFlag() == 1) {
+                        String[] strs = music.getPath().split("=");
+                        url = "http://www.mybiao.top:8000/lrc?id=" + strs[1];
+                    } else {
+                        List<NetMusicBean> netMusicBeans = new ArrayList<>();
+                        Request req = new Request.Builder().url("http://www.mybiao.top:8000/search?word=" + music.getSongAuthor() + " - " + music.getSongName()).build();
+                        try {
+                            Response res = client.newCall(req).execute();
+                            if (res.isSuccessful()) {
+                                String mulist = res.body().string();
+                                if (!mulist.equals("null")) {
+                                    Log.i("muList", mulist);
+                                    JsonParser jsonParser = new JsonParser();
+                                    JsonArray jsonElements = jsonParser.parse(mulist).getAsJsonArray();
+                                    for (JsonElement element : jsonElements) {
+                                        NetMusicBean bean = gson.fromJson(element, NetMusicBean.class);
+                                        Log.i("搜索到", bean.toString());
+                                        netMusicBeans.add(bean);
+                                    }
+                                }
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (netMusicBeans.size() == 1) {
+                            String path = "http://www.mybiao.top:8000/song?id=" + netMusicBeans.get(0).getId();
+                            String[] strs = path.split("=");
+                            url = "http://www.mybiao.top:8000/lrc?id=" + strs[1];
+                        }
+                    }
+                    if (!url.equals("")) {
+                        Request request = new Request.Builder().url(url).build();
+                        try {
+                            Response response = client.newCall(request).execute();
+                            if (response.isSuccessful()) {
+                                Log.i("歌词请求成功", "ok");
+                                InputStream inputStream = response.body().byteStream();
+                                String handers = response.header("Content-Disposition");
+                                String[] strs = handers.split("=");
+                                String fileName = "";
+                                if (strs.length > 1) {
+                                    fileName = strs[1];
+                                }
+                                File file = new File(cachePath);
+                                if (!file.exists()) {
+                                    file.mkdirs();
+                                }
+                                File file1 = new File(cachePath + "/" + getMD5(fileName));
+                                if (!file1.exists()) {
+                                    file1.createNewFile();
+                                }
+                                FileOutputStream out = new FileOutputStream(file1);
+                                byte[] bytes = new byte[1024];
+                                int p = 0;
+                                while ((p = inputStream.read(bytes)) != -1) {
+                                    out.write(bytes, 0, p);
+                                }
+                                FileInputStream stream = new FileInputStream(file1);
+                                //gbk编码，中文不会乱码
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "gbk"));
+                                String line;
+                                while ((line = reader.readLine()) != null) {
+
+                                    String[] lrcs = line.split("\\]");
+                                    if (lrcs.length == 1) {
+                                        continue;
+                                    }
+                                    //获取到歌词
+                                    String lrc = lrcs[1];
+                                    String time = lrcs[0].split("\\[")[1];
+                                    String mintue = time.split(":")[0];
+                                    String million = time.split(":")[1];
+                                    //转化为毫秒数
+                                    int allTime = Integer.parseInt(mintue) * 60 * 1000 + (int) (Double.parseDouble(million) * 1000);
+                                    LrcBean lrcBean = new LrcBean(lrc, allTime);
+                                    lrcList.add(lrcBean);
+                                }
+                                Message message = new Message();
+                                message.what = 101;
+                                message.obj = lrcList;
+                                handler.sendMessage(message);
+                            } else {
+                                Message msg = new Message();
+                                msg.what = 102;
+                                handler.sendMessage(msg);
+                            }
+                        } catch (Exception e) {
+                            Log.i("在主播放页面", "未找到歌词");
                             Message msg = new Message();
                             msg.what = 102;
                             handler.sendMessage(msg);
                         }
-                    } catch (Exception e) {
-                        Log.i("在主播放页面","未找到歌词");
-                        Message msg = new Message();
-                        msg.what = 102;
-                        handler.sendMessage(msg);
                     }
                 }
             }
@@ -486,6 +661,7 @@ public class PlayActivity extends Activity {
                 }
             }
             if (intent.getAction().equals("updateMusic")) {
+                haveLrc = false;
                 Bundle bundle = intent.getBundleExtra("nowplay");
                 music = (Music) bundle.getSerializable("nowplaymusic");
                 songName.setText(music.getSongName());
@@ -498,18 +674,25 @@ public class PlayActivity extends Activity {
                 if(music.getFlag()==0){
                     seekBar.setSecondaryProgress(music.getAlltime());
                 }
-                lrcBeanList = new DealLrc().getLrcList(music);
-                lrcTextView.setText("");
-                if (lrcBeanList != null) {
-                    String lrc = "";
-                    lrc = lrc + "\n\n\n\n";
-                    for (LrcBean bean : lrcBeanList) {
-                        lrc = lrc + bean.getLrc() + "\n";
+                if(music.getFlag()==0) {
+                    lrcBeanList = dealLrc.getLrcList(music);
+                    lrcTextView.setText("");
+                    if (lrcBeanList != null) {
+                        String lrc = "";
+                        lrc = lrc + "\n\n\n\n";
+                        for (LrcBean bean : lrcBeanList) {
+                            lrc = lrc + bean.getLrc() + "\n";
+                        }
+                        lrc = lrc + "\n\n\n\n";
+                        lrcTextView.setText(lrc);
+                        haveLrc = true;
+                    } else {
+//                        getMusicLrc();
+//                        lrcTextView.setText("\n\n\n\n该歌曲暂无歌词");
+                        getCacheMusicLrc();
                     }
-                    lrc = lrc + "\n\n\n\n";
-                    lrcTextView.setText(lrc);
-                } else {
-                        getMusicLrc();
+                }else {
+                    getMusicLrc();
                 }
 
                 if (adapter2 != null) {
@@ -584,22 +767,29 @@ public class PlayActivity extends Activity {
                 if(music.getFlag()==0){
                     seekBar.setSecondaryProgress(music.getAlltime());
                 }
-                lrcBeanList = new DealLrc().getLrcList(music);
-                if (lrcBeanList != null) {
-                    String lrc = "";
-                    lrc = lrc + "\n\n\n\n";
-                    for (LrcBean bean : lrcBeanList) {
-                        lrc = lrc + bean.getLrc() + "\n";
-                    }
-                    lrc = lrc + "\n\n\n\n";
-                    lrcTextView.setText(lrc);
-                    scrollView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            scrollView.scrollTo(0, line);
+                if(music.getFlag()==0) {
+                    lrcBeanList = dealLrc.getLrcList(music);
+                    if (lrcBeanList != null) {
+                        String lrc = "";
+                        lrc = lrc + "\n\n\n\n";
+                        for (LrcBean bean : lrcBeanList) {
+                            lrc = lrc + bean.getLrc() + "\n";
                         }
-                    });
-                } else {
+                        lrc = lrc + "\n\n\n\n";
+                        lrcTextView.setText(lrc);
+                        scrollView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                scrollView.scrollTo(0, line);
+                            }
+                        });
+                        haveLrc = true;
+                    } else {
+//                    getMusicLrc();
+//                        lrcTextView.setText("\n\n\n\n此歌曲暂无歌词");
+                        getCacheMusicLrc();
+                    }
+                }else {
                     getMusicLrc();
                 }
 
@@ -670,7 +860,7 @@ public class PlayActivity extends Activity {
                     }
                     break;
                 case 102:
-                    lrcTextView.setText("\n\n\n\n此歌曲暂无歌词");
+                        lrcTextView.setText("\n\n\n\n此歌曲暂无歌词");
                     break;
             }
         }
