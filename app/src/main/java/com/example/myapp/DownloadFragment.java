@@ -112,10 +112,6 @@ public class DownloadFragment extends Fragment {
                     if(dList.get(i).getMusic().getPath().equals(m.getPath())){
                         dList.get(i).setProgress(progress);
                         if(progress==100){
-                            dList.get(i).getMusic().setPath(newPath);
-                            dList.get(i).getMusic().setFlag(0);
-                            myDao.insertMusic(dList.get(i).getMusic(),"download_music_list");
-                            myDao.insertMusic(dList.get(i).getMusic(),"local_music_list");
                             dList.remove(i);
                         }
                         break;

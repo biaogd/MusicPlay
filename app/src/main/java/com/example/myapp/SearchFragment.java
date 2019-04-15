@@ -159,7 +159,7 @@ public class SearchFragment extends Fragment {
                 OkHttpClient client=new OkHttpClient();
                 List<NetMusicBean> netMusicBeans=new ArrayList<>();
                 if(word!=null) {
-                    Request req = new Request.Builder().url("http://www.mybiao.top:8000/search?word=" + word).build();
+                    Request req = new Request.Builder().url("http://www.mybiao.top:8000/searchBy?word=" + word).build();
                     try {
                         Response res= client.newCall(req).execute();
                         if(res.isSuccessful()) {

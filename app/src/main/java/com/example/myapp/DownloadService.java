@@ -8,7 +8,9 @@ import android.content.IntentFilter;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 
 import java.io.FileOutputStream;
@@ -27,8 +29,8 @@ import okhttp3.Response;
 public class DownloadService extends Service {
     private BroadcastReceiver broadcast;
     private List<Music> downloadList;
-    private Queue<Music> downQueue=new ArrayBlockingQueue<Music>(200);
     private Thread t1;
+    private MyDao myDao;
     public DownloadService() {
     }
 
@@ -47,6 +49,7 @@ public class DownloadService extends Service {
         filter.addAction("get_download_list");
         registerReceiver(broadcast,filter);
         downloadList = new ArrayList<>();
+        myDao=new MyDao(getApplicationContext());
         listenThread();
     }
 
@@ -56,8 +59,19 @@ public class DownloadService extends Service {
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals("download_music")) {
                 Music music = (Music) intent.getSerializableExtra("music");
-                downloadList.add(music);
-                Log.i("DownloadService","添加新的歌曲到下载列表中"+music.getSongName());
+                int i=0;
+                //判断该歌曲是否正在下载中
+                for(i=0;i<downloadList.size();i++){
+                    if(downloadList.get(i).getPath().equals(music.getPath())){
+                        Toast.makeText(getApplicationContext(),"该歌曲已在下载列表",Toast.LENGTH_SHORT);
+                        break;
+                    }
+
+                }
+                if(i>=downloadList.size()) {
+                    downloadList.add(music);
+                    Log.i("DownloadService", "添加新的歌曲到下载列表中" + music.getSongName());
+                }
             }
             if(intent.getAction().equals("get_download_list")){
                 Intent intent1=new Intent("return_download_list");
@@ -100,8 +114,8 @@ public class DownloadService extends Service {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcast);
-        Intent intent=new Intent(getApplicationContext(),DownloadService.class);
-        startService(intent);
+//        Intent intent=new Intent(getApplicationContext(),DownloadService.class);
+//        startService(intent);
     }
     public class MyThread extends Thread{
         private Music music;
@@ -120,27 +134,33 @@ public class DownloadService extends Service {
                     InputStream inputStream = response.body().byteStream();
                     String name = response.header("Content-Disposition");
                     long size = response.body().contentLength();
-                    String []strs = name.split("=");
-                    String fileName="";
-                    if(strs.length>1){
+                    String[] strs = name.split("=");
+                    String fileName = "";
+                    if (strs.length > 1) {
                         fileName = strs[1];
                     }
-                    Log.i("文件名",fileName);
+                    Log.i("文件名", fileName);
                     //文件保存的路径
-                    String newPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/downloadMusic/"+fileName;
-                    FileOutputStream out=new FileOutputStream(newPath);
-                    int i=0,j=0;
-                    byte[] bytes=new byte[1024];
-                    while ((i = inputStream.read(bytes))!=-1){
-                        out.write(bytes,0,i);
-                        j = j+i;
-                        Intent intent=new Intent("update_dw_progress");
-                        intent.putExtra("progress",(int)(j*100/size));
-                        intent.putExtra("music",music);
-                        intent.putExtra("newPath",newPath);
+                    String newPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/downloadMusic/" + fileName;
+                    FileOutputStream out = new FileOutputStream(newPath);
+                    int i = 0, j = 0;
+                    byte[] bytes = new byte[1024];
+                    while ((i = inputStream.read(bytes)) != -1) {
+                        out.write(bytes, 0, i);
+                        j = j + i;
+                        Intent intent = new Intent("update_dw_progress");
+                        intent.putExtra("progress", (int) (j * 100 / size));
+                        intent.putExtra("music", music);
+                        intent.putExtra("newPath", newPath);
                         sendBroadcast(intent);
                     }
-                    Log.i("音乐"+fileName,"下载完毕");
+                    if (j == size) {
+                        music.setPath(newPath);
+                        music.setFlag(0);
+                        myDao.insertMusic(music, "download_music_list");
+                        myDao.insertMusic(music, "local_music_list");
+                        Log.i("音乐" + fileName, "下载完毕");
+                    }
                 }
             } catch (Exception e) {
                 if(e instanceof ConnectException){
