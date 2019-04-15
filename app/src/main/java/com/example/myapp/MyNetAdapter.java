@@ -60,6 +60,7 @@ public class MyNetAdapter extends BaseAdapter {
         TextView songName;
         TextView songAuthor;
         ImageButton menuMusic;
+        ImageButton flagBtn;
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -69,6 +70,7 @@ public class MyNetAdapter extends BaseAdapter {
             holder.songName = (TextView) convertView.findViewById(R.id.song_name_net);
             holder.songAuthor = (TextView) convertView.findViewById(R.id.song_author_net);
             holder.menuMusic = (ImageButton) convertView.findViewById(R.id.menu_music_net);
+            holder.flagBtn = (ImageButton)convertView.findViewById(R.id.music_flag_btn);
             convertView.setTag(holder);
         }else{
             holder=(ViewHolder)convertView.getTag();
@@ -135,6 +137,11 @@ public class MyNetAdapter extends BaseAdapter {
                 });
             }
         });
+        if(music.getFlag()==0){
+            holder.flagBtn.setImageResource(R.mipmap.ic_phone_20);
+        }else {
+            holder.flagBtn.setImageResource(R.mipmap.ic_cloud_20);
+        }
         return convertView;
     }
 

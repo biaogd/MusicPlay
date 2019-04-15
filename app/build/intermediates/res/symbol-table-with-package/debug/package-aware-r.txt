@@ -1198,6 +1198,7 @@ id lrc_scrollView
 id lrc_textView
 id main_menu
 id main_place
+id main_search_btn
 id mainfragment
 id masked
 id media_actions
@@ -1209,6 +1210,7 @@ id moreImageButton
 id mtrl_child_content_container
 id mtrl_internal_children_alpha_tag
 id multiply
+id music_flag_btn
 id music_list_menu
 id myauthor
 id myname
@@ -1468,6 +1470,7 @@ mipmap ic_action_headphones
 mipmap ic_action_heart
 mipmap ic_action_music_2
 mipmap ic_action_playback_repeat
+mipmap ic_cloud_20
 mipmap ic_delete_white_48
 mipmap ic_down_54
 mipmap ic_down_64
@@ -1487,6 +1490,7 @@ mipmap ic_out_48
 mipmap ic_pause64
 mipmap ic_pause_48
 mipmap ic_pause_88
+mipmap ic_phone_20
 mipmap ic_play64
 mipmap ic_play_48
 mipmap ic_play_88

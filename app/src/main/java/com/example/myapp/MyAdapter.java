@@ -317,6 +317,12 @@ public class MyAdapter extends BaseAdapter {
                 });
             }
         });
+        ImageButton flagBtn = (ImageButton)convertView.findViewById(R.id.music_flag_btn);
+        if(m.getFlag()==0){
+            flagBtn.setImageResource(R.mipmap.ic_phone_20);
+        }else {
+            flagBtn.setImageResource(R.mipmap.ic_cloud_20);
+        }
         return convertView;
     }
 

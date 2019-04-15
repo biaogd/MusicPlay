@@ -18,6 +18,17 @@
             android:textSize="@dimen/song_name"
             android:textColor="@color/color1"
             android:text="寂寞才说爱"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/ic_phone_20"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/music_flag_btn"
+                android:background="@color/touming"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,6 +36,7 @@
             android:textColor="@color/black"
             android:textSize="@dimen/song_author"
             android:text="凤凰传奇"/>
+        </LinearLayout>
 
     </LinearLayout>
     <RelativeLayout

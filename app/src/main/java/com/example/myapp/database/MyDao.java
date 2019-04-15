@@ -83,4 +83,29 @@ public class MyDao {
         }
         return row;
     }
+
+    public List<Music> findMusicByKeyword(String word){
+        List<Music> musicList=new ArrayList<>();
+        db = getSQLiteDB();
+        String sql = "select *from local_music_list where path like ?";
+        Cursor cursor=db.rawQuery(sql,new String[]{"%"+word+"%"});
+        if(cursor.moveToFirst()) {
+            do {
+                Music music = new Music();
+                music.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                music.setSongName(cursor.getString(cursor.getColumnIndexOrThrow("song_name")));
+                music.setSongAuthor(cursor.getString(cursor.getColumnIndexOrThrow("song_author")));
+                music.setAlltime(cursor.getInt(cursor.getColumnIndexOrThrow("all_time")));
+                music.setPath(cursor.getString(cursor.getColumnIndexOrThrow("path")));
+                music.setSongSize(cursor.getInt(cursor.getColumnIndexOrThrow("song_size")));
+                music.setFlag(cursor.getInt(cursor.getColumnIndexOrThrow("flag")));
+                music.setLove(cursor.getInt(cursor.getColumnIndexOrThrow("love")));
+                musicList.add(music);
+            } while (cursor.moveToNext());
+        }
+        if(db.isOpen()){
+            db.close();
+        }
+        return musicList;
+    }
 }

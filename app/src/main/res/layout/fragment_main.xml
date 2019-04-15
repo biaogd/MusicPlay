@@ -56,6 +56,8 @@
                 android:layout_height="35dp"
                 android:src="@mipmap/ic_search_48"
                 android:layout_weight="1"
+                android:id="@+id/main_search_btn"
+                android:visibility="invisible"
                 android:background="@color/touming"
                 android:layout_gravity="center"
                 />

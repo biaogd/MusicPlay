@@ -463,9 +463,7 @@ public class MainActivity extends Activity {
                             fileName = strs[1];
                         }
                         InputStream inputStream=response.body().byteStream();
-                        //无法获取文件大小位数
                         long allSize = response.body().contentLength();
-                        Log.i("总的大小",""+allSize);
                         File file=new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+fileName);
                         if(!file.exists()){
                             file.createNewFile();

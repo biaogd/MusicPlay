@@ -3,11 +3,14 @@ package com.example.myapp;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
@@ -55,11 +58,12 @@ public class SearchFragment extends Fragment {
     private SearchView searchView;
     private Handler handler;
     private Gson gson;
-    private List<Music> musicList;
+    private List<Music> musicList,list1;
     private ListView listView;
     private BaseAdapter adapter;
     private LinearLayout place;
     private TextView textView;
+    private MyDao myDao;
     public SearchFragment() {
         // Required empty public constructor
     }
@@ -68,6 +72,7 @@ public class SearchFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        myDao=new MyDao(getActivity());
         // Inflate the layout for this fragment
         View view=inflater.inflate(R.layout.fragment_search, container, false);
         //这个fragment获取焦点
@@ -106,10 +111,22 @@ public class SearchFragment extends Fragment {
             }
         });
         searchView = (SearchView)view.findViewById(R.id.search_music_view);
-       searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
            @Override
            public boolean onQueryTextSubmit(String query) {
-               searchMusic(query);
+               if(checkNet(getActivity())) {
+                   searchMusic(query);
+                   list1.clear();
+                   list1 = myDao.findMusicByKeyword(query);
+               }else {
+                   list1.clear();
+                   list1 = myDao.findMusicByKeyword(query);
+                   Message message=new Message();
+                   message.what = 100;
+                   handler.sendMessage(message);
+               }
+
+               Log.i("在本地查找到",list1.size()+"");
                return false;
            }
 
@@ -121,7 +138,7 @@ public class SearchFragment extends Fragment {
                }
                return false;
            }
-       });
+        });
         listView = (ListView)view.findViewById(R.id.search_list_view);
         place = (LinearLayout)view.findViewById(R.id.main_place);
         textView = new TextView(getActivity());
@@ -134,6 +151,7 @@ public class SearchFragment extends Fragment {
         handler = new MyHandler();
         gson=new Gson();
         musicList=new ArrayList<>();
+        list1=new ArrayList<>();
         adapter=new MyNetAdapter(getActivity(),musicList);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -152,6 +170,18 @@ public class SearchFragment extends Fragment {
         });
         return view;
     }
+
+    public boolean checkNet(Context context){
+        if(context!=null){
+            ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo info=manager.getActiveNetworkInfo();
+            if(info!=null){
+                return info.isConnected();
+            }
+        }
+        return false;
+    }
+
     public void searchMusic(final String word){
         new Thread(new Runnable() {
             @Override
@@ -192,20 +222,23 @@ public class SearchFragment extends Fragment {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if(msg.what == 100){
-//                place.removeAllViews();
-//                place.addView(listView);
                 musicList.clear();
                 List<NetMusicBean> list=(ArrayList<NetMusicBean>)msg.obj;
-                List<Music> musicLists = new MyDao(getActivity()).findAll("love_music_list");
-                for (NetMusicBean bean:list){
-                    Music mu=new Music(bean.getSongName(),bean.getSongAuthor(),bean.getAllTime(),"http://www.mybiao.top:8000/song?id="+bean.getId(),bean.getSongSize());
-                    for(Music m:musicLists){
-                        if(m.getPath().equals(mu.getPath())){
-                            mu.setLove(1);
+                List<Music> musicLists = myDao.findAll("love_music_list");
+                if(list!=null) {
+                    for (NetMusicBean bean : list) {
+                        Music mu = new Music(bean.getSongName(), bean.getSongAuthor(), bean.getAllTime(), "http://www.mybiao.top:8000/song?id=" + bean.getId(), bean.getSongSize());
+                        for (Music m : musicLists) {
+                            if (m.getPath().equals(mu.getPath())) {
+                                mu.setLove(1);
+                            }
                         }
+                        mu.setFlag(1);
+                        musicList.add(mu);
                     }
-                    mu.setFlag(1);
-                    musicList.add(mu);
+                }
+                for(Music mus :list1){
+                    musicList.add(mus);
                 }
                 if(musicList.size()==0){
                     place.removeAllViews();
