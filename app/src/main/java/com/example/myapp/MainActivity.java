@@ -116,6 +116,7 @@ public class MainActivity extends Activity {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(getResources().getColor(R.color.base_color));
+            //设置状态栏为亮色，即把状态栏字体颜色设置为黑色
             window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
         super.onCreate(savedInstanceState);
@@ -225,6 +226,20 @@ public class MainActivity extends Activity {
                 popupWindow.setFocusable(true);
                 popupWindow.setTouchable(true);
                 popupWindow.setOutsideTouchable(true);
+//                //设置弹出窗口背景变半透明，来高亮弹出窗口
+//                WindowManager.LayoutParams lp =getWindow().getAttributes();
+//                lp.alpha=0.5f;
+//                getWindow().setAttributes(lp);
+//
+//                popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+//                    @Override
+//                    public void onDismiss() {
+//                        //恢复透明度
+//                        WindowManager.LayoutParams lp =getWindow().getAttributes();
+//                        lp.alpha=1f;
+//                        getWindow().setAttributes(lp);
+//                    }
+//                });
                 popupWindow.showAtLocation(findViewById(R.id.music_list_menu), Gravity.BOTTOM,0,0);
                 Button cancelBtn=(Button)view.findViewById(R.id.cancel_btn);
                 cancelBtn.setOnClickListener(new View.OnClickListener() {
@@ -508,13 +523,26 @@ public class MainActivity extends Activity {
                 MyApp app=(MyApp) msg.obj;
                 View view=LayoutInflater.from(MainActivity.this).inflate(R.layout.update_app,null);
                 TextView content = (TextView)view.findViewById(R.id.update_content);
-                content.setText("\n"+app.getContent());
-
+                content.setText(app.getContent().replace("\\n","\n"));
                 WindowManager wm = getWindowManager();
                 DisplayMetrics metrics=new DisplayMetrics();
                 wm.getDefaultDisplay().getMetrics(metrics);
                 int width = metrics.widthPixels;
-                final PopupWindow popupWindow=new PopupWindow(view,(int)(width*2/3),WindowManager.LayoutParams.WRAP_CONTENT);
+                final PopupWindow popupWindow=new PopupWindow(view,(int)(width*3/4),WindowManager.LayoutParams.WRAP_CONTENT);
+                //设置弹出窗口背景变半透明，来高亮弹出窗口
+                WindowManager.LayoutParams lp =getWindow().getAttributes();
+                lp.alpha=0.5f;
+                getWindow().setAttributes(lp);
+
+                popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        //恢复透明度
+                        WindowManager.LayoutParams lp =getWindow().getAttributes();
+                        lp.alpha=1f;
+                        getWindow().setAttributes(lp);
+                    }
+                });
                 popupWindow.setTouchInterceptor(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {

@@ -13,5 +13,5 @@
     <color name="touming">#00000000</color>
     <color name="bantm">#80000000</color>
     <color name="menu_list_color">#F02f363d</color>
-    <color name="status">#00FFFFFF</color>
+    <color name="clicked">#30FFFFFF</color>
 </resources>

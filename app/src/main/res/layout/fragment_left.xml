@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:clickable="true"
-            android:background="@drawable/music_list_click"
+            android:background="?android:attr/selectableItemBackground"
             android:id="@+id/localmusicbtn"
             android:paddingVertical="15dp"
             >
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingVertical="15dp"
-            android:background="@drawable/music_list_click"
+            android:background="?android:attr/selectableItemBackground"
             android:id="@+id/nearplay">
             <ImageView
                 android:layout_width="wrap_content"
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingVertical="15dp"
-            android:background="@drawable/music_list_click"
+            android:background="?android:attr/selectableItemBackground"
             android:id="@+id/downloadlist">
             <ImageView
                 android:layout_width="wrap_content"
@@ -100,7 +100,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingVertical="15dp"
-            android:background="@drawable/music_list_click"
+            android:background="?android:attr/selectableItemBackground"
             android:id="@+id/lovelist">
             <ImageView
                 android:layout_width="wrap_content"

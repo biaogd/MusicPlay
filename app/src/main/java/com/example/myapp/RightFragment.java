@@ -58,7 +58,7 @@ public class RightFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view =inflater.inflate(R.layout.fragment_right, container, false);
-        listView = (ListView)view.findViewById(R.id.net_music_list);
+//        listView = (ListView)view.findViewById(R.id.net_music_list);
         handler = new MyHandler();
         list = new ArrayList<>();
         mList=new ArrayList<>();

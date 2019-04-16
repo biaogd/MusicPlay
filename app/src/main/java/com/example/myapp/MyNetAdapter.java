@@ -1,5 +1,6 @@
 package com.example.myapp;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -33,11 +34,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MyNetAdapter extends BaseAdapter {
-    private Context context;
+    private Activity context;
     private List<Music> musicList;
     private ViewHolder holder;
     private MyDao myDao;
-    public MyNetAdapter(Context context,List<Music> list){
+    public MyNetAdapter(Activity context,List<Music> list){
         this.context=context;
         this.musicList=list;
         myDao = new MyDao(this.context);
@@ -87,6 +88,19 @@ public class MyNetAdapter extends BaseAdapter {
                 popupWindow.setFocusable(true);
                 popupWindow.setTouchable(true);
                 popupWindow.setOutsideTouchable(true);
+                WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+                lp.alpha=0.5f;
+                context.getWindow().setAttributes(lp);
+
+                popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        //恢复透明度
+                        WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+                        lp.alpha=1f;
+                        context.getWindow().setAttributes(lp);
+                    }
+                });
                 popupWindow.showAtLocation(finalConvertView.findViewById(R.id.menu_music_net), Gravity.BOTTOM,0,0);
                 TextView songNameAndAuthor = (TextView)myView.findViewById(R.id.on_song_about);
                 songNameAndAuthor.setText("歌曲："+music.getSongName()+" - "+music.getSongAuthor());

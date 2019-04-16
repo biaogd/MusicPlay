@@ -2,20 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/menu_list_color"
+    android:background="@drawable/shape_corner_top"
     android:orientation="vertical">
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="@color/gray">
-    </View>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="十多年开发商的"
         android:textSize="15sp"
         android:paddingVertical="10dp"
-        android:textColor="@color/base_color"
         android:gravity="center"
         android:id="@+id/on_song_about"/>
     <View
@@ -27,8 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="加入到我喜欢"
-        android:textColor="@color/base_color"
-        android:background="@color/touming"
+        android:background="@color/base_color"
         android:id="@+id/come_to_love"
         />
     <View
@@ -40,8 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="下载"
-        android:textColor="@color/base_color"
-        android:background="@color/touming"
+        android:background="@color/base_color"
         android:id="@+id/download_music"
         />
     <View
@@ -53,7 +45,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="取消"
-        android:textColor="@color/base_color"
         android:id="@+id/cancel_btn_net"
-        android:background="@color/touming"/>
+        android:background="@color/base_color"/>
 </LinearLayout>

@@ -48,6 +48,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:id="@+id/about_play_song"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_weight="1">
                 <TextView
                     android:layout_width="wrap_content"
@@ -83,7 +84,7 @@
                 android:layout_marginLeft="10dp"
                 android:id="@+id/music_list_menu"
                 android:src="@mipmap/ic_playlist_48"
-                android:background="@color/base_color"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_gravity="center_vertical"/>
         </LinearLayout>
     </LinearLayout>

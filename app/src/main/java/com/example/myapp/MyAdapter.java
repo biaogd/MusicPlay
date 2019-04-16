@@ -230,8 +230,6 @@ public class MyAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
             final View view=LayoutInflater.from(context).inflate(R.layout.music_list_menu,null);
-
-
                 final PopupWindow popupWindow=new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT,true);
                 popupWindow.setFocusable(true);
                 popupWindow.setTouchable(true);
@@ -350,6 +348,20 @@ public class MyAdapter extends BaseAdapter {
         PopupWindow popupWindow=new PopupWindow(view,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT,true);
         popupWindow.setOutsideTouchable(true);
         popupWindow.setTouchable(true);
+        //设置弹出窗口背景变半透明，来高亮弹出窗口
+        WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+        lp.alpha=0.5f;
+        context.getWindow().setAttributes(lp);
+
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                //恢复透明度
+                WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+                lp.alpha=1f;
+                context.getWindow().setAttributes(lp);
+            }
+        });
         popupWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
         popupWindow.setOutsideTouchable(true);
         popupWindow.showAtLocation(finalConvertView, Gravity.BOTTOM,0,0);

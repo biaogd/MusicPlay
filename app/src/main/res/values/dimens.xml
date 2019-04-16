@@ -7,4 +7,5 @@
     <dimen name="clicked">20sp</dimen>
     <dimen name="unclick">18sp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="radio">15dp</dimen>
 </resources>

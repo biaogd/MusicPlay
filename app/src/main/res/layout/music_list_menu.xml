@@ -2,14 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#DFFFFFFF"
+    android:background="@drawable/shape_corner_top"
     android:orientation="vertical">
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray">
-
-    </View>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="30dp"
@@ -26,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/delete_btn"
-        android:background="@color/touming"
+        android:background="@color/base_color"
         android:text="删除"/>
     <View
         android:layout_width="match_parent"
@@ -38,7 +32,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/touming"
+        android:background="@color/base_color"
         android:id="@+id/about_btn"
         android:text="详细信息"/>
     <View
@@ -52,7 +46,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/touming"
+        android:background="@color/base_color"
         android:id="@+id/cancelBtn"
         android:text="取消"/>
     <View
