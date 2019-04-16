@@ -1,5 +1,6 @@
 package com.example.myapp;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +32,7 @@ public class MyAdapter extends BaseAdapter {
     private LayoutInflater inflater;
     private Fragment fragment;
     private SQLiteDatabase db;
-    private Context context;
+    private Activity context;
     //正在播放的歌曲在列表中的位置
     private int nowPosition;
 
@@ -40,7 +41,7 @@ public class MyAdapter extends BaseAdapter {
     private static final String download_stable = "download_music_list";
     private static final String love_stable = "love_music_list";
 
-    public MyAdapter(Context context,List<Music> list ,Fragment fragment){
+    public MyAdapter(Activity context,List<Music> list ,Fragment fragment){
         this.inflater = LayoutInflater.from(context);
         this.mList = list;
         this.context = context;
@@ -236,6 +237,20 @@ public class MyAdapter extends BaseAdapter {
                 popupWindow.setTouchable(true);
                 popupWindow.setBackgroundDrawable(new ColorDrawable(0x000000));
                 popupWindow.setOutsideTouchable(true);
+                //设置弹出窗口背景变半透明，来高亮弹出窗口
+                WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+                lp.alpha=0.5f;
+                context.getWindow().setAttributes(lp);
+
+                popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        //恢复透明度
+                        WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+                        lp.alpha=1f;
+                        context.getWindow().setAttributes(lp);
+                    }
+                });
                 popupWindow.showAtLocation(finalConvertView.findViewById(R.id.moreImageButton), Gravity.BOTTOM,0,0);
                 TextView nameAuthor = (TextView)view.findViewById(R.id.name_author);
                 nameAuthor.setText(m.getSongName()+" - "+m.getSongAuthor());

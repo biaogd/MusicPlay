@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:descendantFocusability="blocksDescendants"
+    android:fitsSystemWindows="true"
     tools:context=".MainFragment">
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout
