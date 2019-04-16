@@ -1228,6 +1228,10 @@
         "source": "/home/biao/.gradle/caches/transforms-1/files-1.1/appcompat-v7-28.0.0.aar/c2603740c2c788e2703cd1de74a0ab4c/res/drawable-hdpi-v4/abc_ic_star_half_black_48dp.png"
     },
     {
+        "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/menu_main_menu.xml.flat",
+        "source": "/home/biao/AndroidStudioProjects/Myapp2/app/src/main/res/menu/main_menu.xml"
+    },
+    {
         "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/drawable-anydpi-v21_ic_launcher_background.xml.flat",
         "source": "/home/biao/AndroidStudioProjects/Myapp2/app/build/generated/res/pngs/debug/drawable-anydpi-v21/ic_launcher_background.xml"
     },
@@ -1310,6 +1314,10 @@
     {
         "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/layout_design_bottom_navigation_item.xml.flat",
         "source": "/home/biao/.gradle/caches/transforms-1/files-1.1/design-28.0.0.aar/8c614a724eca83748b6c95027eff4850/res/layout/design_bottom_navigation_item.xml"
+    },
+    {
+        "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/mipmap-xxhdpi_cleve.jpg.flat",
+        "source": "/home/biao/AndroidStudioProjects/Myapp2/app/src/main/res/mipmap-xxhdpi/cleve.jpg"
     },
     {
         "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/color_switch_thumb_material_dark.xml.flat",
@@ -1406,6 +1414,10 @@
     {
         "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/anim_abc_grow_fade_in_from_bottom.xml.flat",
         "source": "/home/biao/.gradle/caches/transforms-1/files-1.1/appcompat-v7-28.0.0.aar/c2603740c2c788e2703cd1de74a0ab4c/res/anim/abc_grow_fade_in_from_bottom.xml"
+    },
+    {
+        "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/layout_navigation_head.xml.flat",
+        "source": "/home/biao/AndroidStudioProjects/Myapp2/app/src/main/res/layout/navigation_head.xml"
     },
     {
         "merged": "/home/biao/AndroidStudioProjects/Myapp2/app/build/intermediates/res/merged/debug/drawable-hdpi-v4_abc_ic_star_half_black_36dp.png.flat",

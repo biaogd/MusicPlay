@@ -5,6 +5,8 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -25,9 +27,12 @@ public class MainFragment extends Fragment {
     private TextView left_textView;
     private TextView right_textView;
 
+
     private android.app.Fragment left_fragment;
     private android.app.Fragment right_fragment;
     private Fragment searchFragment,fragment;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     public MainFragment() {
         // Required empty public constructor
     }
@@ -57,6 +62,19 @@ public class MainFragment extends Fragment {
                 FragmentTransaction transaction=manager.beginTransaction();
                 transaction.replace(R.id.other_frag,searchFragment);
                 transaction.commit();
+            }
+        });
+        ImageButton menu=(ImageButton)view.findViewById(R.id.main_menu);
+        drawerLayout=(DrawerLayout)getActivity().findViewById(R.id.my_drawer_layout);
+        navigationView=(NavigationView)getActivity().findViewById(R.id.my_navigation);
+        menu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(drawerLayout.isDrawerOpen(navigationView)){
+                    drawerLayout.closeDrawer(navigationView);
+                }else {
+                    drawerLayout.openDrawer(navigationView);
+                }
             }
         });
         return view;

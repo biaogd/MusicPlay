@@ -1055,6 +1055,7 @@ id FUNCTION
 id META
 id SHIFT
 id SYM
+id about_app
 id about_btn
 id about_play_song
 id about_song_all_time
@@ -1212,6 +1213,8 @@ id mtrl_internal_children_alpha_tag
 id multiply
 id music_flag_btn
 id music_list_menu
+id my_drawer_layout
+id my_navigation
 id myauthor
 id myname
 id name_author
@@ -1333,6 +1336,7 @@ id textinput_helper_text
 id this_song_author
 id this_song_title
 id time
+id timer_exit
 id title
 id titleDividerNoCustom
 id title_template
@@ -1433,6 +1437,7 @@ layout mtrl_layout_snackbar
 layout mtrl_layout_snackbar_include
 layout music_about
 layout music_list_menu
+layout navigation_head
 layout net_item_music
 layout net_music_menu
 layout notification_action
@@ -1462,8 +1467,10 @@ layout tab
 layout update_app
 menu local_music_menu
 menu lrc_menu
+menu main_menu
 menu near_music_menu
 mipmap app_icon_96
+mipmap cleve
 mipmap girl
 mipmap ic_action_download
 mipmap ic_action_headphones
