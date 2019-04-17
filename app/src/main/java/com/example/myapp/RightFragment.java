@@ -1,37 +1,27 @@
 package com.example.myapp;
 
 
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.Intent;
-import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
-import com.example.myapp.database.MyDao;
-import com.example.myapp.self.Music;
 import com.example.myapp.self.NetMusicBean;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -46,32 +36,75 @@ import okhttp3.Response;
  */
 public class RightFragment extends Fragment {
 
-//    private ListView listView;
     private Gson gson=new Gson();
-//    private List<Music> mList;
     private List<NetMusicBean> list;
-//    private BaseAdapter adapter;
     private Handler handler;
     private OkHttpClient client;
+    private View view;
+    private Fragment fragment;
+    private TextView errTV;
+    private ProgressBar loading;
+    private TextView []popularTV;
+    private TextView []newTV;
+    private int loadInt;
+    private LinearLayout popularLayout;
+    private  LinearLayout newLayout;
+
+    private Fragment mainFrag;
     public RightFragment() {
         // Required empty public constructor
     }
-    private View view;
-    private Fragment fragment;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view =inflater.inflate(R.layout.fragment_right, container, false);
-//        listView = (ListView)view.findViewById(R.id.net_music_list);
-//        handler = new MyHandler();
+        handler = new MyHandler();
         list = new ArrayList<>();
+//        Bundle bundle=getArguments();
+//        mainFrag = (MainFragment)bundle.getSerializable("fragment");
 //        mList=new ArrayList<>();
         client=new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
-        LinearLayout popularLayout = (LinearLayout)view.findViewById(R.id.popular_song_layout);
-        LinearLayout newLayout = (LinearLayout)view.findViewById(R.id.new_song_layout);
+        popularLayout = (LinearLayout)view.findViewById(R.id.popular_song_layout);
+        newLayout = (LinearLayout)view.findViewById(R.id.new_song_layout);
         popularLayout.setOnClickListener(listener);
         newLayout.setOnClickListener(listener);
+        popularLayout.setVisibility(View.GONE);
+        newLayout.setVisibility(View.GONE);
+        popularTV=new TextView[]{(TextView)view.findViewById(R.id.popular_song1),
+                (TextView)view.findViewById(R.id.popular_song2),
+                (TextView)view.findViewById(R.id.popular_song3),
+                (TextView)view.findViewById(R.id.popular_song4),
+                (TextView)view.findViewById(R.id.popular_song5)
+
+        };
+        newTV=new TextView[]{(TextView)view.findViewById(R.id.new_song1),
+                (TextView)view.findViewById(R.id.new_song2),
+                (TextView)view.findViewById(R.id.new_song3),
+                (TextView)view.findViewById(R.id.new_song4),
+                (TextView)view.findViewById(R.id.new_song5)
+
+        };
+        errTV = (TextView)view.findViewById(R.id.err_tv);
+        loading = (ProgressBar)view.findViewById(R.id.loading);
+        loading.setVisibility(View.VISIBLE);
+        loadInt = 0;
+        if(checkNet(getActivity())){
+            getRankMusicList("popular");
+            getRankMusicList("new");
+        }else {
+            errTV.setVisibility(View.VISIBLE);
+            loading.setVisibility(View.GONE);
+            popularLayout.setVisibility(View.GONE);
+            newLayout.setVisibility(View.GONE);
+        }
         return view;
     }
 
@@ -108,19 +141,21 @@ public class RightFragment extends Fragment {
         }
         return false;
     }
-    public void searchMusic(final String word){
+    public void getRankMusicList(final String word){
         new Thread(new Runnable() {
             @Override
             public void run() {
-                OkHttpClient client=new OkHttpClient();
+                OkHttpClient client=new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
+                        .readTimeout(20,TimeUnit.SECONDS)
+                        .build();
                 List<NetMusicBean> netMusicBeans=new ArrayList<>();
                 if(word!=null) {
-                    Request req = new Request.Builder().url("http://www.mybiao.top:8000/search?word=" + word).build();
+                    Request req = new Request.Builder().url("http://www.mybiao.top:8000/song/" + word).build();
                     try {
                         Response res= client.newCall(req).execute();
                         if(res.isSuccessful()) {
                             String mulist = res.body().string();
-                            if (mulist != null) {
+                            if (!mulist.equals("null")) {
                                 JsonParser jsonParser = new JsonParser();
                                 JsonArray jsonElements = jsonParser.parse(mulist).getAsJsonArray();
                                 for (JsonElement element : jsonElements) {
@@ -128,42 +163,51 @@ public class RightFragment extends Fragment {
                                     netMusicBeans.add(bean);
                                 }
                             }
+                            res.close();
                         }
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        handler.sendEmptyMessage(404);
                     }
                 }
                 Message message=new Message();
+                if(word.equals("popular")){
+                    message.arg1=0;
+                }else {
+                    message.arg1=1;
+                }
                 message.what = 100;
                 message.obj=netMusicBeans;
                 handler.sendMessage(message);
             }
         }).start();
     }
-//    public class MyHandler extends Handler{
-//        @Override
-//        public void handleMessage(Message msg) {
-//            super.handleMessage(msg);
-//            if(msg.what==100){
-//                list = (ArrayList<NetMusicBean>)msg.obj;
-//                List<Music> musicLists = new MyDao(getActivity()).findAll("love_music_list");
-//                for (NetMusicBean bean:list){
-//                    Music mu=new Music(bean.getSongName(),bean.getSongAuthor(),bean.getAllTime(),"http://www.mybiao.top:8000/song?id="+bean.getId(),bean.getSongSize());
-//                    for(Music m:musicLists){
-//                        if(m.getPath().equals(mu.getPath())){
-//                            mu.setLove(1);
-//                        }
-//                    }
-//                    mu.setFlag(1);
-//                    mList.add(mu);
-//                }
-//                Log.i("mList的size",""+mList.size());
-//                adapter=new MyNetAdapter(getActivity(),mList);
-//                listView.setAdapter(adapter);
-//            }
-//        }
-//    }
+    public class MyHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(msg.what==100){
+                loadInt++;
+                list = (ArrayList<NetMusicBean>)msg.obj;
+                int arg = msg.arg1;
+                if(arg==0){
+                    for (int i=0;i<5;i++){
+                        popularTV[i].setText((i+1)+"."+list.get(i).getSongAuthor()+" - "+list.get(i).getSongName());
+                    }
+                }else {
+                    for (int i=0;i<5;i++){
+                        newTV[i].setText((i+1)+"."+list.get(i).getSongAuthor()+" - "+list.get(i).getSongName());
+                    }
+                }
+                if(loadInt==2){
+                    popularLayout.setVisibility(View.VISIBLE);
+                    newLayout.setVisibility(View.VISIBLE);
+                    loading.setVisibility(View.GONE);
+                    errTV.setVisibility(View.GONE);
+                }
+            }
+        }
+    }
 
     @Override
     public void onResume() {

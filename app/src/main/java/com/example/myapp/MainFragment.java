@@ -23,6 +23,8 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.Serializable;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -148,17 +150,22 @@ public class MainFragment extends Fragment {
                 right_textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
                 if(left_fragment == null){
                     left_fragment = new LeftFragment();
+                    transaction.add(R.id.container,left_fragment);
                 }
-                transaction.replace(R.id.container,left_fragment);
+               hide(transaction);
+//                transaction.replace(R.id.container,left_fragment);
+                transaction.show(left_fragment);
                 break;
             case 1:
                 right_textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
                 left_textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
                 if(right_fragment ==null){
                     right_fragment = new RightFragment();
+                    transaction.add(R.id.container,right_fragment);
                 }
-
-                transaction.replace(R.id.container,right_fragment);
+                hide(transaction);
+                transaction.show(right_fragment);
+//                transaction.replace(R.id.container,right_fragment);
                 break;
             default:break;
 
@@ -172,5 +179,10 @@ public class MainFragment extends Fragment {
         if(right_fragment!=null){
             transaction.hide(right_fragment);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 }
