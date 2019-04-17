@@ -29,6 +29,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -61,9 +62,9 @@ public class SearchFragment extends Fragment {
     private List<Music> musicList,list1;
     private ListView listView;
     private BaseAdapter adapter;
-    private LinearLayout place;
-    private TextView textView;
     private MyDao myDao;
+    private TextView textView;
+    private ProgressBar loading;
     public SearchFragment() {
         // Required empty public constructor
     }
@@ -116,6 +117,7 @@ public class SearchFragment extends Fragment {
            public boolean onQueryTextSubmit(String query) {
                if(checkNet(getActivity())) {
                    searchMusic(query);
+                   loading.setVisibility(View.VISIBLE);
                    list1.clear();
                    list1 = myDao.findMusicByKeyword(query);
                }else {
@@ -140,13 +142,10 @@ public class SearchFragment extends Fragment {
            }
         });
         listView = (ListView)view.findViewById(R.id.search_list_view);
-        place = (LinearLayout)view.findViewById(R.id.main_place);
-        textView = new TextView(getActivity());
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,15);
-        textView.setText("未找到");
-        LinearLayout.LayoutParams layoutParams= new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.gravity = Gravity.CENTER;
-        textView.setLayoutParams(layoutParams);
+        textView = (TextView)view.findViewById(R.id.err_tv);
+        loading=(ProgressBar)view.findViewById(R.id.loading);
+//        listView.setVisibility(View.GONE);
+//        loading.setVisibility(View.VISIBLE);
 
         handler = new MyHandler();
         gson=new Gson();
@@ -165,7 +164,6 @@ public class SearchFragment extends Fragment {
                 bundle.putSerializable("musicList",(ArrayList<Music>)musicList);
                 intent.putExtra("music_data",bundle);
                 getActivity().sendBroadcast(intent);
-                Log.i("广播发送","已发送");
             }
         });
         return view;
@@ -195,19 +193,17 @@ public class SearchFragment extends Fragment {
                         if(res.isSuccessful()) {
                             String mulist = res.body().string();
                             if (!mulist.equals("null")) {
-                                Log.i("muList",mulist);
                                 JsonParser jsonParser = new JsonParser();
                                 JsonArray jsonElements = jsonParser.parse(mulist).getAsJsonArray();
                                 for (JsonElement element : jsonElements) {
                                     NetMusicBean bean = gson.fromJson(element, NetMusicBean.class);
-                                    Log.i("搜索到",bean.toString());
                                     netMusicBeans.add(bean);
                                 }
                             }
                         }
 
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        handler.sendEmptyMessage(404);
                     }
                 }
                 Message message=new Message();
@@ -241,13 +237,21 @@ public class SearchFragment extends Fragment {
                     musicList.add(mus);
                 }
                 if(musicList.size()==0){
-                    place.removeAllViews();
-                    place.addView(textView);
+                    loading.setVisibility(View.GONE);
+                    textView.setText("没有找到音乐...");
+                    listView.setVisibility(View.GONE);
+                    textView.setVisibility(View.VISIBLE);
                 }else{
-                    place.removeAllViews();
-                    place.addView(listView);
+                    loading.setVisibility(View.GONE);
+                    listView.setVisibility(View.VISIBLE);
                     adapter.notifyDataSetChanged();
                 }
+            }
+            if(msg.what==404){
+                listView.setVisibility(View.GONE);
+                loading.setVisibility(View.GONE);
+                textView.setText("无法连接到服务器...");
+                textView.setVisibility(View.VISIBLE);
             }
         }
     }

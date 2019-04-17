@@ -1,6 +1,8 @@
 package com.example.myapp;
 
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -17,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -31,6 +34,7 @@ import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,44 +46,58 @@ import okhttp3.Response;
  */
 public class RightFragment extends Fragment {
 
-    private ListView listView;
+//    private ListView listView;
     private Gson gson=new Gson();
-    private List<Music> mList;
+//    private List<Music> mList;
     private List<NetMusicBean> list;
-    private BaseAdapter adapter;
+//    private BaseAdapter adapter;
     private Handler handler;
+    private OkHttpClient client;
     public RightFragment() {
         // Required empty public constructor
     }
     private View view;
-
+    private Fragment fragment;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view =inflater.inflate(R.layout.fragment_right, container, false);
 //        listView = (ListView)view.findViewById(R.id.net_music_list);
-        handler = new MyHandler();
+//        handler = new MyHandler();
         list = new ArrayList<>();
-        mList=new ArrayList<>();
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Music music=mList.get(position);
-                Intent intent = new Intent();
-                intent.setAction("play_net_music");
-                Bundle bundle=new Bundle();
-                bundle.putInt("pos",position);
-                bundle.putSerializable("musicList",(ArrayList<Music>)mList);
-                intent.putExtra("music_data",bundle);
-                getActivity().sendBroadcast(intent);
-                Log.i("广播发送","已发送");
-            }
-        });
+//        mList=new ArrayList<>();
+        client=new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
+        LinearLayout popularLayout = (LinearLayout)view.findViewById(R.id.popular_song_layout);
+        LinearLayout newLayout = (LinearLayout)view.findViewById(R.id.new_song_layout);
+        popularLayout.setOnClickListener(listener);
+        newLayout.setOnClickListener(listener);
         return view;
     }
 
+    View.OnClickListener listener=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.popular_song_layout:
+                    FragmentTransaction transaction=getFragmentManager().beginTransaction();
+                    if(fragment==null){
+                        fragment=RankFragment.newInstance("popular");
+                    }
+                    transaction.replace(R.id.other_frag,fragment);
+                    transaction.commit();
+                    break;
+                case R.id.new_song_layout:
+                    FragmentTransaction transaction1=getFragmentManager().beginTransaction();
+                    if(fragment==null){
+                        fragment=RankFragment.newInstance("new");
+                    }
+                    transaction1.replace(R.id.other_frag,fragment);
+                    transaction1.commit();
+                    break;
+            }
+        }
+    };
     public boolean checkNet(Context context){
         if(context!=null){
             ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -123,38 +141,38 @@ public class RightFragment extends Fragment {
             }
         }).start();
     }
-    public class MyHandler extends Handler{
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if(msg.what==100){
-                list = (ArrayList<NetMusicBean>)msg.obj;
-                List<Music> musicLists = new MyDao(getActivity()).findAll("love_music_list");
-                for (NetMusicBean bean:list){
-                    Music mu=new Music(bean.getSongName(),bean.getSongAuthor(),bean.getAllTime(),"http://www.mybiao.top:8000/song?id="+bean.getId(),bean.getSongSize());
-                    for(Music m:musicLists){
-                        if(m.getPath().equals(mu.getPath())){
-                            mu.setLove(1);
-                        }
-                    }
-                    mu.setFlag(1);
-                    mList.add(mu);
-                }
-                Log.i("mList的size",""+mList.size());
-                adapter=new MyNetAdapter(getActivity(),mList);
-                listView.setAdapter(adapter);
-            }
-        }
-    }
+//    public class MyHandler extends Handler{
+//        @Override
+//        public void handleMessage(Message msg) {
+//            super.handleMessage(msg);
+//            if(msg.what==100){
+//                list = (ArrayList<NetMusicBean>)msg.obj;
+//                List<Music> musicLists = new MyDao(getActivity()).findAll("love_music_list");
+//                for (NetMusicBean bean:list){
+//                    Music mu=new Music(bean.getSongName(),bean.getSongAuthor(),bean.getAllTime(),"http://www.mybiao.top:8000/song?id="+bean.getId(),bean.getSongSize());
+//                    for(Music m:musicLists){
+//                        if(m.getPath().equals(mu.getPath())){
+//                            mu.setLove(1);
+//                        }
+//                    }
+//                    mu.setFlag(1);
+//                    mList.add(mu);
+//                }
+//                Log.i("mList的size",""+mList.size());
+//                adapter=new MyNetAdapter(getActivity(),mList);
+//                listView.setAdapter(adapter);
+//            }
+//        }
+//    }
 
     @Override
     public void onResume() {
         super.onResume();
-        if(checkNet(getActivity())){
-            searchMusic("");
-        }else {
-            Toast.makeText(getActivity(),"网络无法连接，稍后重试",Toast.LENGTH_LONG).show();
-            Log.i("网络","无法连接");
-        }
+//        if(checkNet(getActivity())){
+//            searchMusic("");
+//        }else {
+//            Toast.makeText(getActivity(),"网络无法连接，稍后重试",Toast.LENGTH_LONG).show();
+//            Log.i("网络","无法连接");
+//        }
     }
 }

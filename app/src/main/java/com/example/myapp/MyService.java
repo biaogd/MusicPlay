@@ -1,6 +1,5 @@
 package com.example.myapp;
 
-import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -17,9 +16,7 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -154,8 +151,8 @@ public class MyService extends Service {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     music.setAlltime(mp.getDuration());
-                    Log.i("歌曲"+music.getSongName()+"总时长",music.getAlltime()+"");
                     startMusic(mp);
+                    Log.i("在打开的哈桑","魂冲了一次");
                     bufferFlag = 1;
                 }
             });
@@ -290,7 +287,6 @@ public class MyService extends Service {
             intent.setAction("getBufferProgress");
             intent.putExtra("bufferPos",percentsAvailable*music.getAlltime()/100);
             sendBroadcast(intent);
-            Log.i("缓冲百分比",percentsAvailable+"");
         }
     };
     //监听声音焦点

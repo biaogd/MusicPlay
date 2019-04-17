@@ -16,6 +16,8 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,6 +46,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
@@ -165,8 +168,11 @@ public class MainActivity extends Activity {
         notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         handler = new MyHandler();
         myDao=new MyDao(this);
-
-        updateApp();
+        if(checkNet(this)){
+            updateApp();
+        }else {
+            Toast.makeText(this,"网络无法连接，稍后重试",Toast.LENGTH_LONG).show();
+        }
         nameTv = (TextView)findViewById(R.id.myname);
         authorTv = (TextView)findViewById(R.id.myauthor);
         progressBar = (ProgressBar)findViewById(R.id.progress);
@@ -226,20 +232,6 @@ public class MainActivity extends Activity {
                 popupWindow.setFocusable(true);
                 popupWindow.setTouchable(true);
                 popupWindow.setOutsideTouchable(true);
-//                //设置弹出窗口背景变半透明，来高亮弹出窗口
-//                WindowManager.LayoutParams lp =getWindow().getAttributes();
-//                lp.alpha=0.5f;
-//                getWindow().setAttributes(lp);
-//
-//                popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-//                    @Override
-//                    public void onDismiss() {
-//                        //恢复透明度
-//                        WindowManager.LayoutParams lp =getWindow().getAttributes();
-//                        lp.alpha=1f;
-//                        getWindow().setAttributes(lp);
-//                    }
-//                });
                 popupWindow.showAtLocation(findViewById(R.id.music_list_menu), Gravity.BOTTOM,0,0);
                 Button cancelBtn=(Button)view.findViewById(R.id.cancel_btn);
                 cancelBtn.setOnClickListener(new View.OnClickListener() {
@@ -263,6 +255,16 @@ public class MainActivity extends Activity {
         });
     }
 
+    public boolean checkNet(Context context){
+        if(context!=null){
+            ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo info=manager.getActiveNetworkInfo();
+            if(info!=null){
+                return info.isConnected();
+            }
+        }
+        return false;
+    }
     //检查是否有更新的版本,,
     public void updateApp(){
         Log.i("函数","更新版本的函数执行了");
@@ -285,13 +287,9 @@ public class MainActivity extends Activity {
                            message.obj = myApp;
                            handler.sendMessage(message);
                        }
-//                       if(isNew>(int)(MUSIC_V*10)) {
-//                           System.out.println("正在执行更新程序");
-//                           handler.sendEmptyMessage(10);
-//                       }
                    }
                }catch (Exception e){
-                   e.printStackTrace();
+                   handler.sendEmptyMessage(404);
                }
            }
        }).start();
@@ -600,6 +598,9 @@ public class MainActivity extends Activity {
                     notificationManager.notify(210,builder.build());
                     startActivity(intent);
                 }
+            }
+            if(msg.what==404){
+                Toast.makeText(MainActivity.this,"无法连接到服务器，请稍后重试",Toast.LENGTH_LONG).show();
             }
         }
     }

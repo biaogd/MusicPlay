@@ -38,10 +38,19 @@ public class MainFragment extends Fragment {
     private Fragment searchFragment,fragment;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+
+    private String which;
     public MainFragment() {
         // Required empty public constructor
     }
 
+    public static Fragment newInstance(String which){
+        MainFragment mainFragment=new MainFragment();
+        Bundle bundle=new Bundle();
+        bundle.putString("which",which);
+        mainFragment.setArguments(bundle);
+        return mainFragment;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -54,7 +63,15 @@ public class MainFragment extends Fragment {
         right_textView.setTextColor(getResources().getColor(R.color.tab_color));
         left_textView.setOnClickListener(listener);
         right_textView.setOnClickListener(listener);
-        setFragment(0);
+        Bundle bundle=getArguments();
+        if(bundle!=null){
+            this.which = bundle.getString("which");
+            if(which!=null&&which.equals("right")){
+                setFragment(1);
+            }
+        }else {
+            setFragment(0);
+        }
         view.setId(R.id.mainfragment);
         LinearLayout layout=(LinearLayout)view.findViewById(R.id.linear_search);
         layout.setOnClickListener(new View.OnClickListener() {

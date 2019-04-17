@@ -33,13 +33,42 @@
             android:layout_height="match_parent"
             android:id="@+id/main_place"
             android:orientation="vertical">
-            <ListView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="@color/gray"
-            android:id="@+id/search_list_view"
-            android:dividerHeight="0.5dp">
-            </ListView>
+            <!--<ListView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:divider="@color/gray"-->
+            <!--android:id="@+id/search_list_view"-->
+            <!--android:dividerHeight="0.5dp">-->
+            <!--</ListView>-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <ListView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@color/gray"
+                    android:id="@+id/search_list_view"
+                    android:dividerHeight="0.5dp">
+                </ListView>
+                <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"
+                    android:id="@+id/loading"
+                    android:indeterminateBehavior="repeat"
+                    android:indeterminateDrawable="@drawable/anim"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:layout_centerInParent="true"
+                    android:text="无法连接到服务器..."
+                    android:id="@+id/err_tv"
+                    android:visibility="gone"
+                    />
+            </RelativeLayout>
         </LinearLayout>
 
     </LinearLayout>
