@@ -3,27 +3,20 @@ package com.example.myapp;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.Serializable;
 
 
 /**
@@ -99,20 +92,6 @@ public class MainFragment extends Fragment {
                 }else {
                     drawerLayout.openDrawer(navigationView);
                 }
-            }
-        });
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                switch (menuItem.getItemId()){
-                    case R.id.about_app:
-                        Toast.makeText(getActivity(),"点击了关于按钮",Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.timer_exit:
-                        Toast.makeText(getActivity(),"点击了定时关闭按钮",Toast.LENGTH_SHORT).show();
-                        break;
-                }
-                return false;
             }
         });
         return view;

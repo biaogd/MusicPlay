@@ -24,15 +24,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -112,6 +116,8 @@ public class MainActivity extends Activity {
     private Gson gson=new Gson();
     private MyDao myDao;
 
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //透明状态栏,android5.0及以上版本，修改状态栏白色，字体黑色
@@ -133,6 +139,7 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         versionCode = packageInfo.versionCode;
+
         Log.i("该应用的版本号",versionCode+"");
 
         ps = getSharedPreferences("isFirst",MODE_PRIVATE);
@@ -251,6 +258,26 @@ public class MainActivity extends Activity {
                         sendBroadcast(intent2);
                     }
                 });
+            }
+        });
+        drawerLayout=(DrawerLayout)findViewById(R.id.my_drawer_layout);
+        navigationView=(NavigationView)findViewById(R.id.my_navigation);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                switch (menuItem.getItemId()){
+                    case R.id.about_app:
+                        Intent intent=new Intent(MainActivity.this,AboutActivity.class);
+                        startActivity(intent);
+                        if(drawerLayout.isDrawerOpen(navigationView)){
+                            drawerLayout.closeDrawer(navigationView);
+                        }
+                        break;
+                    case R.id.timer_exit:
+                        Toast.makeText(MainActivity.this,"点击了定时关闭按钮",Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                return false;
             }
         });
     }

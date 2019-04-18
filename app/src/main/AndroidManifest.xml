@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" /> <!-- android9.0启动前台服务要申请权限 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/><!--检查网络状态-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -16,10 +16,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+        <activity android:name=".AboutActivity" android:parentActivityName=".MainActivity"
+            android:label="关于本应用">
+
+        </activity>
+
         <service
             android:name=".DownloadService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".PlayActivity"
@@ -30,7 +35,7 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity" android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
