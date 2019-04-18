@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MusicPlay</string>
+    <string name="app_name">MusicPlayer</string>
     <string name="left_fragment">我的音乐</string>
     <string name="right_fragment">在线音乐</string>
     <string name="search">搜索你想听的音乐吧！</string>

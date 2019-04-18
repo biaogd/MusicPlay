@@ -601,14 +601,16 @@ public class MyService extends Service {
                 Log.i("在service", "受到广播 update_service_love");
                 Music ms = (Music) intent.getSerializableExtra("music");
                 int i = 0;
-                for (i = 0; i < mList.size(); i++) {
-                    if (mList.get(i).getPath().equals(ms.getPath())) {
-                        int mm = music.getLove();
-                        Log.i("mm", mm + "");
-                        int nn = mm == 0 ? 1 : 0;
-                        Log.i("nn", nn + "");
-                        mList.get(i).setLove(nn);
-                        break;
+                if(mList!=null) {
+                    for (i = 0; i < mList.size(); i++) {
+                        if (mList.get(i).getPath().equals(ms.getPath())) {
+                            int mm = music.getLove();
+                            Log.i("mm", mm + "");
+                            int nn = mm == 0 ? 1 : 0;
+                            Log.i("nn", nn + "");
+                            mList.get(i).setLove(nn);
+                            break;
+                        }
                     }
                 }
             }

@@ -1,8 +1,10 @@
 package com.example.myapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -23,6 +25,7 @@ import android.widget.Toast;
 
 import com.example.myapp.self.Music;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -40,7 +43,7 @@ public class MyAdapter extends BaseAdapter {
     private static final String near_stable = "near_music_list";
     private static final String download_stable = "download_music_list";
     private static final String love_stable = "love_music_list";
-
+    private int index=-1;
     public MyAdapter(Activity context,List<Music> list ,Fragment fragment){
         this.inflater = LayoutInflater.from(context);
         this.mList = list;
@@ -258,11 +261,48 @@ public class MyAdapter extends BaseAdapter {
                     @Override
                     public void onClick(View v) {
                         if(fragment instanceof LocalMusicListFragment){
-                            deleteLove(m,local_stable);
+//                            deleteLove(m,local_stable);
                             popupWindow.dismiss();
-                            mList.remove(position);
-                            notifyDataSetChanged();
-                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
+//                            mList.remove(position);
+//                            notifyDataSetChanged();
+//                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
+//                            showDialog(m,position,popupWindow);
+                            index=-1;
+                            String []arr={"同时删除本地歌曲文件"};
+                            AlertDialog.Builder builder=new AlertDialog.Builder(context);
+                            builder.setTitle("确定删除歌曲?");
+                            builder.setSingleChoiceItems(arr, index, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    index = which;
+                                }
+                            });
+                            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if(index==0){
+                                        deleteLove(m,local_stable);
+                                        mList.remove(position);
+                                        notifyDataSetChanged();
+                                        Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
+                                        File file=new File(m.getPath());
+                                        if(file.exists()){
+                                            file.delete();
+                                        }
+                                        System.out.println(m.getPath());
+                                        File file1=new File(m.getPath().split("\\.")[0]+".lrc");
+                                        if(file1.exists()){
+                                            file1.delete();
+                                        }
+                                    }else{
+                                        deleteLove(m,local_stable);
+//                                        popupWindow.dismiss();
+                                        mList.remove(position);
+                                        notifyDataSetChanged();
+                                    }
+                                }
+                            }).setNegativeButton("取消",null);
+                            builder.create().show();
                         }else if(fragment instanceof NearPlayListFragment){
                             deleteLove(m,near_stable);
                             popupWindow.dismiss();
@@ -337,6 +377,44 @@ public class MyAdapter extends BaseAdapter {
             flagBtn.setImageResource(R.mipmap.ic_cloud_20);
         }
         return convertView;
+    }
+
+    public void showDialog(final Music music, final int pos, final PopupWindow popup){
+        index=-1;
+        String []arr={"同时删除本地歌曲文件，包括歌词"};
+        AlertDialog.Builder builder=new AlertDialog.Builder(context);
+        builder.setTitle("确定删除歌曲?");
+        builder.setSingleChoiceItems(arr, index, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                index = which;
+            }
+        });
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(index==0){
+                    deleteLove(music,local_stable);
+                    mList.remove(pos);
+                    notifyDataSetChanged();
+                    Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
+                    File file=new File(music.getPath());
+                    if(file.exists()){
+                        file.delete();
+                    }
+                    File file1=new File(music.getPath().split(".")[0]+".lrc");
+                    if(file1.exists()){
+                        file1.delete();
+                    }
+                }else{
+                    deleteLove(music,local_stable);
+//                    popup.dismiss();
+                    mList.remove(pos);
+                    notifyDataSetChanged();
+                }
+            }
+        }).setNegativeButton("取消",null);
+        builder.create().show();
     }
 
     /**

@@ -12,6 +12,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -25,6 +27,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +46,9 @@ public class LocalMusicListFragment extends BaseFragment {
     private static final long serialVersionUID = 8450019617744366672L;
     private List<Music> mylist ;
     private ImageButton options;
+    private ProgressBar loading;
+    private TextView textView;
+    private Handler handler;
     public LocalMusicListFragment() {
     }
     @Override
@@ -57,6 +63,7 @@ public class LocalMusicListFragment extends BaseFragment {
         super.onCreateView(inflater,container,savedInstanceState);
         LinearLayout body = (LinearLayout)myview.findViewById(R.id.body);
         View.inflate(getActivity(),R.layout.fragment_local_music_list,body);
+        handler = new MyHandler();
         myview.setId(R.id.localfragment);
         listView = (ListView)myview.findViewById(R.id.local_list_view);
         myview.setId(R.id.localfragment);
@@ -71,6 +78,8 @@ public class LocalMusicListFragment extends BaseFragment {
         ((TextView)(this.myview.findViewById(R.id.list_title))).setText("本地列表("+musicList.size()+")");
         Button downloadingBtn = (Button)myview.findViewById(R.id.downloading_btn);
         downloadingBtn.setVisibility(View.GONE);
+        loading=(ProgressBar)myview.findViewById(R.id.loading);
+        textView=(TextView)myview.findViewById(R.id.about_scanner);
         return this.myview;
     }
 
@@ -93,19 +102,10 @@ public class LocalMusicListFragment extends BaseFragment {
                         setPositiveButton("是", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            mylist = null;
-                            mylist=AllScannerSongs.getAllMusicFromSdcard(getActivity());
-                            SQLiteDatabase db= getActivity().openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
-                            db.delete(local_stable,null,null);
-                            for (Music m:mylist){
-                                insertMusic(m,local_stable);
-                                Log.i("歌曲",m.getSongName()+":插入数据库成功");
-                            }
-                            musicList.clear();
-                            musicList = findAll(local_stable);
-                            MyAdapter adapter=new MyAdapter(getActivity(),musicList,LocalMusicListFragment.this);
-                            listView.setAdapter(adapter);
-                            ((TextView)(myview.findViewById(R.id.list_title))).setText("本地列表("+musicList.size()+")");
+                            scannerMusic();
+                            loading.setVisibility(View.VISIBLE);
+                            textView.setVisibility(View.VISIBLE);
+                            listView.setVisibility(View.GONE);
                         }
                         });
                         alert.create();
@@ -115,6 +115,40 @@ public class LocalMusicListFragment extends BaseFragment {
             }
         });
         menu.show();
+    }
+    public void scannerMusic(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mylist = null;
+//                            mylist=AllScannerSongs.getAllMusicFromSdcard(getActivity());
+                mylist=AllScannerSongs.getMusicFromSdcard(getActivity());
+                SQLiteDatabase db= getActivity().openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
+                db.delete(local_stable,null,null);
+                for (Music m:mylist){
+                    insertMusic(m,local_stable);
+                    Log.i("歌曲",m.getSongName()+":插入数据库成功");
+                }
+                handler.sendEmptyMessage(100);
+            }
+        }).start();
+    }
+
+    public class MyHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(msg.what==100){
+                musicList.clear();
+                musicList = findAll(local_stable);
+                MyAdapter adapter=new MyAdapter(getActivity(),musicList,LocalMusicListFragment.this);
+                listView.setAdapter(adapter);
+                ((TextView)(myview.findViewById(R.id.list_title))).setText("本地列表("+musicList.size()+")");
+                loading.setVisibility(View.GONE);
+                textView.setVisibility(View.GONE);
+                listView.setVisibility(View.VISIBLE);
+            }
+        }
     }
     @Override
     public void onActivityCreated( Bundle savedInstanceState) {

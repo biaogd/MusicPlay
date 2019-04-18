@@ -18,7 +18,32 @@
             android:dividerHeight="0.1dp"
             android:id="@+id/local_list_view"
             android:layout_marginHorizontal="10dp"
-            ></ListView>
+            />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:visibility="gone"
+                android:id="@+id/loading"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDrawable="@drawable/anim"
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_below="@+id/loading"
+                android:visibility="gone"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="正在扫描本地歌曲"
+                android:id="@+id/about_scanner"
+                />
+        </RelativeLayout>
+
     </LinearLayout>
 
 </FrameLayout>

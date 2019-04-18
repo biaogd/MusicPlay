@@ -1,6 +1,7 @@
 package com.example.myapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -44,6 +45,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -274,7 +276,11 @@ public class MainActivity extends Activity {
                         }
                         break;
                     case R.id.timer_exit:
-                        Toast.makeText(MainActivity.this,"点击了定时关闭按钮",Toast.LENGTH_SHORT).show();
+                        AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("定时关闭");
+                        EditText editText=new EditText(MainActivity.this);
+                        editText.setHint("输入时间，分钟");
+
                         break;
                 }
                 return false;
