@@ -124,10 +124,12 @@ public class SearchFragment extends Fragment {
                if(checkNet(getActivity())) {
                    searchMusic(query);
                    loading.setVisibility(View.VISIBLE);
+                   textView.setVisibility(View.GONE);
                    list1.clear();
                    list1 = myDao.findMusicByKeyword(query);
                }else {
                    list1.clear();
+                   textView.setVisibility(View.GONE);
                    list1 = myDao.findMusicByKeyword(query);
                    Message message=new Message();
                    message.what = 100;
@@ -251,6 +253,7 @@ public class SearchFragment extends Fragment {
                     listView.setVisibility(View.GONE);
                     textView.setVisibility(View.VISIBLE);
                 }else{
+                    textView.setVisibility(View.GONE);
                     loading.setVisibility(View.GONE);
                     listView.setVisibility(View.VISIBLE);
                     adapter.notifyDataSetChanged();
