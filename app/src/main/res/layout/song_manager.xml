@@ -18,6 +18,8 @@
             android:textColor="@color/base_color"
             android:layout_gravity="center_vertical"
             android:background="@color/touming"
+            android:singleLine="true"
+            android:ellipsize="marquee"
             android:text="@string/app_name"/>
         <TextView
             android:layout_width="wrap_content"
@@ -25,6 +27,8 @@
             android:textSize="12sp"
             android:id="@+id/song_about_author"
             android:textColor="@color/base_color"
+            android:singleLine="true"
+            android:ellipsize="marquee"
             android:layout_gravity="center_vertical"
             android:background="@color/touming"
             android:text="@string/app_name"/>

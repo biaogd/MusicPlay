@@ -85,6 +85,9 @@ public class SearchFragment extends Fragment {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if(event.getAction() == KeyEvent.ACTION_DOWN){
                     if (keyCode == KeyEvent.KEYCODE_BACK){
+                        if(searchView!=null){
+                            searchView.clearFocus();
+                        }
                         FragmentManager manager=getFragmentManager();
                         FragmentTransaction transaction=manager.beginTransaction();
                         if(fragment == null){
@@ -102,6 +105,9 @@ public class SearchFragment extends Fragment {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(searchView!=null){
+                    searchView.clearFocus();
+                }
                 FragmentManager manager=getFragmentManager();
                 FragmentTransaction transaction=manager.beginTransaction();
                 if(fragment == null){
@@ -129,6 +135,7 @@ public class SearchFragment extends Fragment {
                }
 
                Log.i("在本地查找到",list1.size()+"");
+               searchView.clearFocus();
                return false;
            }
 
@@ -136,6 +143,8 @@ public class SearchFragment extends Fragment {
            public boolean onQueryTextChange(String newText) {
                if(newText.trim().length()==0){
                    musicList.clear();
+                   textView.setVisibility(View.GONE);
+                   loading.setVisibility(View.GONE);
                    adapter.notifyDataSetChanged();
                }
                return false;

@@ -237,7 +237,6 @@ public class PlayActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if(music.getFlag()==0){         //本地歌曲或已经下载的歌曲
-
                     updateLove(music,"local_music_list");
                     updateLove(music,"near_music_list");
                     updateLove(music,"download_music_list");
@@ -629,6 +628,8 @@ public class PlayActivity extends Activity {
                 if (lrcBeanList != null) {
                     Bundle bundle = intent.getBundleExtra("current");
                     int myPosition = bundle.getInt("position");
+                    final int height = scrollView.getHeight();
+                    final int h1 = getLrcY(1)-getLrcY(0);
                     for (int i = 0; i < lrcBeanList.size(); i++) {
                         if (i == lrcBeanList.size() - 1) {
                             if (myPosition >= lrcBeanList.get(i).getBeginTime()) {
@@ -636,7 +637,7 @@ public class PlayActivity extends Activity {
                                 scrollView.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        scrollView.scrollTo(0, getLrcY(line));
+                                        scrollView.scrollTo(0, getLrcY(line)+h1/2);
                                     }
                                 });
                             }
@@ -646,7 +647,7 @@ public class PlayActivity extends Activity {
                                 scrollView.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        scrollView.scrollTo(0, getLrcY(line));
+                                        scrollView.scrollTo(0, getLrcY(line)+h1/2);
                                     }
                                 });
                             }
@@ -673,6 +674,11 @@ public class PlayActivity extends Activity {
                 //重置进度条的进度数
                 seekBar.setProgress(0);
                 seekBar.setSecondaryProgress(0);
+                if(music.getLove()==1){
+                    loveBtn.setImageResource(images[1]);
+                }else {
+                    loveBtn.setImageResource(images[0]);
+                }
                 if(music.getFlag()==0){
                     seekBar.setSecondaryProgress(music.getAlltime());
                 }
@@ -681,11 +687,18 @@ public class PlayActivity extends Activity {
                     lrcTextView.setText("");
                     if (lrcBeanList != null) {
                         String lrc = "";
-                        lrc = lrc + "\n\n\n\n";
+//                        lrc = lrc + "\n\n\n\n";
                         for (LrcBean bean : lrcBeanList) {
                             lrc = lrc + bean.getLrc() + "\n";
                         }
-                        lrc = lrc + "\n\n\n\n";
+//                        lrc = lrc + "\n\n\n\n";
+                        lrcTextView.setText(lrc);
+                        final int height = scrollView.getHeight();
+                        int h1 = getLrcY(1)-getLrcY(0);
+                        for(int i=0;i<(height/h1)/2+1;i++){
+                            lrc = "\n"+lrc;
+                            lrc = lrc+"\n";
+                        }
                         lrcTextView.setText(lrc);
                         haveLrc = true;
                     } else {
@@ -773,12 +786,22 @@ public class PlayActivity extends Activity {
                     lrcBeanList = dealLrc.getLrcList(music);
                     if (lrcBeanList != null) {
                         String lrc = "";
-                        lrc = lrc + "\n\n\n\n";
+//                        lrc = lrc + "\n\n\n\n";
+
+
                         for (LrcBean bean : lrcBeanList) {
                             lrc = lrc + bean.getLrc() + "\n";
                         }
-                        lrc = lrc + "\n\n\n\n";
+//                        lrc = lrc + "\n\n\n\n";
                         lrcTextView.setText(lrc);
+                        final int height = scrollView.getHeight();
+                        int h1 = getLrcY(1)-getLrcY(0);
+                        for(int i=0;i<(height/h1)/2+1;i++){
+                            lrc = "\n"+lrc;
+                            lrc = lrc+"\n";
+                        }
+                        lrcTextView.setText(lrc);
+                        Log.i("可以容纳的行数",height/h1+"op"+height+"opp"+lrcTextView.getHeight());
                         scrollView.post(new Runnable() {
                             @Override
                             public void run() {
@@ -846,11 +869,18 @@ public class PlayActivity extends Activity {
                     }else {
                         if (lrcBeanList != null) {
                             String lrc = "";
-                            lrc = lrc + "\n\n\n\n";
+//                            lrc = lrc + "\n\n\n\n";
                             for (LrcBean bean : lrcBeanList) {
                                 lrc = lrc + bean.getLrc() + "\n";
                             }
-                            lrc = lrc + "\n\n\n\n";
+//                            lrc = lrc + "\n\n\n\n";
+                            lrcTextView.setText(lrc);
+                            final int height = scrollView.getHeight();
+                            int h1 = getLrcY(1)-getLrcY(0);
+                            for(int i=0;i<(height/h1)/2+1;i++){
+                                lrc = "\n"+lrc;
+                                lrc = lrc+"\n";
+                            }
                             lrcTextView.setText(lrc);
                             scrollView.post(new Runnable() {
                                 @Override

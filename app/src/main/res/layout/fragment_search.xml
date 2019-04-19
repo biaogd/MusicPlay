@@ -25,6 +25,7 @@
                 android:layout_height="wrap_content"
                 android:iconifiedByDefault="false"
                 android:queryHint="搜索音乐，作者"
+                android:imeOptions="actionSearch"
                 android:id="@+id/search_music_view"
                 />
         </LinearLayout>
