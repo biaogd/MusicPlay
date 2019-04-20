@@ -402,11 +402,12 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(player.isPlaying()){
-            player.stop();
+        if(music!=null){
             timer.cancel();
             timer1.cancel();
         }
+        player.reset();
+        player.release();
         unregisterReceiver(broadcast);
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
             stopForeground(true);
@@ -549,7 +550,6 @@ public class MyService extends Service {
                 }
             }
             if (intent.getAction().equals("exitApp")) {
-
             }
             if (intent.getAction().equals("seekTo")) {
                 position = intent.getIntExtra("progress", position);

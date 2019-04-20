@@ -6,6 +6,7 @@
     android:clipToPadding="false"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/my_drawer_layout">
+
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -89,15 +90,25 @@
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
-    <android.support.design.widget.NavigationView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/my_navigation"
-        android:fitsSystemWindows="true"
-        app:menu="@menu/main_menu"
-        app:headerLayout="@layout/navigation_head"
-        android:layout_gravity="start"
-        >
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:fitsSystemWindows="true"-->
+        <!--android:layout_gravity="start"-->
+        <!--android:background="@color/base_color"-->
+        <!--android:orientation="vertical"-->
+        <!--&gt;-->
 
-    </android.support.design.widget.NavigationView>
+        <android.support.design.widget.NavigationView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/my_navigation"
+            app:menu="@menu/main_menu"
+            android:fitsSystemWindows="true"
+            android:layout_gravity="start"
+            app:headerLayout="@layout/navigation_head"
+            >
+        </android.support.design.widget.NavigationView>
+    <!--</LinearLayout>-->
+
 </android.support.v4.widget.DrawerLayout>

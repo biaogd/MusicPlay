@@ -30,31 +30,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/popular_song1"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/popular_song2"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/popular_song3"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/popular_song4"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/popular_song5"
-                android:text="遇见"
                 />
         </LinearLayout>
         <LinearLayout
@@ -76,31 +71,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/new_song1"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/new_song2"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/new_song3"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/new_song4"
-                android:text="遇见"
                 />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/new_song5"
-                android:text="遇见"
                 />
         </LinearLayout>
         <RelativeLayout

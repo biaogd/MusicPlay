@@ -32,6 +32,8 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -47,6 +49,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -65,6 +68,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -120,6 +125,11 @@ public class MainActivity extends Activity {
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+
+    private long selfTime;
+    private long beforeSureTime;
+    private Timer timer;
+    private TimerTask timerTask;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //透明状态栏,android5.0及以上版本，修改状态栏白色，字体黑色
@@ -263,7 +273,24 @@ public class MainActivity extends Activity {
             }
         });
         drawerLayout=(DrawerLayout)findViewById(R.id.my_drawer_layout);
+        //关闭手势滑动
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         navigationView=(NavigationView)findViewById(R.id.my_navigation);
+        selfTime = -2;
+        timer=new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(selfTime!=-2) {
+                    selfTime = selfTime - 1000;
+                    handler.sendEmptyMessage(555);
+                    if (selfTime == 0) {
+                        this.cancel();
+                        timer.cancel();
+                    }
+                }
+            }
+        },0,1000);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -276,16 +303,180 @@ public class MainActivity extends Activity {
                         }
                         break;
                     case R.id.timer_exit:
-                        AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
-                        builder.setTitle("定时关闭");
-                        EditText editText=new EditText(MainActivity.this);
-                        editText.setHint("输入时间，分钟");
+                        View view=LayoutInflater.from(MainActivity.this).inflate(R.layout.timer_exit,null);
+                        final PopupWindow popupWindow=new PopupWindow(view,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+                        popupWindow.setFocusable(true);
+                        popupWindow.setTouchable(true);
+                        popupWindow.setOutsideTouchable(true);
+                        //设置弹出窗口背景变半透明，来高亮弹出窗口
+                        WindowManager.LayoutParams lp =getWindow().getAttributes();
+                        lp.alpha=0.5f;
+                        getWindow().setAttributes(lp);
 
+                        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                            @Override
+                            public void onDismiss() {
+                                //恢复透明度
+                                WindowManager.LayoutParams lp =getWindow().getAttributes();
+                                lp.alpha=1f;
+                                getWindow().setAttributes(lp);
+                            }
+                        });
+                        popupWindow.showAtLocation(findViewById(R.id.music_list_menu), Gravity.BOTTOM,0,0);
+                        LinearLayout []layouts=new LinearLayout[]{(LinearLayout)view.findViewById(R.id.close_timer),
+                                (LinearLayout)view.findViewById(R.id.timer_15),
+                                (LinearLayout)view.findViewById(R.id.timer_30),
+                                (LinearLayout)view.findViewById(R.id.timer_45),
+                                (LinearLayout)view.findViewById(R.id.timer_60)
+                        };
+                        //final修饰对象，对象的指向不可改变，值可以改变
+                        final ImageView[] imageViews = new ImageView[]{
+                                (ImageView) view.findViewById(R.id.image_id_1),
+                                (ImageView) view.findViewById(R.id.image_id_2),
+                                (ImageView) view.findViewById(R.id.image_id_3),
+                                (ImageView) view.findViewById(R.id.image_id_4),
+                                (ImageView) view.findViewById(R.id.image_id_5),
+                        };
+                        final EditText editText=(EditText)view.findViewById(R.id.time_edit_text);
+                        final Button button=(Button)view.findViewById(R.id.submit_time);
+                        layouts[0].setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                clearAllClick(imageViews);
+                                imageViews[0].setVisibility(View.VISIBLE);
+                                beforeSureTime = -1;
+                                button.setEnabled(true);
+                            }
+                        });
+                        layouts[1].setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                clearAllClick(imageViews);
+                                imageViews[1].setVisibility(View.VISIBLE);
+                                beforeSureTime = 15;
+                                button.setEnabled(true);
+                            }
+                        });
+                        layouts[2].setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                clearAllClick(imageViews);
+                                imageViews[2].setVisibility(View.VISIBLE);
+                                beforeSureTime = 30;
+                                button.setEnabled(true);
+                            }
+                        });
+                        layouts[3].setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                clearAllClick(imageViews);
+                                imageViews[3].setVisibility(View.VISIBLE);
+                                beforeSureTime = 45;
+                                button.setEnabled(true);
+                            }
+                        });
+                        layouts[4].setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                clearAllClick(imageViews);
+                                imageViews[4].setVisibility(View.VISIBLE);
+                                beforeSureTime = 60;
+                                button.setEnabled(true);
+                            }
+                        });
+                        TextView doItSelf = (TextView)view.findViewById(R.id.do_it_yourself);
+                        final LinearLayout inputLayout=(LinearLayout)view.findViewById(R.id.input_time);
+                        doItSelf.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                clearAllClick(imageViews);
+                                beforeSureTime=0;
+                                if(inputLayout.getVisibility()==View.VISIBLE) {
+                                    inputLayout.setVisibility(View.GONE);
+                                }else {
+                                    inputLayout.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        });
+
+                        editText.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                            }
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                            }
+
+                            @Override
+                            public void afterTextChanged(Editable s) {
+                                if(beforeSureTime == 0&&s.length()==0||Integer.parseInt(s.toString())==0){
+                                    button.setEnabled(false);
+                                }else {
+                                    button.setEnabled(true);
+                                }
+                            }
+                        });
+                        button.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if(beforeSureTime==-1){
+                                    selfTime = -2;
+                                    navigationView.getMenu().findItem(R.id.timer_exit).setTitle("定时关闭");
+                                }else if(beforeSureTime==0){
+                                    beforeSureTime = Long.parseLong(editText.getText().toString());
+                                    selfTime = beforeSureTime*60*1000;
+                                }else {
+                                    selfTime = beforeSureTime*60*1000;
+                                }
+                                popupWindow.dismiss();
+                            }
+                        });
                         break;
+                    case R.id.exit:
+                        if(drawerLayout.isDrawerOpen(navigationView)){
+                            drawerLayout.closeDrawer(navigationView);
+                        }
+                        Intent intent2=new Intent("exitApp");
+                        sendBroadcast(intent2);
                 }
                 return false;
             }
         });
+    }
+//
+//    public void startTimer(){
+//        timer.cancel();
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                selfTime = selfTime-1000;
+//                handler.sendEmptyMessage(555);
+//                if (selfTime==0){
+//                    this.cancel();
+//                    timer.cancel();
+//                }
+//            }
+//        },0,1000);
+//    }
+    public void clearAllClick(View []vs){
+        for(View view:vs){
+            view.setVisibility(View.INVISIBLE);
+        }
+    }
+    View.OnClickListener myListener=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+            }
+        }
+    };
+    public String transforTime(long time) {
+        long million = time / 1000;
+        int mill = (int) million % 60; //获取秒
+        int minute = (int) million / 60;
+        String allTime = String.valueOf(minute) + ":" + String.valueOf(mill);
+        return allTime;
     }
 
     public boolean checkNet(Context context){
@@ -478,10 +669,14 @@ public class MainActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Intent home = new Intent(Intent.ACTION_MAIN);
-            home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            home.addCategory(Intent.CATEGORY_HOME);
-            startActivity(home);
+            if(drawerLayout.isDrawerOpen(navigationView)){
+                drawerLayout.closeDrawer(navigationView);
+            }else {
+                Intent home = new Intent(Intent.ACTION_MAIN);
+                home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                home.addCategory(Intent.CATEGORY_HOME);
+                startActivity(home);
+            }
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -634,6 +829,14 @@ public class MainActivity extends Activity {
             }
             if(msg.what==404){
                 Toast.makeText(MainActivity.this,"无法连接到服务器，请稍后重试",Toast.LENGTH_LONG).show();
+            }
+            if(msg.what==555){
+                if(selfTime>=0)
+                navigationView.getMenu().findItem(R.id.timer_exit).setTitle("定时关闭(剩余时间："+transforTime(selfTime)+")");
+                if(selfTime==0){
+                    Intent intent2=new Intent("exitApp");
+                    sendBroadcast(intent2);
+                }
             }
         }
     }
