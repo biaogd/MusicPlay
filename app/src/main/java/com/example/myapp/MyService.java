@@ -499,18 +499,22 @@ public class MyService extends Service {
                     }
                 }
                 if (keys.equals("last")) {
-                    if (order == random_play) {
-                        randowPlay();
-                    } else {
-                        last();
-                    }
-
+                   if(music!=null) {
+                       if (order == random_play) {
+                           randowPlay();
+                       } else {
+                           last();
+                       }
+                   }
                 }
+
                 if (keys.equals("next")) {
-                    if (order == random_play) {
-                        randowPlay();
-                    } else {
-                        next();
+                    if(music!=null) {
+                        if (order == random_play) {
+                            randowPlay();
+                        } else {
+                            next();
+                        }
                     }
                 }
             }

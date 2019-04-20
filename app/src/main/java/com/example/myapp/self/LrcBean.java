@@ -6,6 +6,7 @@ public class LrcBean implements Serializable {
     private static final long serialVersionUID = -8931844425754525250L;
     private String lrc;
     private int beginTime;
+//    private int allCount;       //连这个歌词总共的自动换行数
 
     public LrcBean(String lrc, int beginTime) {
         this.lrc = lrc;

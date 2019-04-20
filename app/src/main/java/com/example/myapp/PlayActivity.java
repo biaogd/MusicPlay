@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextPaint;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -104,7 +109,9 @@ public class PlayActivity extends Activity {
 
     private PopupMenu popupMenu;
     private boolean haveLrc=false;
-
+    //截止到播放的歌词，总共换行的次数
+//    private int allCount=0;
+    //一个歌曲歌词自动换行的个数
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -387,6 +394,7 @@ public class PlayActivity extends Activity {
     }
     final String cachePath = Environment.getExternalStorageDirectory().getAbsolutePath()+
             "/Android/data/com.example.myapp/cache/lrc-cache";
+
     //获取本地歌词缓存的文件
     public void getCacheMusicLrc(){
         new Thread(new Runnable() {
@@ -437,7 +445,13 @@ public class PlayActivity extends Activity {
             }
         }).start();
     }
-    //从服务器查找歌词
+
+    /**
+     * 开启一个线程，查找歌词
+     * 先从缓存中通过md5算法转换名称，到制定目录查找是否已经存在缓存歌词文件，
+     * 如果已经存在歌词文件，就直接通过handler通知主线程加载歌词
+     * 如果缓存中不存在，就从服务其中查找
+     */
     public void getMusicLrc(){
 
         new Thread(new Runnable() {
@@ -449,7 +463,6 @@ public class PlayActivity extends Activity {
                 String lrcMd5Name = getMD5(lrcName);
                 File file2=new File(cachePath+"/"+lrcMd5Name);
                 if(file2.exists()){
-                    Log.i("在缓存中查找到歌词","是的");
                     FileInputStream stream= null;
                     try {
                         stream = new FileInputStream(file2);
@@ -477,10 +490,11 @@ public class PlayActivity extends Activity {
                         message.obj = lrcList;
                         handler.sendMessage(message);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Message msg = new Message();
+                            msg.what = 102;
+                            handler.sendMessage(msg);
                         }
                 }else {
-                    Log.i("在缓存中","没有查找到歌词");
                     OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
                     String url = "";
                     if (music.getFlag() == 1) {
@@ -506,7 +520,9 @@ public class PlayActivity extends Activity {
                             }
 
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Message msg = new Message();
+                            msg.what = 102;
+                            handler.sendMessage(msg);
                         }
                         if (netMusicBeans.size() == 1) {
                             String path = "http://www.mybiao.top:8000/song?id=" + netMusicBeans.get(0).getId();
@@ -603,6 +619,51 @@ public class PlayActivity extends Activity {
         return allTime;
     }
 
+    /**
+     * 从歌词文件读取的歌词一行可能过长，在textView中，会自动分行
+     * 而歌词的滚动是根据从文件中读取的一行，滚动的，自动换行会造成歌词显示位置偏下，
+     * 原因是换行占用了textView的一行空间，所以歌词偏下
+     * 获取到正在播放的歌词，前面的歌词自动换行所另外占用的行数
+     * 在歌词滚动是根据lrcBeanList的下标滚动制定行数时，在滚动时加上自动换行
+     * 所占用的行数，纠正歌词的偏移
+     * @param width     textiew的宽度
+     * @param i         lrcBeanList的下标
+     * @return          返回另外占用的行数
+     */
+    public int getAllCount(int width,int i){
+        int allCount = 0;
+        String lrcs;
+        float textWidth;
+        double count;
+        int beishu ;
+        TextPaint paint=lrcTextView.getPaint();
+        for (int j = 0; j < lrcBeanList.size(); j++) {
+            if (j <= i) {
+                lrcs = lrcBeanList.get(j).getLrc();
+                textWidth = paint.measureText(lrcs);
+                count = Math.ceil(textWidth / width);
+                beishu = (int) Math.round(count);
+                allCount = allCount + beishu - 1;
+            }
+        }
+        return allCount;
+    }
+
+    //修改正在播放的歌词的颜色
+    public void playingLrcColor(int line) {
+        int start = 0, end = 0;
+        Layout layout = lrcTextView.getLayout();
+        final int height = scrollView.getHeight();
+        int h1 = getLrcY(1)-getLrcY(0);
+        line = line+(height/h1)/2+1;
+        end = layout.getLineEnd(line);
+        start = layout.getLineStart(line);
+        System.out.println("start = "+start+";end = "+end);
+        SpannableString span=new SpannableString(lrcTextView.getText().toString());
+        span.setSpan(new ForegroundColorSpan(Color.BLUE),start,end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        System.out.println(span.toString().equals(lrcTextView.getText().toString()));
+        lrcTextView.setText(span);
+    }
     private class MyBroadcast extends BroadcastReceiver {
 
         @Override
@@ -630,24 +691,34 @@ public class PlayActivity extends Activity {
                     int myPosition = bundle.getInt("position");
                     final int height = scrollView.getHeight();
                     final int h1 = getLrcY(1)-getLrcY(0);
+                    final int width = lrcTextView.getMeasuredWidth();
                     for (int i = 0; i < lrcBeanList.size(); i++) {
                         if (i == lrcBeanList.size() - 1) {
                             if (myPosition >= lrcBeanList.get(i).getBeginTime()) {
                                 line = i;
+                                String lrcs = lrcBeanList.get(i).getLrc();
+                                //获取到目前的总换行个数
+                                final int allCount = getAllCount(width,i);
+                                playingLrcColor(i+allCount-1);
                                 scrollView.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        scrollView.scrollTo(0, getLrcY(line)+h1/2);
+                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
                                     }
                                 });
                             }
                         } else {
                             if (myPosition >= lrcBeanList.get(i).getBeginTime() && myPosition <= lrcBeanList.get(i + 1).getBeginTime()) {
                                 line = i;
+                                String lrcs = lrcBeanList.get(i).getLrc();
+                                //获取到目前的总换行个数
+                                final int allCount = getAllCount(width,i);
+                                playingLrcColor(i+allCount-1);
                                 scrollView.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        scrollView.scrollTo(0, getLrcY(line)+h1/2);
+                                        System.out.println(allCount+"---------------");
+                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
                                     }
                                 });
                             }
@@ -664,6 +735,7 @@ public class PlayActivity extends Activity {
                 }
             }
             if (intent.getAction().equals("updateMusic")) {
+                //切换歌曲，重置换行个数
                 haveLrc = false;
                 Bundle bundle = intent.getBundleExtra("nowplay");
                 music = (Music) bundle.getSerializable("nowplaymusic");
@@ -786,13 +858,9 @@ public class PlayActivity extends Activity {
                     lrcBeanList = dealLrc.getLrcList(music);
                     if (lrcBeanList != null) {
                         String lrc = "";
-//                        lrc = lrc + "\n\n\n\n";
-
-
                         for (LrcBean bean : lrcBeanList) {
                             lrc = lrc + bean.getLrc() + "\n";
                         }
-//                        lrc = lrc + "\n\n\n\n";
                         lrcTextView.setText(lrc);
                         final int height = scrollView.getHeight();
                         int h1 = getLrcY(1)-getLrcY(0);
