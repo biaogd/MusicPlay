@@ -24,6 +24,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 
 import java.io.File;
@@ -51,7 +52,7 @@ public class BaseFragment extends Fragment implements Serializable {
     protected static final String download_stable = "download_music_list";
     protected static final String love_stable = "love_music_list";
     protected MyBroadcastReceiver broadcast;
-
+    private MyDao myDao;
     public BaseFragment(){
     }
 
@@ -134,11 +135,13 @@ public class BaseFragment extends Fragment implements Serializable {
     @Override
     public void onActivityCreated( Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        myDao=new MyDao(getActivity());
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Music music=musicList.get(position);
                 File file = new File(music.getPath());
+                String tname="";
                 if(music.getFlag()==0) {
                     if (file.exists()) {
                         Intent intent = new Intent();
@@ -169,8 +172,18 @@ public class BaseFragment extends Fragment implements Serializable {
                     } else {
                         //这个本地音乐文件不存在时
                         Toast.makeText(getActivity(), "音乐文件不存在，无法播放", Toast.LENGTH_SHORT).show();
-                        String paths = musicList.get(position).getPath();
-                        getSQLiteDB().delete(local_stable, "path=?", new String[]{paths});
+//                        String paths = musicList.get(position).getPath();
+//                        getSQLiteDB().delete(local_stable, "path=?", new String[]{paths});
+                        if(getFragment() instanceof LocalMusicListFragment){
+                            tname = local_stable;
+                        }else if(getFragment() instanceof DownloadMusicFragment){
+                            tname = download_stable;
+                        }else if(getFragment() instanceof NearPlayListFragment){
+                            tname = near_stable;
+                        }else {
+                            tname = love_stable;
+                        }
+                        myDao.deleteMusic(music,tname);
                         musicList.remove(position);
                         adapter.notifyDataSetChanged();
                     }

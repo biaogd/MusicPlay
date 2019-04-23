@@ -274,7 +274,7 @@ public class MainActivity extends Activity {
         });
         drawerLayout=(DrawerLayout)findViewById(R.id.my_drawer_layout);
         //关闭手势滑动
-        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+//        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         navigationView=(NavigationView)findViewById(R.id.my_navigation);
         selfTime = -2;
         timer=new Timer();
@@ -444,21 +444,7 @@ public class MainActivity extends Activity {
             }
         });
     }
-//
-//    public void startTimer(){
-//        timer.cancel();
-//        timer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                selfTime = selfTime-1000;
-//                handler.sendEmptyMessage(555);
-//                if (selfTime==0){
-//                    this.cancel();
-//                    timer.cancel();
-//                }
-//            }
-//        },0,1000);
-//    }
+
     public void clearAllClick(View []vs){
         for(View view:vs){
             view.setVisibility(View.INVISIBLE);

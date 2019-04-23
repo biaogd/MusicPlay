@@ -33,11 +33,10 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/downBtns"
-            android:visibility="invisible"
-            android:src="@drawable/expand30"
+            android:id="@+id/play_menu_main"
+            android:src="@mipmap/ic_menu_48"
             android:layout_weight="1"
-            android:background="@color/base_color"/>
+            android:background="@color/touming"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

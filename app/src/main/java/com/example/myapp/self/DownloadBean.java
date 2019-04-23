@@ -7,17 +7,24 @@ public class DownloadBean implements Serializable {
 
     private Music music;
     private int progress;
-
+    private int flag;
     public DownloadBean(Music music, int progress) {
         this.music = music;
         this.progress = progress;
     }
 
+    public DownloadBean(Music music, int progress, int flag) {
+        this.music = music;
+        this.progress = progress;
+        this.flag = flag;
+    }
+
     @Override
     public String toString() {
-        return "downloadBean{" +
+        return "DownloadBean{" +
                 "music=" + music +
                 ", progress=" + progress +
+                ", flag=" + flag +
                 '}';
     }
 
@@ -35,5 +42,13 @@ public class DownloadBean implements Serializable {
 
     public void setProgress(int progress) {
         this.progress = progress;
+    }
+
+    public int getFlag() {
+        return flag;
+    }
+
+    public void setFlag(int flag) {
+        this.flag = flag;
     }
 }

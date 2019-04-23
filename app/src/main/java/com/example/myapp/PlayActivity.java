@@ -100,7 +100,7 @@ public class PlayActivity extends Activity {
 
     private MyHandlers handler;
 
-    private ImageButton loveBtn;
+    private ImageButton loveBtn,menuBtn;
 
     private MyDao myDao;
     private DealLrc dealLrc;
@@ -112,6 +112,8 @@ public class PlayActivity extends Activity {
     //截止到播放的歌词，总共换行的次数
 //    private int allCount=0;
     //一个歌曲歌词自动换行的个数
+
+    private int spaces=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -295,10 +297,68 @@ public class PlayActivity extends Activity {
                 popupMenu.show();
             }
         });
+        menuBtn=(ImageButton)findViewById(R.id.play_menu_main);
+        menuBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View myView = LayoutInflater.from(PlayActivity.this).inflate(R.layout.play_menu,null);
+                final PopupWindow window=new PopupWindow(myView, WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+                window.setFocusable(true);
+                window.setTouchable(true);
+                window.setOutsideTouchable(true);
+                WindowManager.LayoutParams lp =getWindow().getAttributes();
+                lp.alpha=0.5f;
+                getWindow().setAttributes(lp);
+
+                window.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        //恢复透明度
+                        WindowManager.LayoutParams lp =getWindow().getAttributes();
+                        lp.alpha=1f;
+                        getWindow().setAttributes(lp);
+                    }
+                });
+                window.showAtLocation(findViewById(R.id.play_menu_main), Gravity.BOTTOM,0,0);
+                Button playDwBtn = (Button)myView.findViewById(R.id.play_download);
+                Button cancelBtn = (Button)myView.findViewById(R.id.play_cancel);
+                cancelBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        window.dismiss();
+                    }
+                });
+                playDwBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent=new Intent("download_music");
+                        intent.putExtra("music",music);
+                        sendBroadcast(intent);
+                        window.dismiss();
+                    }
+                });
+                if(music.getFlag()==0){
+                    playDwBtn.setEnabled(false);
+                }else {
+                    int i=0;
+                    List<Music> musicList1=myDao.findAll("local_music_list");
+                    for(i=0;i<musicList1.size();i++){
+                        if(musicList1.get(i).getSongName().equals(music.getSongName())&&musicList1.get(i).getSongAuthor().equals(music.getSongAuthor())){
+                            playDwBtn.setEnabled(false);
+                            break;
+                        }
+                    }
+                    if(i>=musicList1.size()){
+                        playDwBtn.setEnabled(true);
+                    }
+                }
+            }
+        });
         //发送广播到 service，获取音乐播放信息
         Intent intent=new Intent("update_play_message");
         sendBroadcast(intent);
     }
+
     private SQLiteDatabase getSQLiteDB(){
         return this.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
     }
@@ -655,7 +715,9 @@ public class PlayActivity extends Activity {
         Layout layout = lrcTextView.getLayout();
         final int height = scrollView.getHeight();
         int h1 = getLrcY(1)-getLrcY(0);
-        line = line+(height/h1)/2+1;
+        System.out.println("传过去的line = "+line+"--------------");
+        line = line+spaces;
+        System.out.println("line = "+line+"--------------");
         end = layout.getLineEnd(line);
         start = layout.getLineStart(line);
         System.out.println("start = "+start+";end = "+end);
@@ -699,7 +761,7 @@ public class PlayActivity extends Activity {
                                 String lrcs = lrcBeanList.get(i).getLrc();
                                 //获取到目前的总换行个数
                                 final int allCount = getAllCount(width,i);
-                                playingLrcColor(i+allCount-1);
+                                playingLrcColor(i+allCount);
                                 scrollView.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -713,11 +775,11 @@ public class PlayActivity extends Activity {
                                 String lrcs = lrcBeanList.get(i).getLrc();
                                 //获取到目前的总换行个数
                                 final int allCount = getAllCount(width,i);
-                                playingLrcColor(i+allCount-1);
+                                playingLrcColor(line+allCount);
                                 scrollView.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        System.out.println(allCount+"---------------");
+                                        System.out.println(allCount+"---------------"+line);
                                         scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
                                     }
                                 });
@@ -767,6 +829,7 @@ public class PlayActivity extends Activity {
                         lrcTextView.setText(lrc);
                         final int height = scrollView.getHeight();
                         int h1 = getLrcY(1)-getLrcY(0);
+                        spaces = (height/h1)/2+1;
                         for(int i=0;i<(height/h1)/2+1;i++){
                             lrc = "\n"+lrc;
                             lrc = lrc+"\n";
@@ -864,12 +927,13 @@ public class PlayActivity extends Activity {
                         lrcTextView.setText(lrc);
                         final int height = scrollView.getHeight();
                         int h1 = getLrcY(1)-getLrcY(0);
+                        spaces = (height/h1)/2+1;
                         for(int i=0;i<(height/h1)/2+1;i++){
                             lrc = "\n"+lrc;
                             lrc = lrc+"\n";
                         }
                         lrcTextView.setText(lrc);
-                        Log.i("可以容纳的行数",height/h1+"op"+height+"opp"+lrcTextView.getHeight());
+                        Log.i("可以容纳的行数",height/h1+"op"+height+"SDSADA"+h1+"opp"+lrcTextView.getHeight());
                         scrollView.post(new Runnable() {
                             @Override
                             public void run() {
@@ -945,6 +1009,7 @@ public class PlayActivity extends Activity {
                             lrcTextView.setText(lrc);
                             final int height = scrollView.getHeight();
                             int h1 = getLrcY(1)-getLrcY(0);
+                            spaces = (height/h1)/2+1;
                             for(int i=0;i<(height/h1)/2+1;i++){
                                 lrc = "\n"+lrc;
                                 lrc = lrc+"\n";

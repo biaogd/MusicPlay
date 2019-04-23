@@ -63,13 +63,14 @@ public class DownloadService extends Service {
                 //判断该歌曲是否正在下载中
                 for(i=0;i<downloadList.size();i++){
                     if(downloadList.get(i).getPath().equals(music.getPath())){
-                        Toast.makeText(getApplicationContext(),"该歌曲已在下载列表",Toast.LENGTH_SHORT);
+                        Toast.makeText(getApplicationContext(),"该歌曲已在下载列表",Toast.LENGTH_SHORT).show();
                         break;
                     }
 
                 }
                 if(i>=downloadList.size()) {
                     downloadList.add(music);
+                    Toast.makeText(getApplicationContext(),"该歌曲加入下载列表成功",Toast.LENGTH_SHORT).show();
                     Log.i("DownloadService", "添加新的歌曲到下载列表中" + music.getSongName());
                 }
             }
@@ -77,7 +78,6 @@ public class DownloadService extends Service {
                 Intent intent1=new Intent("return_download_list");
                 intent1.putExtra("list",(ArrayList)downloadList);
                 sendBroadcast(intent1);
-                Log.i("获取下载列表的广播","已发送");
             }
         }
     }

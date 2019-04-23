@@ -42,6 +42,7 @@ public class DownloadAdapter extends BaseAdapter {
         TextView songTV;
         TextView sizeTV;
         ProgressBar progressBar;
+        TextView waitTV;
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -51,6 +52,7 @@ public class DownloadAdapter extends BaseAdapter {
             holder.songTV=(TextView)convertView.findViewById(R.id.song_intro);
             holder.sizeTV=(TextView)convertView.findViewById(R.id.song_size_tv);
             holder.progressBar=(ProgressBar)convertView.findViewById(R.id.dw_progress);
+            holder.waitTV = (TextView)convertView.findViewById(R.id.download_waiting);
             convertView.setTag(holder);
         }else {
             holder=(ViewHolder)convertView.getTag();
@@ -63,6 +65,13 @@ public class DownloadAdapter extends BaseAdapter {
         DecimalFormat format=new DecimalFormat("#.00");
         holder.sizeTV.setText(format.format(sizes)+"M");
         holder.progressBar.setProgress(progress);
+        if(progress==0){
+            holder.waitTV.setVisibility(View.VISIBLE);
+            holder.progressBar.setVisibility(View.GONE);
+        }else {
+            holder.waitTV.setVisibility(View.GONE);
+            holder.progressBar.setVisibility(View.VISIBLE);
+        }
         return convertView;
     }
 }

@@ -33,5 +33,15 @@
             android:progress="0"
             style="?android:attr/progressBarStyleHorizontal"
             android:id="@+id/dw_progress"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="15sp"
+            android:text="等待中..."
+            android:visibility="gone"
+            android:id="@+id/download_waiting"
+
+            />
     </RelativeLayout>
 </LinearLayout>
