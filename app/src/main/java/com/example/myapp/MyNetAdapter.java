@@ -136,7 +136,7 @@ public class MyNetAdapter extends BaseAdapter {
                 //查找本地歌曲有没有这首歌
                 for (Music m:mList){
                     if(m.getSongName().equals(music.getSongName())&&m.getSongAuthor().equals(music.getSongAuthor())){
-                        downloadBtn.setVisibility(View.GONE);   //隐藏下载按钮并且不占空间
+                        downloadBtn.setEnabled(false);
                         break;
                     }
                 }

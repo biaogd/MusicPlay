@@ -188,7 +188,11 @@ public class MyAdapter extends BaseAdapter {
                    loveBtn.setImageResource(images[i]);
                    updateLove(m,near_stable);
                    updateLove(m,download_stable);
-
+                   if(m.getLove()==0){
+                       m.setLove(1);
+                   }else {
+                       m.setLove(0);
+                   }
                    if(i == 0){
                        deleteLove(m,love_stable);
                    }
@@ -206,6 +210,11 @@ public class MyAdapter extends BaseAdapter {
                     if(i == 1){
                         insertMusic(m,love_stable);
                     }
+                    if(m.getLove()==0){
+                        m.setLove(1);
+                    }else {
+                        m.setLove(0);
+                    }
                     updateLove(m,local_stable);
 //                    intent.putExtra("fragment","nearFragment");
                 }else {
@@ -218,6 +227,11 @@ public class MyAdapter extends BaseAdapter {
                     }
                     if(i == 1){
                         insertMusic(m,love_stable);
+                    }
+                    if(m.getLove()==0){
+                        m.setLove(1);
+                    }else {
+                        m.setLove(0);
                     }
 //                    intent.putExtra("fragment","downloadFragment");
                 }
