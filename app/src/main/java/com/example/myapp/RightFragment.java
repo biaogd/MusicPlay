@@ -191,12 +191,16 @@ public class RightFragment extends Fragment {
                 list = (ArrayList<NetMusicBean>)msg.obj;
                 int arg = msg.arg1;
                 if(arg==0){
-                    for (int i=0;i<5;i++){
-                        popularTV[i].setText((i+1)+"."+list.get(i).getSongAuthor()+" - "+list.get(i).getSongName());
+                    if(!list.isEmpty()) {
+                        for (int i = 0; i < 5; i++) {
+                            popularTV[i].setText((i + 1) + "." + list.get(i).getSongAuthor() + " - " + list.get(i).getSongName());
+                        }
                     }
                 }else {
-                    for (int i=0;i<5;i++){
-                        newTV[i].setText((i+1)+"."+list.get(i).getSongAuthor()+" - "+list.get(i).getSongName());
+                    if(!list.isEmpty()) {
+                        for (int i = 0; i < 5; i++) {
+                            newTV[i].setText((i + 1) + "." + list.get(i).getSongAuthor() + " - " + list.get(i).getSongName());
+                        }
                     }
                 }
                 if(loadInt==2){
