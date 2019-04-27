@@ -465,6 +465,8 @@ public class PlayActivity extends Activity {
                 String lrcName = music.getSongAuthor()+" - "+music.getSongName()+".lrc";
                 String lrcMd5Name = getMD5(lrcName);
                 Log.i("Md5",lrcMd5Name);
+                File fs1 = new File(cachePath);
+
                 File file2=new File(cachePath+"/"+lrcMd5Name);
                 if(file2.exists()){
                     Log.i("在缓存中查找到歌词","是的");

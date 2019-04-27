@@ -9,6 +9,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -127,7 +128,7 @@ public class MainActivity extends Activity {
     private NavigationView navigationView;
 
     private long selfTime;
-    private long beforeSureTime;
+    private long beforeSureTime=-1;
     private Timer timer;
     private TimerTask timerTask;
     @Override
@@ -339,6 +340,9 @@ public class MainActivity extends Activity {
                         };
                         final EditText editText=(EditText)view.findViewById(R.id.time_edit_text);
                         final Button button=(Button)view.findViewById(R.id.submit_time);
+                        TextView doItSelf = (TextView)view.findViewById(R.id.do_it_yourself);
+                        final LinearLayout inputLayout=(LinearLayout)view.findViewById(R.id.input_time);
+                        button.setEnabled(false);
                         layouts[0].setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -346,6 +350,7 @@ public class MainActivity extends Activity {
                                 imageViews[0].setVisibility(View.VISIBLE);
                                 beforeSureTime = -1;
                                 button.setEnabled(true);
+                                inputLayout.setVisibility(View.GONE);
                             }
                         });
                         layouts[1].setOnClickListener(new View.OnClickListener() {
@@ -355,6 +360,7 @@ public class MainActivity extends Activity {
                                 imageViews[1].setVisibility(View.VISIBLE);
                                 beforeSureTime = 15;
                                 button.setEnabled(true);
+                                inputLayout.setVisibility(View.GONE);
                             }
                         });
                         layouts[2].setOnClickListener(new View.OnClickListener() {
@@ -364,6 +370,7 @@ public class MainActivity extends Activity {
                                 imageViews[2].setVisibility(View.VISIBLE);
                                 beforeSureTime = 30;
                                 button.setEnabled(true);
+                                inputLayout.setVisibility(View.GONE);
                             }
                         });
                         layouts[3].setOnClickListener(new View.OnClickListener() {
@@ -373,6 +380,7 @@ public class MainActivity extends Activity {
                                 imageViews[3].setVisibility(View.VISIBLE);
                                 beforeSureTime = 45;
                                 button.setEnabled(true);
+                                inputLayout.setVisibility(View.GONE);
                             }
                         });
                         layouts[4].setOnClickListener(new View.OnClickListener() {
@@ -382,10 +390,10 @@ public class MainActivity extends Activity {
                                 imageViews[4].setVisibility(View.VISIBLE);
                                 beforeSureTime = 60;
                                 button.setEnabled(true);
+                                inputLayout.setVisibility(View.GONE);
                             }
                         });
-                        TextView doItSelf = (TextView)view.findViewById(R.id.do_it_yourself);
-                        final LinearLayout inputLayout=(LinearLayout)view.findViewById(R.id.input_time);
+
                         doItSelf.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -396,12 +404,14 @@ public class MainActivity extends Activity {
                                 }else {
                                     inputLayout.setVisibility(View.VISIBLE);
                                 }
+
                             }
                         });
 
                         editText.addTextChangedListener(new TextWatcher() {
                             @Override
                             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
                             }
 
                             @Override
@@ -424,8 +434,11 @@ public class MainActivity extends Activity {
                                     selfTime = -2;
                                     navigationView.getMenu().findItem(R.id.timer_exit).setTitle("定时关闭");
                                 }else if(beforeSureTime==0){
-                                    beforeSureTime = Long.parseLong(editText.getText().toString());
-                                    selfTime = beforeSureTime*60*1000;
+                                    String str = editText.getText().toString();
+                                    if(!str.equals("")) {
+                                        beforeSureTime = Long.parseLong(editText.getText().toString());
+                                        selfTime = beforeSureTime * 60 * 1000;
+                                    }
                                 }else {
                                     selfTime = beforeSureTime*60*1000;
                                 }
@@ -439,11 +452,39 @@ public class MainActivity extends Activity {
                         }
                         Intent intent2=new Intent("exitApp");
                         sendBroadcast(intent2);
+                    case R.id.clean_cache:
+                        AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("清理缓存").setMessage("确认清理所有的缓存歌曲和歌词文件？")
+                                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        final String cachePath = Environment.getExternalStorageDirectory().getAbsolutePath() +
+                                                "/Android/data/com.example.myapp/cache/";
+                                        File file = new File(cachePath + "lrc-cache");
+                                        if (file.exists()) {
+                                            Log.i("文件", "存在 ");
+                                            File []fs1=file.listFiles();
+                                            for (File f : fs1){
+                                                f.delete();
+                                            }
+                                        }
+                                        File file1 = new File(cachePath + "video-cache");
+                                        if (file1.exists()) {
+                                            Log.i("文件", "存在 ");
+                                            File []fs2=file1.listFiles();
+                                            for (File f : fs2){
+                                                f.delete();
+                                            }
+                                        }
+                                        Toast.makeText(MainActivity.this, "清理缓存成功", Toast.LENGTH_LONG).show();
+                                    }
+                                }).setNegativeButton("取消",null).show();
                 }
                 return false;
             }
         });
     }
+
 
     public void clearAllClick(View []vs){
         for(View view:vs){

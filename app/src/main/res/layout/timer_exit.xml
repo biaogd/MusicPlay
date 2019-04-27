@@ -26,7 +26,7 @@
                 android:visibility="invisible"
                 android:id="@+id/image_id_1"
                 android:layout_alignParentRight="true"
-                android:src="@mipmap/ic_forward_50"/>
+                android:src="@mipmap/ic_correct_50"/>
         </RelativeLayout>
 
     </LinearLayout>
@@ -51,7 +51,7 @@
                 android:visibility="invisible"
                 android:id="@+id/image_id_2"
                 android:layout_alignParentRight="true"
-                android:src="@mipmap/ic_forward_50"/>
+                android:src="@mipmap/ic_correct_50"/>
         </RelativeLayout>
 
     </LinearLayout>
@@ -76,7 +76,7 @@
                 android:visibility="invisible"
                 android:id="@+id/image_id_3"
                 android:layout_alignParentRight="true"
-                android:src="@mipmap/ic_forward_50"/>
+                android:src="@mipmap/ic_correct_50"/>
         </RelativeLayout>
 
     </LinearLayout>
@@ -101,7 +101,7 @@
                 android:layout_alignParentRight="true"
                 android:visibility="invisible"
                 android:id="@+id/image_id_4"
-                android:src="@mipmap/ic_forward_50"/>
+                android:src="@mipmap/ic_correct_50"/>
         </RelativeLayout>
 
     </LinearLayout>
@@ -127,7 +127,7 @@
                 android:layout_alignParentRight="true"
                 android:visibility="invisible"
                 android:id="@+id/image_id_5"
-                android:src="@mipmap/ic_forward_50"/>
+                android:src="@mipmap/ic_correct_50"/>
         </RelativeLayout>
 
     </LinearLayout>
@@ -137,7 +137,7 @@
         android:text="自定义"
         android:textColor="@color/beautiful"
         android:id="@+id/do_it_yourself"
-        android:textSize="15sp"/>
+        android:textSize="18sp"/>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -582,7 +582,6 @@ public class MyService extends Service {
                 for (i = 0; i < mList.size(); i++) {
                     if (mList.get(i).getPath().equals(nowMusic.getPath())) {
                         mList.remove(i);
-                        Log.i("删除歌曲播放列表", "成功");
                         break;
                     }
                 }
@@ -602,7 +601,6 @@ public class MyService extends Service {
                 }
             }
             if (intent.getAction().equals("update_service_love")) {
-                Log.i("在service", "受到广播 update_service_love");
                 Music ms = (Music) intent.getSerializableExtra("music");
                 int i = 0;
                 if(mList!=null) {
