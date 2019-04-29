@@ -282,8 +282,8 @@ public class MyService extends Service {
             intent1.putExtra("now_music", music);
             sendBroadcast(intent1);
         }
-        int pos1 = sp.getInt("pos",0);
-        myPos = pos1;
+//        int pos1 = sp.getInt("pos",0);
+//        myPos = pos1;
     }
 
     public class App{
@@ -445,7 +445,7 @@ public class MyService extends Service {
             editor.putInt("current",player.getCurrentPosition());
             editor.putInt("order",order);               //保存播放顺序
             editor.putString("whichFragment",whichFragment);
-            editor.putInt("pos",myPos);
+//            editor.putInt("pos",myPos);
             editor.apply();
             System.out.println("数据已保存"+"listp="+listp);
         }
@@ -498,7 +498,6 @@ public class MyService extends Service {
                     if (music != null && bufferFlag == 1) {
                         if(first==0){
                             play();
-//                            player.seekTo(myPos);
                             pauseMusic();
                             first=1;
                         }else {
@@ -532,18 +531,7 @@ public class MyService extends Service {
                 intent2.putExtra("orderKey", order);
                 sendBroadcast(intent2);
             }
-//            if (intent.getAction().equals("status")) {
-//                Intent intent1 = new Intent();
-//                intent1.setAction("returnOrder");
-//                Bundle bundle = new Bundle();
-//                bundle.putInt("orderKey", order);
-//                if(first!=0) {
-//                    bundle.putInt("positions", player.getCurrentPosition());
-//                }
-//                first=2;
-//                intent1.putExtra("orderKeys", bundle);
-//                sendBroadcast(intent1);
-//            }
+
             if (intent.getAction().equals("pauseMusic")) {
                 String keys = intent.getStringExtra("keys");
                 if (keys.equals("pause")) {

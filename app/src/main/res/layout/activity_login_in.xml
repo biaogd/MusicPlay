@@ -36,6 +36,13 @@
             android:inputType="textPassword"
             android:id="@+id/user_pw"
             android:hint="密码"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/login_err_tv"
+        android:visibility="gone"
+        android:layout_marginBottom="10dp"
+        android:textSize="18sp"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

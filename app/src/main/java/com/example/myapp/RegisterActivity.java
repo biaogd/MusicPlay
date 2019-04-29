@@ -81,7 +81,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
                                     String status = response.body().string();
-                                    if(status.equals("falied")){
+                                    if(status.equals("failed")){
                                         handler.sendEmptyMessage(401);
                                     }else if(status.equals("successed")){
                                         handler.sendEmptyMessage(200);
