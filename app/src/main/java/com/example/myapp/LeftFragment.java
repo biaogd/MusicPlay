@@ -4,6 +4,7 @@ package com.example.myapp;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -14,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
+
+import com.example.myapp.self.MyLogin;
 
 
 /**
@@ -32,7 +35,6 @@ public class LeftFragment extends Fragment{
 
 
     @Override
-
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -49,40 +51,10 @@ public class LeftFragment extends Fragment{
         neartv.setText(neartv.getText()+"("+getCount("near_music_list")+")");
         downloadtv.setText(downloadtv.getText()+"("+getCount("download_music_list")+")");
         loveltv.setText(loveltv.getText()+"("+getCount("love_music_list")+")");
-        View.OnClickListener listener=new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentManager manager=getFragmentManager();
-                FragmentTransaction transaction=manager.beginTransaction();
-                switch (v.getId()){
-                    case R.id.localmusicbtn:
-                        if(localFragment == null){
-                            localFragment=new LocalMusicListFragment();
-                        }
-                        transaction.replace(R.id.other_frag,localFragment);
-                        break;
-                    case R.id.nearplay:
-                        if(nearFragment == null){
-                            nearFragment=new NearPlayListFragment();
-                        }
-                        transaction.replace(R.id.other_frag,nearFragment);
-                        break;
-                    case R.id.downloadlist:
-                        if(downloadFragment==null)
-                            downloadFragment = new DownloadMusicFragment();
-                        transaction.replace(R.id.other_frag,downloadFragment);
-                        break;
-                    case R.id.lovelist:
-                        if(loveFragment==null)
-                            loveFragment = new LoveMusicFragment();
-                        transaction.replace(R.id.other_frag,loveFragment);
-                        break;
-                    default:
-                        break;
-                }
-                transaction.commit();
-            }
-        };
+        LinearLayout userLayout=(LinearLayout)view.findViewById(R.id.music_user);
+        userLayout.setOnClickListener(listener);
+
+//        MyLogin.getMyLogin().setLogin(true);
 
         local.setOnClickListener(listener);
         near.setOnClickListener(listener);
@@ -92,6 +64,50 @@ public class LeftFragment extends Fragment{
         return view;
     }
 
+    View.OnClickListener listener=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            FragmentManager manager=getFragmentManager();
+            FragmentTransaction transaction=manager.beginTransaction();
+            switch (v.getId()){
+                case R.id.localmusicbtn:
+                    if(localFragment == null){
+                        localFragment=new LocalMusicListFragment();
+                    }
+                    transaction.replace(R.id.other_frag,localFragment);
+                    transaction.commit();
+                    break;
+                case R.id.nearplay:
+                    if(nearFragment == null){
+                        nearFragment=new NearPlayListFragment();
+                    }
+                    transaction.replace(R.id.other_frag,nearFragment);
+                    transaction.commit();
+                    break;
+                case R.id.downloadlist:
+                    if(downloadFragment==null)
+                        downloadFragment = new DownloadMusicFragment();
+                    transaction.replace(R.id.other_frag,downloadFragment);
+                    transaction.commit();
+                    break;
+                case R.id.lovelist:
+                    if(loveFragment==null)
+                        loveFragment = new LoveMusicFragment();
+                    transaction.replace(R.id.other_frag,loveFragment);
+                    transaction.commit();
+                    break;
+                case R.id.music_user:
+                    boolean logined = MyLogin.getMyLogin().isLogin();
+                    if(!logined){
+                        Intent intent=new Intent(getActivity(),Login_in.class);
+                        startActivity(intent);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
     public SQLiteDatabase getSQLiteDB(){
         return getActivity().openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
     }

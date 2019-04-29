@@ -25,8 +25,8 @@ public class MainFragment extends Fragment {
     private TextView right_textView;
 
 
-    private android.app.Fragment left_fragment;
-    private android.app.Fragment right_fragment;
+    private Fragment left_fragment;
+    private Fragment right_fragment;
     private Fragment searchFragment,fragment;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -65,8 +65,9 @@ public class MainFragment extends Fragment {
             setFragment(0);
         }
         view.setId(R.id.mainfragment);
-        LinearLayout layout=(LinearLayout)view.findViewById(R.id.linear_search);
-        layout.setOnClickListener(new View.OnClickListener() {
+        ImageButton searchBtn=(ImageButton)view.findViewById(R.id.main_search_btn);
+//        LinearLayout layout=(LinearLayout)view.findViewById(R.id.linear_search);
+        searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(searchFragment==null) {

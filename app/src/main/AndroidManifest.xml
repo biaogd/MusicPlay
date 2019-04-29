@@ -16,10 +16,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".AboutActivity" android:parentActivityName=".MainActivity"
-            android:label="关于MusicPlayer">
-
-        </activity>
+        <activity android:name=".RegisterActivity"
+            android:parentActivityName=".Login_in"
+            android:label="用户注册"/>
+        <activity android:name=".Login_in" />
+        <activity
+            android:name=".AboutActivity"
+            android:label="关于MusicPlayer"
+            android:parentActivityName=".MainActivity" />
 
         <service
             android:name=".DownloadService"
@@ -35,7 +39,9 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".MainActivity" android:launchMode="singleTask">
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

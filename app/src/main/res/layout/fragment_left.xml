@@ -9,9 +9,40 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="20dp"
         android:background="@color/base_color"
+        android:paddingHorizontal="20dp"
         >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/corner_user"
+            android:layout_marginVertical="10dp">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/music_user"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:id="@+id/music_user_image"
+                    android:src="@mipmap/ic_action_download"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:id="@+id/music_user_name"
+                    android:layout_gravity="center_vertical"
+                    android:text="hello world"/>
+            </LinearLayout>
+        </RelativeLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,7 +60,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="&#160;&#160;&#160;本地列表"
+                android:text="&#160;&#160;&#160;&#160;&#160;本地列表"
                 android:textSize="15sp"
                android:gravity="center_vertical"
                 android:id="@+id/localmusictv"
@@ -57,7 +88,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="&#160;&#160;&#160;最近播放"
+                android:text="&#160;&#160;&#160;&#160;&#160;最近播放"
                 android:textSize="15sp"
                 android:id="@+id/nearlisttv"
                 android:textColor="@color/color1"
@@ -83,7 +114,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="&#160;&#160;&#160;下载管理"
+                android:text="&#160;&#160;&#160;&#160;&#160;下载管理"
                 android:textSize="15sp"
                 android:textColor="@color/color1"
                 android:id="@+id/downloadlisttv"
@@ -93,7 +124,6 @@
             android:layout_width="match_parent"
             android:layout_height="0.1dp"
             android:background="@color/gray">
-
         </View>
         <LinearLayout
             android:layout_width="match_parent"
@@ -109,13 +139,13 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="&#160;&#160;&#160;我喜欢"
+                android:text="&#160;&#160;&#160;&#160;&#160;我喜欢"
                 android:textSize="15sp"
                 android:textColor="@color/color1"
                 android:id="@+id/lovelisttv"
                 android:gravity="center_vertical"/>
         </LinearLayout>
-
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>

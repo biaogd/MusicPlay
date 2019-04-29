@@ -131,6 +131,8 @@ public class MainActivity extends Activity {
     private long beforeSureTime=-1;
     private Timer timer;
     private TimerTask timerTask;
+    //用于应用启动时确定歌曲信息是否加载完毕
+    private int flag1=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //透明状态栏,android5.0及以上版本，修改状态栏白色，字体黑色
@@ -152,8 +154,6 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         versionCode = packageInfo.versionCode;
-
-        Log.i("该应用的版本号",versionCode+"");
 
         ps = getSharedPreferences("isFirst",MODE_PRIVATE);
         this.count=ps.getInt("count",-1);
@@ -205,6 +205,7 @@ public class MainActivity extends Activity {
         filter.addAction("startorpause");
         filter.addAction("exitApp");
         filter.addAction("musicList");
+        filter.addAction("nowMusic");
         registerReceiver(broadcast,filter);
         //0是暂停播放时显示，1是正在播放时显示
         playbtn=(ImageButton) findViewById(R.id.palybtn);
@@ -218,7 +219,6 @@ public class MainActivity extends Activity {
             }
 
         });
-
         LinearLayout layout=(LinearLayout)findViewById(R.id.about_play_song);
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -452,6 +452,7 @@ public class MainActivity extends Activity {
                         }
                         Intent intent2=new Intent("exitApp");
                         sendBroadcast(intent2);
+                        break;
                     case R.id.clean_cache:
                         AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
                         builder.setTitle("清理缓存").setMessage("确认清理所有的缓存歌曲和歌词文件？")
@@ -479,6 +480,7 @@ public class MainActivity extends Activity {
                                         Toast.makeText(MainActivity.this, "清理缓存成功", Toast.LENGTH_LONG).show();
                                     }
                                 }).setNegativeButton("取消",null).show();
+                        break;
                 }
                 return false;
             }
@@ -670,6 +672,11 @@ public class MainActivity extends Activity {
                     adapter2.notifyDataSetChanged();
                 }
             }
+            if(intent.getAction().equals("nowMusic")){
+                nowMusic = (Music)intent.getSerializableExtra("now_music");
+                nameTv.setText(nowMusic.getSongName());
+                authorTv.setText(nowMusic.getSongAuthor());
+            }
         }
     }
 
@@ -677,9 +684,9 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         //每次从新进入到这个Activity，发送广播到Service，获取当前的播放状态
-        Intent intent1=new Intent();
-        intent1.setAction("updateActivity");
-        sendBroadcast(intent1);
+            Intent intent1 = new Intent();
+            intent1.setAction("updateActivity");
+            sendBroadcast(intent1);
 
     }
 

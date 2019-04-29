@@ -58,30 +58,29 @@
                 android:src="@mipmap/ic_search_48"
                 android:layout_weight="1"
                 android:id="@+id/main_search_btn"
-                android:visibility="invisible"
                 android:background="@color/touming"
                 android:layout_gravity="center"
                 />
         </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginHorizontal="60dp"
-            android:paddingVertical="5dp"
-            android:background="@color/back1"
-            android:id="@+id/linear_search"
-            android:orientation="horizontal">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@mipmap/ic_search_32"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="搜索音乐"/>
-        </LinearLayout>
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="10dp"-->
+            <!--android:layout_marginHorizontal="60dp"-->
+            <!--android:paddingVertical="5dp"-->
+            <!--android:background="@color/back1"-->
+            <!--android:id="@+id/linear_search"-->
+            <!--android:orientation="horizontal">-->
+            <!--<ImageView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:src="@mipmap/ic_search_32"/>-->
+            <!--<TextView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:gravity="center"-->
+                <!--android:text="搜索音乐"/>-->
+        <!--</LinearLayout>-->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

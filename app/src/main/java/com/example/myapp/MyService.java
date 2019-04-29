@@ -8,6 +8,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences.Editor;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
@@ -25,6 +27,8 @@ import android.widget.RemoteViews;
 import com.danikula.videocache.CacheListener;
 import com.danikula.videocache.HttpProxyCacheServer;
 import com.example.myapp.self.Music;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -65,7 +69,10 @@ public class MyService extends Service {
     private AudioManager audioManager;
     private AudioAttributes audioAttributes;
     private AudioFocusRequest focusRequest;
-
+    private Gson gson;
+    private SharedPreferences.Editor editor;
+    private int first=0;
+    private int myPos=0;
     public MyService() {
     }
 
@@ -152,7 +159,6 @@ public class MyService extends Service {
                 public void onPrepared(MediaPlayer mp) {
                     music.setAlltime(mp.getDuration());
                     startMusic(mp);
-                    Log.i("在打开的哈桑","魂冲了一次");
                     bufferFlag = 1;
                 }
             });
@@ -181,7 +187,8 @@ public class MyService extends Service {
                     Bundle bundle = new Bundle();
 //                    Log.i("music总时间",""+music.getAlltime());
                     bundle.putInt("alltime", music.getAlltime());
-                    bundle.putInt("position", player.getCurrentPosition());
+                    myPos = player.getCurrentPosition();
+                    bundle.putInt("position", myPos);
                     bundle.putInt("cacheFlag",cacheFlag);
                     myIntent.putExtra("current", bundle);
                     myIntent.setAction("currentposition");
@@ -250,6 +257,33 @@ public class MyService extends Service {
         }else{
             audioManager.requestAudioFocus(focusChangeListener,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN);
         }
+        gson=new Gson();
+        //从磁盘中恢复数据
+        SharedPreferences sp=getSharedPreferences("exit_data",MODE_PRIVATE);
+        String mListJson = sp.getString("music_list","");
+        if(!mListJson.equals("")){
+            mList = gson.fromJson(mListJson,new TypeToken<List<Music>>(){}.getType());
+            Log.i("读取到歌曲列表",mList.size()+"");
+        }
+        int index = sp.getInt("listp",-1);
+        if(index!=-1){
+            listp=index;
+            music = mList.get(index);
+            Log.i("下标",index+"");
+        }
+        int myOrder = sp.getInt("order",-1);
+        if(myOrder!=-1){
+            this.order=myOrder;
+            bufferFlag=1;
+        }
+        whichFragment = sp.getString("whichFragment",null);
+        if(music!=null) {
+            Intent intent1 = new Intent("nowMusic");
+            intent1.putExtra("now_music", music);
+            sendBroadcast(intent1);
+        }
+        int pos1 = sp.getInt("pos",0);
+        myPos = pos1;
     }
 
     public class App{
@@ -402,6 +436,19 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        //程序退出时保存数据
+        if(mList!=null&&mList.size()>0&&music!=null) {
+            editor = getSharedPreferences("exit_data", MODE_PRIVATE).edit();
+            String mListJson = gson.toJson(mList);
+            editor.putString("music_list", mListJson);   //保存与音乐列表
+            editor.putInt("listp", listp);               //保存正在播放的音乐在list中的下标
+            editor.putInt("current",player.getCurrentPosition());
+            editor.putInt("order",order);               //保存播放顺序
+            editor.putString("whichFragment",whichFragment);
+            editor.putInt("pos",myPos);
+            editor.apply();
+            System.out.println("数据已保存"+"listp="+listp);
+        }
         if(music!=null){
             timer.cancel();
             timer1.cancel();
@@ -443,12 +490,20 @@ public class MyService extends Service {
                 play();
             }
             if (intent.getAction().equals("sop")) {
+                System.out.println("调用了歌曲播放暂停功能");
                 if (player.isPlaying() && bufferFlag == 1) {
                     pauseMusic();
                 } else {
                     //music对象不为空，为暂停状态
                     if (music != null && bufferFlag == 1) {
-                        startMusic(player);
+                        if(first==0){
+                            play();
+//                            player.seekTo(myPos);
+                            pauseMusic();
+                            first=1;
+                        }else {
+                            startMusic(player);
+                        }
                     }
                 }
             }
@@ -477,15 +532,18 @@ public class MyService extends Service {
                 intent2.putExtra("orderKey", order);
                 sendBroadcast(intent2);
             }
-            if (intent.getAction().equals("status")) {
-                Intent intent1 = new Intent();
-                intent1.setAction("returnOrder");
-                Bundle bundle = new Bundle();
-                bundle.putInt("orderKey", order);
-                bundle.putInt("positions", player.getCurrentPosition());
-                intent1.putExtra("orderKeys", bundle);
-                sendBroadcast(intent1);
-            }
+//            if (intent.getAction().equals("status")) {
+//                Intent intent1 = new Intent();
+//                intent1.setAction("returnOrder");
+//                Bundle bundle = new Bundle();
+//                bundle.putInt("orderKey", order);
+//                if(first!=0) {
+//                    bundle.putInt("positions", player.getCurrentPosition());
+//                }
+//                first=2;
+//                intent1.putExtra("orderKeys", bundle);
+//                sendBroadcast(intent1);
+//            }
             if (intent.getAction().equals("pauseMusic")) {
                 String keys = intent.getStringExtra("keys");
                 if (keys.equals("pause")) {
@@ -547,7 +605,7 @@ public class MyService extends Service {
                     Intent myIntent = new Intent();
                     Bundle bundle2 = new Bundle();
                     bundle2.putInt("alltime", music.getAlltime());
-                    bundle2.putInt("position", player.getCurrentPosition());
+                    bundle2.putInt("position", myPos);
                     myIntent.putExtra("current", bundle2);
                     myIntent.setAction("currentposition");
                     sendBroadcast(myIntent);
@@ -622,6 +680,8 @@ public class MyService extends Service {
                     Intent intent1 = new Intent();
                     intent1.setAction("getMusic");
                     intent1.putExtra("nowplaymusic", music);
+                    intent1.putExtra("pos", myPos);
+                    intent1.putExtra("order",order);
                     sendBroadcast(intent1);
                     //获取播放或暂停的播放状态
                     if (player.isPlaying()) {
@@ -640,6 +700,7 @@ public class MyService extends Service {
                     }
                 }
             }
+
         }
     }
 }

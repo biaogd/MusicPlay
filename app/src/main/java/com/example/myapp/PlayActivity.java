@@ -114,6 +114,7 @@ public class PlayActivity extends Activity {
     //一个歌曲歌词自动换行的个数
 
     private int spaces=0;
+    private int noewpos=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -189,9 +190,9 @@ public class PlayActivity extends Activity {
 
         playOrder = (ImageButton) findViewById(R.id.play_sort);
         //发送广播获取现在的播放顺序
-        Intent intentq = new Intent();
-        intentq.setAction("status");
-        sendBroadcast(intentq);
+//        Intent intentq = new Intent();
+//        intentq.setAction("status");
+//        sendBroadcast(intentq);
         playOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -354,9 +355,10 @@ public class PlayActivity extends Activity {
                 }
             }
         });
-        //发送广播到 service，获取音乐播放信息
+//        发送广播到 service，获取音乐播放信息
         Intent intent=new Intent("update_play_message");
         sendBroadcast(intent);
+//        getMusicLrc();
     }
 
     private SQLiteDatabase getSQLiteDB(){
@@ -717,21 +719,54 @@ public class PlayActivity extends Activity {
         Layout layout = lrcTextView.getLayout();
         final int height = scrollView.getHeight();
         int h1 = getLrcY(1)-getLrcY(0);
-        System.out.println("传过去的line = "+line+"--------------");
         line = line+spaces;
-        System.out.println("line = "+line+"--------------");
         end = layout.getLineEnd(line);
         start = layout.getLineStart(line);
-        System.out.println("start = "+start+";end = "+end);
         SpannableString span=new SpannableString(lrcTextView.getText().toString());
         span.setSpan(new ForegroundColorSpan(Color.BLUE),start,end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        System.out.println(span.toString().equals(lrcTextView.getText().toString()));
         lrcTextView.setText(span);
+    }
+
+    public void scrollToY(int pos2,final int height){
+        final int h1 = getLrcY(1)-getLrcY(0);
+        final int width = lrcTextView.getMeasuredWidth();
+        for (int i = 0; i < lrcBeanList.size(); i++) {
+            if (i == lrcBeanList.size() - 1) {
+                if (pos2 >= lrcBeanList.get(i).getBeginTime()) {
+                    line = i;
+                    String lrcs = lrcBeanList.get(i).getLrc();
+                    //获取到目前的总换行个数
+                    final int allCount = getAllCount(width,i);
+                    playingLrcColor(i+allCount);
+                    scrollView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
+                        }
+                    });
+                }
+            } else {
+                if (pos2 >= lrcBeanList.get(i).getBeginTime() && pos2 <= lrcBeanList.get(i + 1).getBeginTime()) {
+                    line = i;
+                    String lrcs = lrcBeanList.get(i).getLrc();
+                    //获取到目前的总换行个数
+                    final int allCount = getAllCount(width,i);
+                    playingLrcColor(line+allCount);
+                    scrollView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
+                        }
+                    });
+                }
+            }
+        }
     }
     private class MyBroadcast extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            final int height = scrollView.getHeight();
             if (intent.getAction().equals("currentposition")) {
                 Bundle bundle = intent.getBundleExtra("current");
                 nowPosition = bundle.getInt("position");
@@ -749,45 +784,46 @@ public class PlayActivity extends Activity {
                     seekBar.setSecondaryProgress(seekBar.getMax());
                 }
             }
+
             if (intent.getAction().equals("currentpositionper")) {
                 if (lrcBeanList != null) {
                     Bundle bundle = intent.getBundleExtra("current");
                     int myPosition = bundle.getInt("position");
-                    final int height = scrollView.getHeight();
-                    final int h1 = getLrcY(1)-getLrcY(0);
-                    final int width = lrcTextView.getMeasuredWidth();
-                    for (int i = 0; i < lrcBeanList.size(); i++) {
-                        if (i == lrcBeanList.size() - 1) {
-                            if (myPosition >= lrcBeanList.get(i).getBeginTime()) {
-                                line = i;
-                                String lrcs = lrcBeanList.get(i).getLrc();
-                                //获取到目前的总换行个数
-                                final int allCount = getAllCount(width,i);
-                                playingLrcColor(i+allCount);
-                                scrollView.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
-                                    }
-                                });
-                            }
-                        } else {
-                            if (myPosition >= lrcBeanList.get(i).getBeginTime() && myPosition <= lrcBeanList.get(i + 1).getBeginTime()) {
-                                line = i;
-                                String lrcs = lrcBeanList.get(i).getLrc();
-                                //获取到目前的总换行个数
-                                final int allCount = getAllCount(width,i);
-                                playingLrcColor(line+allCount);
-                                scrollView.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        System.out.println(allCount+"---------------"+line);
-                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
-                                    }
-                                });
-                            }
-                        }
-                    }
+//                    final int height = scrollView.getHeight();
+//                    final int h1 = getLrcY(1)-getLrcY(0);
+//                    final int width = lrcTextView.getMeasuredWidth();
+//                    for (int i = 0; i < lrcBeanList.size(); i++) {
+//                        if (i == lrcBeanList.size() - 1) {
+//                            if (myPosition >= lrcBeanList.get(i).getBeginTime()) {
+//                                line = i;
+//                                String lrcs = lrcBeanList.get(i).getLrc();
+//                                //获取到目前的总换行个数
+//                                final int allCount = getAllCount(width,i);
+//                                playingLrcColor(i+allCount);
+//                                scrollView.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
+//                                    }
+//                                });
+//                            }
+//                        } else {
+//                            if (myPosition >= lrcBeanList.get(i).getBeginTime() && myPosition <= lrcBeanList.get(i + 1).getBeginTime()) {
+//                                line = i;
+//                                String lrcs = lrcBeanList.get(i).getLrc();
+//                                //获取到目前的总换行个数
+//                                final int allCount = getAllCount(width,i);
+//                                playingLrcColor(line+allCount);
+//                                scrollView.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
+//                                    }
+//                                });
+//                            }
+//                        }
+//                    }
+                    scrollToY(myPosition,height);
                 }
             }
             if (intent.getAction().equals("startorpause")) {
@@ -829,7 +865,7 @@ public class PlayActivity extends Activity {
                         }
 //                        lrc = lrc + "\n\n\n\n";
                         lrcTextView.setText(lrc);
-                        final int height = scrollView.getHeight();
+//                        final int height = scrollView.getHeight();
                         int h1 = getLrcY(1)-getLrcY(0);
                         spaces = (height/h1)/2+1;
                         for(int i=0;i<(height/h1)/2+1;i++){
@@ -861,17 +897,6 @@ public class PlayActivity extends Activity {
                         }
                     }
                     adapter2.notifyDataSetChanged();
-                }
-            }
-            if (intent.getAction().equals("returnOrder")) {
-                Bundle bundle = intent.getBundleExtra("orderKeys");
-                int time1 = bundle.getInt("positions");
-                nowTime.setText(String.valueOf(transforTime(time1)));
-                seekBar.setProgress(time1);
-                int orders = bundle.getInt("orderKey");
-                Log.i("收到广播", "获取到了播放顺序");
-                if (orders != -1) {
-                    playOrder.setImageResource(orderImages[orders]);
                 }
             }
             if (intent.getAction().equals("getOrder")) {
@@ -914,8 +939,15 @@ public class PlayActivity extends Activity {
                 songName.setText(music.getSongName());
                 songAuthor.setText(music.getSongAuthor());
                 allTime.setText(String.valueOf(transforTime(music.getAlltime())));
-
+                int pos = intent.getIntExtra("pos",0);
+                noewpos = pos;
                 seekBar.setMax(music.getAlltime());
+                seekBar.setProgress(pos);
+                nowTime.setText(transforTime(pos));
+                int orders = intent.getIntExtra("order",-1);
+                if(orders!=-1){
+                    playOrder.setImageResource(orderImages[orders]);
+                }
                 if(music.getFlag()==0){
                     seekBar.setSecondaryProgress(music.getAlltime());
                 }
@@ -927,7 +959,7 @@ public class PlayActivity extends Activity {
                             lrc = lrc + bean.getLrc() + "\n";
                         }
                         lrcTextView.setText(lrc);
-                        final int height = scrollView.getHeight();
+//                        final int height = scrollView.getHeight();
                         int h1 = getLrcY(1)-getLrcY(0);
                         spaces = (height/h1)/2+1;
                         for(int i=0;i<(height/h1)/2+1;i++){
@@ -935,17 +967,11 @@ public class PlayActivity extends Activity {
                             lrc = lrc+"\n";
                         }
                         lrcTextView.setText(lrc);
-                        Log.i("可以容纳的行数",height/h1+"op"+height+"SDSADA"+h1+"opp"+lrcTextView.getHeight());
-                        scrollView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                scrollView.scrollTo(0, line);
-                            }
-                        });
+                        //歌词恢复到播放的地方
+                        scrollToY(pos,height);
                         haveLrc = true;
+                        System.out.println("本地有歌词");
                     } else {
-//                    getMusicLrc();
-//                        lrcTextView.setText("\n\n\n\n此歌曲暂无歌词");
                         getCacheMusicLrc();
                     }
                 }else {
@@ -1003,11 +1029,9 @@ public class PlayActivity extends Activity {
                     }else {
                         if (lrcBeanList != null) {
                             String lrc = "";
-//                            lrc = lrc + "\n\n\n\n";
                             for (LrcBean bean : lrcBeanList) {
                                 lrc = lrc + bean.getLrc() + "\n";
                             }
-//                            lrc = lrc + "\n\n\n\n";
                             lrcTextView.setText(lrc);
                             final int height = scrollView.getHeight();
                             int h1 = getLrcY(1)-getLrcY(0);
@@ -1017,12 +1041,7 @@ public class PlayActivity extends Activity {
                                 lrc = lrc+"\n";
                             }
                             lrcTextView.setText(lrc);
-                            scrollView.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    scrollView.scrollTo(0, line);
-                                }
-                            });
+                            scrollToY(noewpos,height);
                         }
                     }
                     break;
