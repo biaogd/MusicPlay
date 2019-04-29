@@ -1,12 +1,18 @@
 package com.example.myapp;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -30,6 +36,13 @@ public class Login_in extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(Build.VERSION.SDK_INT>=21){
+            Window window = getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(getResources().getColor(R.color.base_color));
+            //设置状态栏为亮色，即把状态栏字体颜色设置为黑色
+            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
         setContentView(R.layout.activity_login_in);
         cancelBtn=(Button)findViewById(R.id.login_cancel_btn);
         cancelBtn.setOnClickListener(listener);
@@ -42,6 +55,7 @@ public class Login_in extends Activity {
         registerTv.setOnClickListener(listener);
         errTv = (TextView)findViewById(R.id.login_err_tv);
         handler=new MyHandler();
+
     }
 
     View.OnClickListener listener=new View.OnClickListener() {
@@ -63,7 +77,7 @@ public class Login_in extends Activity {
                         RequestBody body=new FormBody.Builder().add("email",userId)
                                 .add("password",userPw).build();
                         String url = "http://www.mybiao.top:8000/music/user/login";
-                        String urls="http://192.168.0.106:8000/music/user/login";
+                        String urls="http://192.168.43.119:8000/music/user/login";
                         Request request=new Request.Builder().url(urls).post(body).build();
                         client.newCall(request).enqueue(new Callback() {
                             @Override
@@ -74,11 +88,19 @@ public class Login_in extends Activity {
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
                                 String str = response.body().string();
+                                String []strs = str.split("-");
+                                str = strs[0];
                                 if(str.equals("unActivation")){
                                     //用户未激活
                                     handler.sendEmptyMessage(100);
                                 }else if(str.equals("success")){
-                                    handler.sendEmptyMessage(200);
+                                    Message message=new Message();
+                                    message.what=200;
+                                    //获取用户id
+                                    message.arg1 = Integer.parseInt(strs[1]);
+                                    //获取用户名称
+                                    message.obj=new String(strs[2]);
+                                    handler.sendMessage(message);
                                 }else if(str.equals("noPassword")){
                                     handler.sendEmptyMessage(101);
                                 }else if(str.equals("unRegister")){
@@ -97,6 +119,12 @@ public class Login_in extends Activity {
             }
         }
     };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
     public class MyHandler extends Handler{
         @Override
         public void handleMessage(Message msg) {
@@ -111,7 +139,12 @@ public class Login_in extends Activity {
                     errTv.setVisibility(View.VISIBLE);
                     break;
                 case 200:
-
+                    int id = msg.arg1;
+                    String name = (String) msg.obj;
+                    Intent intent=new Intent("login_success");
+                    intent.putExtra("id",id);
+                    intent.putExtra("name",name);
+                    sendBroadcast(intent);
                     finish();
                     break;
                 case 101:

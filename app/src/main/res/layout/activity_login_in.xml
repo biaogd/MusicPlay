@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/base_color"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
     <RelativeLayout
         android:layout_width="match_parent"
@@ -11,14 +12,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:textSize="20sp"
+            android:textSize="18sp"
+            android:textColor="@color/color1"
             android:text="登录或注册"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/base_color"
+            android:background="?android:attr/selectableItemBackground"
             android:text="取消"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:layout_alignParentRight="true"
             android:id="@+id/login_cancel_btn"
             />

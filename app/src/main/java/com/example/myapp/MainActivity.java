@@ -61,6 +61,7 @@ import android.widget.Toast;
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.MyApp;
+import com.example.myapp.self.MyLogin;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -292,6 +293,11 @@ public class MainActivity extends Activity {
                 }
             }
         },0,1000);
+        if(!MyLogin.getMyLogin().isLogin()){
+            navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
+        }else {
+            navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用/注销登录");
+        }
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -447,11 +453,65 @@ public class MainActivity extends Activity {
                         });
                         break;
                     case R.id.exit:
-                        if(drawerLayout.isDrawerOpen(navigationView)){
-                            drawerLayout.closeDrawer(navigationView);
+                        View view1 = LayoutInflater.from(MainActivity.this).inflate(R.layout.exit_app,null);
+                        Button exitBtn = (Button)view1.findViewById(R.id.exit_app_id);
+                        Button outBtn = (Button)view1.findViewById(R.id.login_out_user_id);
+                        if(!MyLogin.getMyLogin().isLogin()){
+                            outBtn.setVisibility(View.GONE);
+                            navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
+                        }else {
+                            outBtn.setVisibility(View.VISIBLE);
+                            navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用/注销登录");
                         }
-                        Intent intent2=new Intent("exitApp");
-                        sendBroadcast(intent2);
+                        final PopupWindow popup=new PopupWindow(view1,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+                        popup.setFocusable(true);
+                        popup.setTouchable(true);
+                        popup.setOutsideTouchable(true);
+                        //设置弹出窗口背景变半透明，来高亮弹出窗口
+                        WindowManager.LayoutParams lps =getWindow().getAttributes();
+                        lps.alpha=0.5f;
+                        getWindow().setAttributes(lps);
+
+                        popup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                            @Override
+                            public void onDismiss() {
+                                //恢复透明度
+                                WindowManager.LayoutParams lps =getWindow().getAttributes();
+                                lps.alpha=1f;
+                                getWindow().setAttributes(lps);
+                            }
+                        });
+                        popup.showAtLocation(findViewById(R.id.music_list_menu),Gravity.BOTTOM,0,0);
+
+                        exitBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent2=new Intent("exitApp");
+                                sendBroadcast(intent2);
+                            }
+                        });
+
+                        outBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                SharedPreferences.Editor editor=getSharedPreferences("user_data",MODE_PRIVATE).edit();
+                                editor.clear();
+                                editor.apply();
+                                MyLogin.getMyLogin().setLogin(false);
+                                MyLogin.getMyLogin().setBean(null);
+                                if(!MyLogin.getMyLogin().isLogin()){
+                                    navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
+                                }else {
+                                    navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用/注销登录");
+                                }
+                                Intent intent2=new Intent("login_out");
+                                sendBroadcast(intent2);
+                                if(drawerLayout.isDrawerOpen(navigationView)){
+                                    drawerLayout.closeDrawer(navigationView);
+                                }
+                                popup.dismiss();
+                            }
+                        });
                         break;
                     case R.id.clean_cache:
                         AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
@@ -684,9 +744,14 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         //每次从新进入到这个Activity，发送广播到Service，获取当前的播放状态
-            Intent intent1 = new Intent();
-            intent1.setAction("updateActivity");
-            sendBroadcast(intent1);
+        Intent intent1 = new Intent();
+        intent1.setAction("updateActivity");
+        sendBroadcast(intent1);
+        if(!MyLogin.getMyLogin().isLogin()){
+            navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
+        }else {
+            navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用/注销登录");
+        }
 
     }
 
