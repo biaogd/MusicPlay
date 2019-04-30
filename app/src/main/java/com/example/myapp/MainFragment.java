@@ -60,6 +60,8 @@ public class MainFragment extends Fragment {
             this.which = bundle.getString("which");
             if(which!=null&&which.equals("right")){
                 setFragment(1);
+            }else {
+                setFragment(0);
             }
         }else {
             setFragment(0);

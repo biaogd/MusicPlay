@@ -216,11 +216,6 @@ public class RightFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-//        if(checkNet(getActivity())){
-//            searchMusic("");
-//        }else {
-//            Toast.makeText(getActivity(),"网络无法连接，稍后重试",Toast.LENGTH_LONG).show();
-//            Log.i("网络","无法连接");
-//        }
+
     }
 }

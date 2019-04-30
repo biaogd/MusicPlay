@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SelfFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/ic_left_64"
+                android:id="@+id/self_back_btn"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:background="@color/touming"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/self_name_tv"
+                android:layout_weight="30"
+                android:textColor="@color/color1"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="那一年"
+                android:textSize="18sp"/>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/ic_left_64"
+                android:visibility="invisible"
+                android:id="@+id/back_search_btns"
+                android:layout_weight="1"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/touming"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+                <ListView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@color/gray"
+                    android:id="@+id/self_list_view"
+                    android:dividerHeight="0.5dp">
+                </ListView>
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</FrameLayout>

@@ -14,6 +14,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +26,26 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapp.database.MyDao;
+import com.example.myapp.self.Music;
 import com.example.myapp.self.MyLogin;
+import com.example.myapp.self.SelfSongBean;
+import com.example.myapp.self.SongListBean;
 import com.example.myapp.self.UserBean;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 /**
@@ -33,12 +54,17 @@ import com.example.myapp.self.UserBean;
 public class LeftFragment extends Fragment{
 
 
-    private Fragment localFragment,nearFragment,downloadFragment,loveFragment;
+    private Fragment localFragment,nearFragment,downloadFragment,loveFragment,fragment;
     private LinearLayout local,near,download,love;
     private SQLiteDatabase db;
     private BroadcastReceiver broadcast;
-    private TextView userNameTv;
-    private ImageView userImage;
+    private TextView userNameTv,selfListTv;
+    private ImageView userImage,downForward;
+    private LinearLayout layout1;
+    private int []images=new int[]{R.mipmap.ic_right_32,R.mipmap.ic_bottom_32};
+    private Handler handler;
+
+    private Gson gson;
     public LeftFragment() {
         // Required empty public constructor
     }
@@ -48,7 +74,7 @@ public class LeftFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view=inflater.inflate(R.layout.fragment_left, container, false);
+        final View view=inflater.inflate(R.layout.fragment_left, container, false);
         local=(LinearLayout) view.findViewById(R.id.localmusicbtn);
         near = (LinearLayout) view.findViewById(R.id.nearplay);
         download = (LinearLayout) view.findViewById(R.id.downloadlist);
@@ -64,7 +90,7 @@ public class LeftFragment extends Fragment{
         LinearLayout userLayout=(LinearLayout)view.findViewById(R.id.music_user);
         userNameTv = (TextView)view.findViewById(R.id.music_user_name);
         userImage = (ImageView)view.findViewById(R.id.music_user_image);
-
+        downForward = (ImageView)view.findViewById(R.id.image_down_forward);
         userLayout.setOnClickListener(listener);
 
 //        MyLogin.getMyLogin().setLogin(true);
@@ -73,22 +99,55 @@ public class LeftFragment extends Fragment{
         near.setOnClickListener(listener);
         download.setOnClickListener(listener);
         love.setOnClickListener(listener);
+        layout1=(LinearLayout)view.findViewById(R.id.body);
+        selfListTv = (TextView)view.findViewById(R.id.create_list_tv);
+        selfListTv.setOnClickListener(listener);
         broadcast=new MyBroadcast();
         IntentFilter filter=new IntentFilter();
         filter.addAction("login_success");
         filter.addAction("login_out");
         getActivity().registerReceiver(broadcast,filter);
+        handler=new MyHandler();
+        gson=new Gson();
 
         SharedPreferences sp = getActivity().getSharedPreferences("user_data",Context.MODE_PRIVATE);
         String name = sp.getString("name",null);
         int id = sp.getInt("id",-1);
         if(name!=null&&id!=-1){
             userNameTv.setText(name);
-            UserBean userBean = new UserBean(id, name, 0);
+            String str=sp.getString("song_list",null);
+            List<SongListBean> songBeanList=new ArrayList<>();
+            if(str!=null){
+                String []songList=str.split(";");
+                for(String s:songList){
+                    final String []ss=s.split("\\*");
+                    View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list,null);
+                    TextView tv=(TextView)myView.findViewById(R.id.song_list_name);
+                    tv.setText(ss[1]);
+                    TextView tv1=(TextView)myView.findViewById(R.id.song_list_count);
+                    tv1.setText(ss[2]+"首");
+                    final SongListBean listBean=new SongListBean(Integer.parseInt(ss[0]),ss[1],Integer.parseInt(ss[2]));
+                    songBeanList.add(listBean);
+                    myView.setId(Integer.parseInt(ss[0]));
+                    myView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            System.out.println("正在启动一个新的页面");
+                            FragmentTransaction transaction=getFragmentManager().beginTransaction();
+                            if(fragment==null){
+                                fragment=SelfFragment.newInstance(listBean);
+                            }
+                            transaction.replace(R.id.other_frag,fragment);
+                            transaction.commit();
+                        }
+                    });
+                    layout1.addView(myView);
+                }
+            }
+            UserBean userBean = new UserBean(id, name, 0,songBeanList);
             MyLogin.getMyLogin().setBean(userBean);
             MyLogin.getMyLogin().setLogin(true);
             userImage.setImageResource(R.mipmap.ic_male_64);
-            userNameTv.setText(name);
         }else {
             MyLogin.getMyLogin().setLogin(false);
             userImage.setImageResource(R.mipmap.ic_login_64);
@@ -142,12 +201,83 @@ public class LeftFragment extends Fragment{
                         Toast.makeText(getActivity(),"未连接到网络",Toast.LENGTH_LONG).show();
                     }
                     break;
+                case R.id.create_list_tv:
+                    if(layout1.getVisibility()==View.GONE){
+                        layout1.setVisibility(View.VISIBLE);
+                        downForward.setImageResource(images[1]);
+                    }else {
+                        layout1.setVisibility(View.GONE);
+                        downForward.setImageResource(images[0]);
+                    }
+                    break;
                 default:
                     break;
             }
         }
     };
 
+    public void getListFromNet(final int id){
+        System.out.println("正在同步歌单");
+        OkHttpClient client=new OkHttpClient();
+        String url="http://192.168.43.119:8000/music/user/getSongs?list_id="+id;
+        Request request=new Request.Builder().url(url).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                handler.sendEmptyMessage(400);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String js = response.body().string();
+                List<Music> musicList=new ArrayList<>();
+                if(!js.equals("null")){
+                    JsonParser jsonParser=new JsonParser();
+                    JsonArray array=jsonParser.parse(js).getAsJsonArray();
+                    List<Music> loveList = new MyDao(getActivity()).findAll("love_music_list");
+                    List<Music> localList = new MyDao(getActivity()).findAll("local_music_list");
+                    for(JsonElement element:array){
+                        SelfSongBean bean=gson.fromJson(element,SelfSongBean.class);
+                        Music music=new Music(bean.getSongName(),bean.getSongAuthor(),0,bean.getSongPath(),0);
+                        int i=0;
+                        for(i =0;i<loveList.size();i++){
+                            Music m = loveList.get(i);
+                            if(music.getSongName().equals(m.getSongName())&&music.getSongAuthor().equals(m.getSongAuthor())){
+                                music.setLove(1);
+                                break;
+                            }
+                        }
+                        if(i>=loveList.size()){
+                            music.setLove(0);
+                        }
+                        music.setFlag(bean.getSongId());
+                        if(bean.getSongId()==0){
+                            int j = 0;
+                            for(j=0;j<localList.size();j++){
+                                Music music1=localList.get(j);
+                                if(music.getSongName().equals(music1.getSongName())&&music.getSongAuthor().equals(music1.getSongAuthor())){
+                                    music.setFlag(0);
+                                    break;
+                                }
+                            }
+                            //歌曲不再本地,也不在服务器上，无法播放
+                            if(j>=localList.size()){
+                                music.setFlag(-1);
+                            }
+                        }
+                        musicList.add(music);
+                    }
+
+                }
+                Message msg = new Message();
+                msg.what=200;
+                msg.arg1=id;
+                msg.obj = musicList;
+                handler.sendMessage(msg);
+            }
+        });
+
+    }
     public boolean checkNet(Context context){
         if(context!=null){
             ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -180,27 +310,78 @@ public class LeftFragment extends Fragment{
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals("login_success")){
                 int id = intent.getIntExtra("id",-1);
-                String name = intent.getStringExtra("name");
-                if(id!=-1&&name!=null) {
+                String str = intent.getStringExtra("name");
+                if(id!=-1&&str!=null) {
+                    String []strs = str.split("-");
+                    String name = strs[0];
+                    String []songList=strs[1].split(";");
+                    Log.i("歌单",strs[1]);
+                    List<SongListBean> songBeanList=new ArrayList<>();
+                    for(String s:songList){
+                        String []ss=s.split("\\*");
+                        View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list,null);
+                        TextView tv=(TextView)myView.findViewById(R.id.song_list_name);
+                        tv.setText(ss[1]);
+                        TextView tv1=(TextView)myView.findViewById(R.id.song_list_count);
+                        tv1.setText(ss[2]+"首");
+                        final SongListBean bean=new SongListBean(Integer.parseInt(ss[0]),ss[1],Integer.parseInt(ss[2]));
+                        songBeanList.add(bean);
+                        myView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                System.out.println("正在启动一个新的页面");
+                                FragmentTransaction transaction=getFragmentManager().beginTransaction();
+                                if(fragment==null){
+                                    fragment=SelfFragment.newInstance(bean);
+                                }
+                                transaction.replace(R.id.other_frag,fragment);
+                                transaction.commit();
+                            }
+                        });
+                        layout1.addView(myView);
+                        //完成登录后，加载自定义的歌单的歌词
+                        getListFromNet(Integer.parseInt(ss[0]));
+                    }
+
                     userNameTv.setText(name);
                     userImage.setImageResource(R.mipmap.ic_male_64);
-                    UserBean userBean = new UserBean(id, name, 0);
+                    UserBean userBean = new UserBean(id, name, 0,songBeanList);
                     MyLogin.getMyLogin().setBean(userBean);
                     MyLogin.getMyLogin().setLogin(true);
                     SharedPreferences.Editor editor = getActivity().getSharedPreferences("user_data", Context.MODE_PRIVATE).edit();
                     editor.putInt("id", id);
                     editor.putString("name", name);
+                    editor.putString("song_list",strs[1]);
                     editor.apply();
                 }else {
-                    Toast.makeText(getActivity(),"登录异常",Toast.LENGTH_LONG);
+                    Toast.makeText(getActivity(),"登录异常",Toast.LENGTH_LONG).show();
                 }
             }
             if(intent.getAction().equals("login_out")){
                 userImage.setImageResource(R.mipmap.ic_login_64);
                 userNameTv.setText("立即登录");
-
+                layout1.removeAllViews();
             }
         }
     }
-
+public class MyHandler extends Handler{
+    @Override
+    public void handleMessage(Message msg) {
+        super.handleMessage(msg);
+        switch (msg.what){
+            case 200:
+                System.out.println("保存歌单到本地");
+                List<Music> musicList = (ArrayList<Music>) msg.obj;
+                String songs = gson.toJson(musicList);
+                SharedPreferences.Editor editor = getActivity().getSharedPreferences("self_list", Context.MODE_PRIVATE).edit();
+                editor.putString("list_"+msg.arg1, songs);
+                editor.apply();
+                Log.i("获取到列表", musicList.toString());
+                break;
+            case 400:
+                Toast.makeText(getActivity(),"获取列表异常",Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+}
 }

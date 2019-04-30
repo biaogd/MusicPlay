@@ -12,6 +12,14 @@
         android:background="@color/base_color"
         android:paddingHorizontal="20dp"
         >
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -146,7 +154,59 @@
                 android:id="@+id/lovelisttv"
                 android:gravity="center_vertical"/>
         </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/gray"
+                />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ic_right_32"
+                    android:layout_gravity="center_vertical"
+                    android:id="@+id/image_down_forward"
+                    android:background="@color/touming"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="建立的歌单"
+                    android:layout_gravity="center_vertical"
+                    android:textColor="@color/color1"
+                    android:id="@+id/create_list_tv"
+                    />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@mipmap/ic_add_48"
+                        android:layout_alignParentRight="true"
+                        android:id="@+id/add_list_btn"
+                        android:background="@color/touming"/>
+                </RelativeLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/body">
+
+            </LinearLayout>
         </LinearLayout>
+        </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
 
 </FrameLayout>

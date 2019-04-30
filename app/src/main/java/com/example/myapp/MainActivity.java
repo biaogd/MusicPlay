@@ -497,6 +497,9 @@ public class MainActivity extends Activity {
                                 SharedPreferences.Editor editor=getSharedPreferences("user_data",MODE_PRIVATE).edit();
                                 editor.clear();
                                 editor.apply();
+                                SharedPreferences.Editor editor1=getSharedPreferences("self_list",MODE_PRIVATE).edit();
+                                editor1.clear();
+                                editor1.apply();
                                 MyLogin.getMyLogin().setLogin(false);
                                 MyLogin.getMyLogin().setBean(null);
                                 if(!MyLogin.getMyLogin().isLogin()){

@@ -1,6 +1,7 @@
 package com.example.myapp.self;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class UserBean implements Serializable {
 
@@ -8,11 +9,18 @@ public class UserBean implements Serializable {
     private int id;
     private String userName;
     private int imageName;
-
+    private List<SongListBean> songList;
     public UserBean(int id, String userName, int imageName) {
         this.id = id;
         this.userName = userName;
         this.imageName = imageName;
+    }
+
+    public UserBean(int id, String userName, int imageName, List<SongListBean> songList) {
+        this.id = id;
+        this.userName = userName;
+        this.imageName = imageName;
+        this.songList = songList;
     }
 
     public int getId() {
@@ -37,5 +45,13 @@ public class UserBean implements Serializable {
 
     public void setImageName(int imageName) {
         this.imageName = imageName;
+    }
+
+    public List<SongListBean> getSongList() {
+        return songList;
+    }
+
+    public void setSongList(List<SongListBean> songList) {
+        this.songList = songList;
     }
 }

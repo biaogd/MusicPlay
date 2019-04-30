@@ -24,10 +24,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.myapp.self.Music;
+import com.example.myapp.self.MyLogin;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class MyAdapter extends BaseAdapter {
 
@@ -197,7 +207,14 @@ public class MyAdapter extends BaseAdapter {
                        deleteLove(m,love_stable);
                    }
                    if(i == 1){
-                       insertMusic(m,love_stable);
+                       if(!MyLogin.getMyLogin().isLogin()){
+                           //如果没有用户登录，直接跳转到用户登录界面
+                           Intent intents=new Intent(context,Login_in.class);
+                           context.startActivity(intents);
+                       }else {
+                           syncSongList(m);
+                           insertMusic(m, love_stable);
+                       }
                    }
 //                   intent.putExtra("fragment","localFragment");
                 }else if(fragment instanceof NearPlayListFragment){
@@ -208,7 +225,14 @@ public class MyAdapter extends BaseAdapter {
                         deleteLove(m,love_stable);
                     }
                     if(i == 1){
-                        insertMusic(m,love_stable);
+                        if(!MyLogin.getMyLogin().isLogin()){
+                            //如果没有用户登录，直接跳转到用户登录界面
+                            Intent intents=new Intent(context,Login_in.class);
+                            context.startActivity(intents);
+                        }else {
+                            syncSongList(m);
+                            insertMusic(m, love_stable);
+                        }
                     }
                     if(m.getLove()==0){
                         m.setLove(1);
@@ -216,7 +240,6 @@ public class MyAdapter extends BaseAdapter {
                         m.setLove(0);
                     }
                     updateLove(m,local_stable);
-//                    intent.putExtra("fragment","nearFragment");
                 }else {
                     int i=updateLove(m,download_stable);
                     loveBtn.setImageResource(images[i]);
@@ -226,14 +249,20 @@ public class MyAdapter extends BaseAdapter {
                         deleteLove(m,love_stable);
                     }
                     if(i == 1){
-                        insertMusic(m,love_stable);
+                        if(!MyLogin.getMyLogin().isLogin()){
+                            //如果没有用户登录，直接跳转到用户登录界面
+                            Intent intents=new Intent(context,Login_in.class);
+                            context.startActivity(intents);
+                        }else {
+                            syncSongList(m);
+                            insertMusic(m, love_stable);
+                        }
                     }
                     if(m.getLove()==0){
                         m.setLove(1);
                     }else {
                         m.setLove(0);
                     }
-//                    intent.putExtra("fragment","downloadFragment");
                 }
                 intent.putExtra("music",m);
                 context.sendBroadcast(intent);
@@ -393,6 +422,44 @@ public class MyAdapter extends BaseAdapter {
         return convertView;
     }
 
+
+    public void syncSongList(Music m){
+//        if(!MyLogin.getMyLogin().isLogin()){
+//            //如果没有用户登录，直接跳转到用户登录界面
+//            Intent intent=new Intent(context,Login_in.class);
+//            context.startActivity(intent);
+//        }else {
+            OkHttpClient client = new OkHttpClient();
+            //用户id
+            int userId = MyLogin.getMyLogin().getBean().getId();
+            int listId= 1;
+            int mId=m.getFlag();
+            RequestBody body=new FormBody.Builder().add("user_id",String.valueOf(userId))
+                    .add("song_list_id",String.valueOf(listId))
+                    .add("music_id",String.valueOf(mId))
+                    .add("music_name",m.getSongName())
+                    .add("music_author",m.getSongAuthor())
+                    .add("music_path",m.getPath()).build();
+            Request request=new Request.Builder().post(body).url("").build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                }
+            });
+//        }
+    }
+    public void syncNetDelMusicFromSongList(Music music){
+        OkHttpClient client=new OkHttpClient();
+
+
+
+    }
     public void showDialog(final Music music, final int pos, final PopupWindow popup){
         index=-1;
         String []arr={"同时删除本地歌曲文件，包括歌词"};

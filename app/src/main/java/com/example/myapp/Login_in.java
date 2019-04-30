@@ -99,7 +99,7 @@ public class Login_in extends Activity {
                                     //获取用户id
                                     message.arg1 = Integer.parseInt(strs[1]);
                                     //获取用户名称
-                                    message.obj=new String(strs[2]);
+                                    message.obj=new String(strs[2]+"-"+strs[3]);
                                     handler.sendMessage(message);
                                 }else if(str.equals("noPassword")){
                                     handler.sendEmptyMessage(101);
