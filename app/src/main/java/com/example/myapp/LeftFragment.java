@@ -30,6 +30,7 @@ import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.MyLogin;
 import com.example.myapp.self.SelfSongBean;
+import com.example.myapp.self.SongIdBean;
 import com.example.myapp.self.SongListBean;
 import com.example.myapp.self.UserBean;
 import com.google.gson.Gson;
@@ -60,7 +61,7 @@ public class LeftFragment extends Fragment{
     private LinearLayout local,near,download,love;
     private SQLiteDatabase db;
     private BroadcastReceiver broadcast;
-    private TextView userNameTv,selfListTv;
+    private TextView userNameTv,selfListTv,loveTv;
     private ImageView userImage,downForward;
     private LinearLayout layout1;
     private int []images=new int[]{R.mipmap.ic_right_32,R.mipmap.ic_bottom_32};
@@ -88,12 +89,12 @@ public class LeftFragment extends Fragment{
         TextView localtv=(TextView)view.findViewById(R.id.localmusictv);
         TextView neartv = (TextView)view.findViewById(R.id.nearlisttv);
         TextView downloadtv = (TextView)view.findViewById(R.id.downloadlisttv);
-        TextView loveltv = (TextView)view.findViewById(R.id.lovelisttv);
+        loveTv = (TextView)view.findViewById(R.id.lovelisttv);
 
         localtv.setText(localtv.getText()+"("+myDao.allCount("local_music_list",0)+")");
         neartv.setText(neartv.getText()+"("+myDao.allCount("near_music_list",0)+")");
         downloadtv.setText(downloadtv.getText()+"("+myDao.allCount("download_music_list",0)+")");
-        loveltv.setText(loveltv.getText()+"("+myDao.allCount("love_music_list",0)+")");
+//        loveltv.setText(loveltv.getText()+"("+myDao.allCount("love_music_list",0)+")");
 
         LinearLayout userLayout=(LinearLayout)view.findViewById(R.id.music_user);
         userNameTv = (TextView)view.findViewById(R.id.music_user_name);
@@ -157,6 +158,7 @@ public class LeftFragment extends Fragment{
             MyLogin.getMyLogin().setLogin(true);
             MyLogin.getMyLogin().setLoveId(loveId);
             userImage.setImageResource(R.mipmap.ic_male_64);
+            loveTv.setText(loveTv.getText()+"("+myDao.allCount("love_music_list",0)+")");
         }else {
             MyLogin.getMyLogin().setLogin(false);
             userImage.setImageResource(R.mipmap.ic_login_64);
@@ -228,7 +230,7 @@ public class LeftFragment extends Fragment{
     public void getListFromNet(final SongListBean beans){
         System.out.println("正在同步歌单");
         OkHttpClient client=new OkHttpClient();
-        String url="http://192.168.0.106:8000/music/user/getSongs?list_id="+beans.getListId();
+        String url="http://192.168.43.119:8000/music/user/getSongs?list_id="+beans.getListId();
         Request request=new Request.Builder().url(url).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -239,7 +241,8 @@ public class LeftFragment extends Fragment{
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String js = response.body().string();
-                List<Music> musicList=new ArrayList<>();
+//                List<Music> musicList=new ArrayList<>();
+                List<SongIdBean> songIdBeans=new ArrayList<>();
                 if(!js.equals("null")){
                     JsonParser jsonParser=new JsonParser();
                     JsonArray array=jsonParser.parse(js).getAsJsonArray();
@@ -279,11 +282,13 @@ public class LeftFragment extends Fragment{
                                 music.setFlag(-1);
                             }
                         }
-                        musicList.add(music);
+//                        musicList.add(music);
+                        SongIdBean songIdBean=new SongIdBean(bean.getId(),music);
+                        songIdBeans.add(songIdBean);
                     }
 
                 }
-                NewBean newBean=new NewBean(musicList,beans);
+                NewBean newBean=new NewBean(songIdBeans,beans);
                 Message msg = new Message();
                 msg.what=200;
                 msg.obj = newBean;
@@ -295,20 +300,20 @@ public class LeftFragment extends Fragment{
     public class NewBean implements Serializable{
 
         private static final long serialVersionUID = 9147966199655146746L;
-        private List<Music> musicList;
+        private List<SongIdBean> songIdBeans;
         private SongListBean bean;
 
-        public NewBean(List<Music> musicList, SongListBean bean) {
-            this.musicList = musicList;
+        public NewBean(List<SongIdBean> songIdBeans, SongListBean bean) {
+            this.songIdBeans = songIdBeans;
             this.bean = bean;
         }
 
-        public List<Music> getMusicList() {
-            return musicList;
+        public List<SongIdBean> getSongIdBeans() {
+            return songIdBeans;
         }
 
-        public void setMusicList(List<Music> musicList) {
-            this.musicList = musicList;
+        public void setSongIdBeans(List<SongIdBean> songIdBeans) {
+            this.songIdBeans = songIdBeans;
         }
 
         public SongListBean getBean() {
@@ -331,13 +336,6 @@ public class LeftFragment extends Fragment{
     }
     public SQLiteDatabase getSQLiteDB(){
         return getActivity().openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
-    }
-
-    public int getCount(String tableName){
-        db=getSQLiteDB();
-        Cursor cursor=db.query(tableName,new String[]{"id"},null,null,null,null,null);
-        return cursor.getCount();
-
     }
 
     @Override
@@ -417,6 +415,8 @@ public class LeftFragment extends Fragment{
                 userImage.setImageResource(R.mipmap.ic_login_64);
                 userNameTv.setText("立即登录");
                 layout1.removeAllViews();
+                loveTv.setText("我喜欢");
+
             }
         }
     }
@@ -428,20 +428,20 @@ public class MyHandler extends Handler{
             case 200:
                 System.out.println("保存歌单到本地");
                 NewBean newBean = (NewBean) msg.obj;
-                List<Music> musicList=newBean.getMusicList();
+                List<SongIdBean> songIdBeans=newBean.getSongIdBeans();
                 SongListBean bean=newBean.getBean();
                 if(bean.getListName().equals("我喜欢")){
                     myDao.clearTable("love_music_list");
-                    for (Music m:musicList) {
-                        myDao.insertMusic(m,"love_music_list");
+                    for (SongIdBean songIdBean:songIdBeans) {
+                        myDao.insertMusic(songIdBean.getMusic(),"love_music_list");
                     }
                 }else {
                     //将歌曲信息插入到数据库当中
-                    for (Music m : musicList) {
-                        myDao.insertMusic(bean.getListId(), m, selfTable);
+                    for (SongIdBean bean1:songIdBeans) {
+                        myDao.insertMusic(bean.getListId(), bean1, selfTable);
                     }
                 }
-                Log.i("获取到列表", musicList.toString());
+                Log.i("获取到列表", songIdBeans.toString());
                 break;
             case 400:
                 Toast.makeText(getActivity(),"获取列表异常",Toast.LENGTH_SHORT).show();

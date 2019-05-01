@@ -215,6 +215,7 @@ public class MyAdapter extends BaseAdapter {
                                 }
                                 if (i == 0) {
                                     deleteLove(m, love_stable);
+                                    syncNetDelMusicFromSongList(m,bean);
                                 }
                                 if (i == 1) {
                                     insertMusic(m, love_stable);
@@ -227,6 +228,7 @@ public class MyAdapter extends BaseAdapter {
                             updateLove(m, download_stable);
                             if (i == 0) {
                                 deleteLove(m, love_stable);
+                                syncNetDelMusicFromSongList(m,bean);
                             }
                             if (i == 1) {
                                 insertMusic(m, love_stable);
@@ -245,6 +247,7 @@ public class MyAdapter extends BaseAdapter {
                             updateLove(m, near_stable);
                             if (i == 0) {
                                 deleteLove(m, love_stable);
+                                syncNetDelMusicFromSongList(m,bean);
                             }
                             if (i == 1) {
                                 insertMusic(m, love_stable);
@@ -299,69 +302,81 @@ public class MyAdapter extends BaseAdapter {
                 deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if(fragment instanceof LocalMusicListFragment){
-                            popupWindow.dismiss();
-                            index=-1;
-                            String []arr={"同时删除本地歌曲文件"};
-                            AlertDialog.Builder builder=new AlertDialog.Builder(context);
-                            builder.setTitle("确定删除歌曲?");
-                            builder.setSingleChoiceItems(arr, index, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    index = which;
-                                }
-                            });
-                            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if(index==0){
-                                        deleteLove(m,local_stable);
-                                        mList.remove(position);
-                                        notifyDataSetChanged();
-                                        Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
-                                        File file=new File(m.getPath());
-                                        if(file.exists()){
-                                            file.delete();
-                                        }
-                                        System.out.println(m.getPath());
-                                        File file1=new File(m.getPath().split("\\.")[0]+".lrc");
-                                        if(file1.exists()){
-                                            file1.delete();
-                                        }
-                                    }else{
-                                        deleteLove(m,local_stable);
-//                                        popupWindow.dismiss();
-                                        mList.remove(position);
-                                        notifyDataSetChanged();
+                            if (fragment instanceof LocalMusicListFragment) {
+                                popupWindow.dismiss();
+                                index = -1;
+                                String[] arr = {"同时删除本地歌曲文件"};
+                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                builder.setTitle("确定删除歌曲?");
+                                builder.setSingleChoiceItems(arr, index, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        index = which;
                                     }
+                                });
+                                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        if (index == 0) {
+                                            deleteLove(m, local_stable);
+                                            mList.remove(position);
+                                            notifyDataSetChanged();
+                                            Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                                            File file = new File(m.getPath());
+                                            if (file.exists()) {
+                                                file.delete();
+                                            }
+                                            System.out.println(m.getPath());
+                                            File file1 = new File(m.getPath().split("\\.")[0] + ".lrc");
+                                            if (file1.exists()) {
+                                                file1.delete();
+                                            }
+                                        } else {
+                                            deleteLove(m, local_stable);
+//                                        popupWindow.dismiss();
+                                            mList.remove(position);
+                                            notifyDataSetChanged();
+                                        }
+                                    }
+                                }).setNegativeButton("取消", null);
+                                builder.create().show();
+                            } else if (fragment instanceof NearPlayListFragment) {
+                                deleteLove(m, near_stable);
+                                popupWindow.dismiss();
+                                mList.remove(position);
+                                notifyDataSetChanged();
+                                Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                            } else if (fragment instanceof DownloadMusicFragment) {
+                                deleteLove(m, download_stable);
+                                popupWindow.dismiss();
+                                mList.remove(position);
+                                notifyDataSetChanged();
+                                Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                            } else {
+                                popupWindow.dismiss();
+                                if(checkNet(context)) {
+                                    if (!MyLogin.getMyLogin().isLogin()){
+                                        Intent intent=new Intent(context,Login_in.class);
+                                        context.startActivity(intent);
+                                    }else {
+                                        updateLove(m, near_stable);
+                                        deleteLove(m, love_stable);
+                                        //同时删除网络歌曲
+                                        syncNetDelMusicFromSongList(m,new SongListBean(MyLogin.getMyLogin().getLoveId(),null,0));
+                                        updateLove(m, local_stable);
+                                        updateLove(m, download_stable);
+                                        mList.remove(position);
+                                        notifyDataSetChanged();
+                                        Intent intent = new Intent("update_service_love");
+                                        intent.putExtra("music", m);
+                                        context.sendBroadcast(intent);
+                                        Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                                    }
+                                }else {
+                                    Toast.makeText(context, "未连接到网络", Toast.LENGTH_SHORT).show();
+
                                 }
-                            }).setNegativeButton("取消",null);
-                            builder.create().show();
-                        }else if(fragment instanceof NearPlayListFragment){
-                            deleteLove(m,near_stable);
-                            popupWindow.dismiss();
-                            mList.remove(position);
-                            notifyDataSetChanged();
-                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
-                        }else if(fragment instanceof DownloadMusicFragment){
-                            deleteLove(m,download_stable);
-                            popupWindow.dismiss();
-                            mList.remove(position);
-                            notifyDataSetChanged();
-                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
-                        }else {
-                            popupWindow.dismiss();
-                            updateLove(m,near_stable);
-                            deleteLove(m,love_stable);
-                            updateLove(m,local_stable);
-                            updateLove(m,download_stable);
-                            mList.remove(position);
-                            notifyDataSetChanged();
-                            Intent intent=new Intent("update_service_love");
-                            intent.putExtra("music",m);
-                            context.sendBroadcast(intent);
-                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
-                        }
+                            }
                     }
                 });
                 Button cancelBtn =(Button)view.findViewById(R.id.cancelBtn);
@@ -414,7 +429,7 @@ public class MyAdapter extends BaseAdapter {
     }
 
 
-    public void syncSongList(Music m, SongListBean bean) {
+    private void syncSongList(Music m, SongListBean bean) {
         OkHttpClient client = new OkHttpClient();
         //用户id
         int userId = MyLogin.getMyLogin().getBean().getId();
@@ -427,7 +442,7 @@ public class MyAdapter extends BaseAdapter {
                 .add("music_author", m.getSongAuthor())
                 .add("music_path", m.getPath()).build();
         String url = "http://www.mybiao.top:8000/music/user/syncAddMusic";
-        String urls = "http://192.168.0.106:8000/music/user/syncAddMusic";
+        String urls = "http://192.168.43.119:8000/music/user/syncAddMusic";
         Request request = new Request.Builder().post(body).url(urls).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -441,10 +456,28 @@ public class MyAdapter extends BaseAdapter {
             }
         });
     }
-    public void syncNetDelMusicFromSongList(Music music){
+    private void syncNetDelMusicFromSongList(Music music,SongListBean bean){
         OkHttpClient client=new OkHttpClient();
+        int listId = bean.getListId();
+        String songName = music.getSongName();
+        String songAuthor = music.getSongAuthor();
+        RequestBody body=new FormBody.Builder().add("listId",String.valueOf(listId))
+                .add("songName",songName)
+                .add("songAuthor",songAuthor).build();
+        String url = "http://www.mybiao.top:8000/music/user/syncDelMusic";
+        String urls = "http://192.168.43.119:8000/music/user/syncDelMusic";
+        Request request=new Request.Builder().url(urls).post(body).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
 
+            }
 
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+            }
+        });
 
     }
 

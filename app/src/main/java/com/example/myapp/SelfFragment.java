@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
+import com.example.myapp.self.SongIdBean;
 import com.example.myapp.self.SongListBean;
 import com.google.gson.Gson;
 
@@ -28,7 +29,7 @@ import java.util.List;
 public class SelfFragment extends Fragment {
     private Fragment fragment;
     private ListView listView;
-    private List<Music> musicList;
+    private List<SongIdBean> idBeanList;
     private ImageButton backBtn;
     private TextView titleTv;
     private BaseAdapter adapter;
@@ -82,7 +83,7 @@ public class SelfFragment extends Fragment {
         Bundle bundle=getArguments();
         SongListBean bean = (SongListBean) bundle.getSerializable("which");
         if(bean!=null) {
-            musicList = myDao.findAll(bean.getListId(), selfTable);
+            idBeanList = myDao.findAll(bean.getListId(), selfTable);
         }
         backBtn = (ImageButton)view.findViewById(R.id.self_back_btn);
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -101,7 +102,7 @@ public class SelfFragment extends Fragment {
             titleTv.setText(bean.getListName());
         }
         listView=(ListView)view.findViewById(R.id.self_list_view);
-        adapter=new MyNetAdapter(getActivity(),musicList);
+        adapter=new SelfAdapter(getActivity(),idBeanList);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

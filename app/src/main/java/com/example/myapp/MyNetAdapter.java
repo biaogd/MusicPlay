@@ -21,6 +21,8 @@ import android.widget.TextView;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
+import com.example.myapp.self.MyLogin;
+import com.example.myapp.self.SongListBean;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,8 +31,12 @@ import java.net.ConnectException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MyNetAdapter extends BaseAdapter {
@@ -121,6 +127,7 @@ public class MyNetAdapter extends BaseAdapter {
                         intent1.setAction("updatelove");
                         context.sendBroadcast(intent1);
                         updateLove(music,"near_music_list");
+                        syncSongList(music,new SongListBean(MyLogin.getMyLogin().getLoveId(),null,0));
                         popupWindow.dismiss();
                     }
                 });
@@ -165,6 +172,35 @@ public class MyNetAdapter extends BaseAdapter {
             holder.songAuthor.setTextColor(context.getResources().getColor(R.color.gray));
         }
         return convertView;
+    }
+
+
+    private void syncSongList(Music m, SongListBean bean) {
+        OkHttpClient client = new OkHttpClient();
+        //用户id
+        int userId = MyLogin.getMyLogin().getBean().getId();
+        int listId = bean.getListId();
+        int mId = m.getFlag();
+        RequestBody body = new FormBody.Builder().add("user_id", String.valueOf(userId))
+                .add("song_list_id", String.valueOf(listId))
+                .add("music_id", String.valueOf(mId))
+                .add("music_name", m.getSongName())
+                .add("music_author", m.getSongAuthor())
+                .add("music_path", m.getPath()).build();
+        String url = "http://www.mybiao.top:8000/music/user/syncAddMusic";
+        String urls = "http://192.168.43.119:8000/music/user/syncAddMusic";
+        Request request = new Request.Builder().post(body).url(urls).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.i("上传新的歌曲","成功");
+            }
+        });
     }
 
     private SQLiteDatabase getSQLiteDB(){
