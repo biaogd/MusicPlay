@@ -127,7 +127,6 @@ public class LocalMusicListFragment extends BaseFragment {
                 db.delete(local_stable,null,null);
                 for (Music m:mylist){
                     insertMusic(m,local_stable);
-                    Log.i("歌曲",m.getSongName()+":插入数据库成功");
                 }
                 handler.sendEmptyMessage(100);
             }

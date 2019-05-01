@@ -77,7 +77,7 @@ public class Login_in extends Activity {
                         RequestBody body=new FormBody.Builder().add("email",userId)
                                 .add("password",userPw).build();
                         String url = "http://www.mybiao.top:8000/music/user/login";
-                        String urls="http://192.168.43.119:8000/music/user/login";
+                        String urls="http://192.168.0.106:8000/music/user/login";
                         Request request=new Request.Builder().url(urls).post(body).build();
                         client.newCall(request).enqueue(new Callback() {
                             @Override

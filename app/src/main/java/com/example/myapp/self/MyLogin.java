@@ -3,6 +3,7 @@ package com.example.myapp.self;
 public class MyLogin {
     private boolean logined;
     private UserBean bean;
+    private int loveId;
     private static MyLogin myLogin;
     public static MyLogin getMyLogin(){
         if(myLogin==null){
@@ -25,5 +26,13 @@ public class MyLogin {
 
     public void setBean(UserBean bean) {
         this.bean = bean;
+    }
+
+    public int getLoveId() {
+        return loveId;
+    }
+
+    public void setLoveId(int loveId) {
+        this.loveId = loveId;
     }
 }

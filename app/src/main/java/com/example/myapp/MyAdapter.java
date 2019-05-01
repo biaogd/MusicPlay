@@ -10,6 +10,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.app.Fragment;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 
 import com.example.myapp.self.Music;
 import com.example.myapp.self.MyLogin;
+import com.example.myapp.self.SongListBean;
 
 import java.io.File;
 import java.io.IOException;
@@ -185,87 +188,80 @@ public class MyAdapter extends BaseAdapter {
         loveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent("update_service_love");
-                if(fragment instanceof LoveMusicFragment){
-                    updateLove(m,near_stable);
-                    deleteLove(m,love_stable);
-                    updateLove(m,local_stable);
-                    updateLove(m,download_stable);
-                    mList.remove(position);
-                    notifyDataSetChanged();
-                }else if(fragment instanceof  LocalMusicListFragment){
-                   int i= updateLove(m,local_stable);
-                   loveBtn.setImageResource(images[i]);
-                   updateLove(m,near_stable);
-                   updateLove(m,download_stable);
-                   if(m.getLove()==0){
-                       m.setLove(1);
-                   }else {
-                       m.setLove(0);
-                   }
-                   if(i == 0){
-                       deleteLove(m,love_stable);
-                   }
-                   if(i == 1){
-                       if(!MyLogin.getMyLogin().isLogin()){
-                           //如果没有用户登录，直接跳转到用户登录界面
-                           Intent intents=new Intent(context,Login_in.class);
-                           context.startActivity(intents);
-                       }else {
-                           syncSongList(m);
-                           insertMusic(m, love_stable);
-                       }
-                   }
+                if (checkNet(context)) {
+                    if (!MyLogin.getMyLogin().isLogin()) {
+                        //如果没有用户登录，直接跳转到用户登录界面
+                        Intent intents = new Intent(context, Login_in.class);
+                        context.startActivity(intents);
+                    }else {
+                        Intent intent = new Intent("update_service_love");
+                        SongListBean bean=new SongListBean(MyLogin.getMyLogin().getLoveId(),null,0);
+                        if (fragment instanceof LoveMusicFragment) {
+                            updateLove(m, near_stable);
+                            deleteLove(m, love_stable);
+                            updateLove(m, local_stable);
+                            updateLove(m, download_stable);
+                            mList.remove(position);
+                            notifyDataSetChanged();
+                        } else if (fragment instanceof LocalMusicListFragment) {
+                                int i = updateLove(m, local_stable);
+                                loveBtn.setImageResource(images[i]);
+                                updateLove(m, near_stable);
+                                updateLove(m, download_stable);
+                                if (m.getLove() == 0) {
+                                    m.setLove(1);
+                                } else {
+                                    m.setLove(0);
+                                }
+                                if (i == 0) {
+                                    deleteLove(m, love_stable);
+                                }
+                                if (i == 1) {
+                                    insertMusic(m, love_stable);
+                                    syncSongList(m,bean);
+                                }
 //                   intent.putExtra("fragment","localFragment");
-                }else if(fragment instanceof NearPlayListFragment){
-                    int i=updateLove(m,near_stable);
-                    loveBtn.setImageResource(images[i]);
-                    updateLove(m,download_stable);
-                    if(i == 0){
-                        deleteLove(m,love_stable);
-                    }
-                    if(i == 1){
-                        if(!MyLogin.getMyLogin().isLogin()){
-                            //如果没有用户登录，直接跳转到用户登录界面
-                            Intent intents=new Intent(context,Login_in.class);
-                            context.startActivity(intents);
-                        }else {
-                            syncSongList(m);
-                            insertMusic(m, love_stable);
+                        } else if (fragment instanceof NearPlayListFragment) {
+                            int i = updateLove(m, near_stable);
+                            loveBtn.setImageResource(images[i]);
+                            updateLove(m, download_stable);
+                            if (i == 0) {
+                                deleteLove(m, love_stable);
+                            }
+                            if (i == 1) {
+                                insertMusic(m, love_stable);
+                                syncSongList(m,bean);
+                            }
+                            if (m.getLove() == 0) {
+                                m.setLove(1);
+                            } else {
+                                m.setLove(0);
+                            }
+                            updateLove(m, local_stable);
+                        } else {
+                            int i = updateLove(m, download_stable);
+                            loveBtn.setImageResource(images[i]);
+                            updateLove(m, local_stable);
+                            updateLove(m, near_stable);
+                            if (i == 0) {
+                                deleteLove(m, love_stable);
+                            }
+                            if (i == 1) {
+                                insertMusic(m, love_stable);
+                                syncSongList(m,bean);
+                            }
+                            if (m.getLove() == 0) {
+                                m.setLove(1);
+                            } else {
+                                m.setLove(0);
+                            }
                         }
+                        intent.putExtra("music", m);
+                        context.sendBroadcast(intent);
                     }
-                    if(m.getLove()==0){
-                        m.setLove(1);
-                    }else {
-                        m.setLove(0);
-                    }
-                    updateLove(m,local_stable);
                 }else {
-                    int i=updateLove(m,download_stable);
-                    loveBtn.setImageResource(images[i]);
-                    updateLove(m,local_stable);
-                    updateLove(m,near_stable);
-                    if(i == 0){
-                        deleteLove(m,love_stable);
-                    }
-                    if(i == 1){
-                        if(!MyLogin.getMyLogin().isLogin()){
-                            //如果没有用户登录，直接跳转到用户登录界面
-                            Intent intents=new Intent(context,Login_in.class);
-                            context.startActivity(intents);
-                        }else {
-                            syncSongList(m);
-                            insertMusic(m, love_stable);
-                        }
-                    }
-                    if(m.getLove()==0){
-                        m.setLove(1);
-                    }else {
-                        m.setLove(0);
-                    }
+                    Toast.makeText(context,"网络无法连接",Toast.LENGTH_LONG).show();
                 }
-                intent.putExtra("music",m);
-                context.sendBroadcast(intent);
             }
         });
         loveBtn.setImageResource(images[m.getLove()]);
@@ -304,12 +300,7 @@ public class MyAdapter extends BaseAdapter {
                     @Override
                     public void onClick(View v) {
                         if(fragment instanceof LocalMusicListFragment){
-//                            deleteLove(m,local_stable);
                             popupWindow.dismiss();
-//                            mList.remove(position);
-//                            notifyDataSetChanged();
-//                            Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
-//                            showDialog(m,position,popupWindow);
                             index=-1;
                             String []arr={"同时删除本地歌曲文件"};
                             AlertDialog.Builder builder=new AlertDialog.Builder(context);
@@ -423,42 +414,49 @@ public class MyAdapter extends BaseAdapter {
     }
 
 
-    public void syncSongList(Music m){
-//        if(!MyLogin.getMyLogin().isLogin()){
-//            //如果没有用户登录，直接跳转到用户登录界面
-//            Intent intent=new Intent(context,Login_in.class);
-//            context.startActivity(intent);
-//        }else {
-            OkHttpClient client = new OkHttpClient();
-            //用户id
-            int userId = MyLogin.getMyLogin().getBean().getId();
-            int listId= 1;
-            int mId=m.getFlag();
-            RequestBody body=new FormBody.Builder().add("user_id",String.valueOf(userId))
-                    .add("song_list_id",String.valueOf(listId))
-                    .add("music_id",String.valueOf(mId))
-                    .add("music_name",m.getSongName())
-                    .add("music_author",m.getSongAuthor())
-                    .add("music_path",m.getPath()).build();
-            Request request=new Request.Builder().post(body).url("").build();
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
+    public void syncSongList(Music m, SongListBean bean) {
+        OkHttpClient client = new OkHttpClient();
+        //用户id
+        int userId = MyLogin.getMyLogin().getBean().getId();
+        int listId = bean.getListId();
+        int mId = m.getFlag();
+        RequestBody body = new FormBody.Builder().add("user_id", String.valueOf(userId))
+                .add("song_list_id", String.valueOf(listId))
+                .add("music_id", String.valueOf(mId))
+                .add("music_name", m.getSongName())
+                .add("music_author", m.getSongAuthor())
+                .add("music_path", m.getPath()).build();
+        String url = "http://www.mybiao.top:8000/music/user/syncAddMusic";
+        String urls = "http://192.168.0.106:8000/music/user/syncAddMusic";
+        Request request = new Request.Builder().post(body).url(urls).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
 
-                }
+            }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-
-                }
-            });
-//        }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.i("上传新的歌曲","成功");
+            }
+        });
     }
     public void syncNetDelMusicFromSongList(Music music){
         OkHttpClient client=new OkHttpClient();
 
 
 
+    }
+
+    public boolean checkNet(Context context){
+        if(context!=null){
+            ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo info=manager.getActiveNetworkInfo();
+            if(info!=null){
+                return info.isConnected();
+            }
+        }
+        return false;
     }
     public void showDialog(final Music music, final int pos, final PopupWindow popup){
         index=-1;

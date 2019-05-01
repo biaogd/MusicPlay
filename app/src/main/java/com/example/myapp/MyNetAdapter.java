@@ -153,8 +153,16 @@ public class MyNetAdapter extends BaseAdapter {
         });
         if(music.getFlag()==0){
             holder.flagBtn.setImageResource(R.mipmap.ic_phone_20);
-        }else {
+            holder.songName.setTextColor(context.getResources().getColor(R.color.color1));
+            holder.songAuthor.setTextColor(context.getResources().getColor(R.color.color1));
+        }else if(music.getFlag()==1){
             holder.flagBtn.setImageResource(R.mipmap.ic_cloud_20);
+            holder.songName.setTextColor(context.getResources().getColor(R.color.color1));
+            holder.songAuthor.setTextColor(context.getResources().getColor(R.color.color1));
+        }else {
+            holder.flagBtn.setImageResource(R.mipmap.ic_phone_20);
+            holder.songName.setTextColor(context.getResources().getColor(R.color.gray));
+            holder.songAuthor.setTextColor(context.getResources().getColor(R.color.gray));
         }
         return convertView;
     }

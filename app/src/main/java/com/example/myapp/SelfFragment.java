@@ -2,23 +2,22 @@ package com.example.myapp;
 
 
 import android.app.FragmentTransaction;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.SongListBean;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
 
@@ -34,6 +33,9 @@ public class SelfFragment extends Fragment {
     private TextView titleTv;
     private BaseAdapter adapter;
     private Gson gson;
+    private MyDao myDao;
+    private static final String selfTable="self_music_list";
+
     //使用getArguments()和setArguments()在fragment之间传递信息
     public static Fragment newInstance(SongListBean bean){
         SelfFragment selfFragment=new SelfFragment();
@@ -75,12 +77,13 @@ public class SelfFragment extends Fragment {
             }
         });
         gson=new Gson();
+        myDao =new MyDao(getActivity());
         //根据传递过来的参数加载不同的音乐列表
         Bundle bundle=getArguments();
         SongListBean bean = (SongListBean) bundle.getSerializable("which");
-        SharedPreferences sp=getActivity().getSharedPreferences("self_list", Context.MODE_PRIVATE);
-        musicList = gson.fromJson(sp.getString("list_"+bean.getListId(),null),new TypeToken<List<Music>>(){}.getType());
-
+        if(bean!=null) {
+            musicList = myDao.findAll(bean.getListId(), selfTable);
+        }
         backBtn = (ImageButton)view.findViewById(R.id.self_back_btn);
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,6 +103,12 @@ public class SelfFragment extends Fragment {
         listView=(ListView)view.findViewById(R.id.self_list_view);
         adapter=new MyNetAdapter(getActivity(),musicList);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            }
+        });
         return view;
     }
 

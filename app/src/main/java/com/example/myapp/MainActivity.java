@@ -106,6 +106,9 @@ public class MainActivity extends Activity {
     private String nearsql="create table near_music_list(id integer primary key autoincrement,song_name text,song_author text,all_time integer,path text,song_size integer,flag integer default 0,love integer default 0);";
     private String downloadsql="create table download_music_list(id integer primary key autoincrement,song_name text,song_author text,all_time integer,song_size integer,path text,flag integer default 0,love integer default 0);";
     private String lovesql="create table love_music_list(id integer primary key autoincrement,song_name text,song_author text,all_time integer, path text,song_size integer,flag integer default 0,love integer default 0)";
+    //保存自定义歌单的歌曲信息
+    //list_id歌单的id
+    private String selfsql="create table self_music_list(id integer primary key autoincrement,list_id integer,song_name text,song_author text,all_time integer, path text,song_size integer,flag integer default 0,love integer default 0)";
     //要播放的音乐
     private Music nowMusic;
     private boolean playing;
@@ -165,6 +168,7 @@ public class MainActivity extends Activity {
             db.execSQL(nearsql);
             db.execSQL(downloadsql);
             db.execSQL(lovesql);
+            db.execSQL(selfsql);
         }
         this.count++;
         editor=getSharedPreferences("isFirst",MODE_PRIVATE).edit();
@@ -502,6 +506,7 @@ public class MainActivity extends Activity {
                                 editor1.apply();
                                 MyLogin.getMyLogin().setLogin(false);
                                 MyLogin.getMyLogin().setBean(null);
+                                myDao.clearTable("self_music_list");
                                 if(!MyLogin.getMyLogin().isLogin()){
                                     navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
                                 }else {
