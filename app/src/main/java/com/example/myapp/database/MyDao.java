@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.example.myapp.self.Music;
-import com.example.myapp.self.SongIdBean;
+import com.example.myapp.self.SongListBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,8 +59,8 @@ public class MyDao {
         return list;
     }
 
-    public List<SongIdBean> findAll(int listId,String tableName){
-        List<SongIdBean> list=new ArrayList<>();
+    public List<Music> findAll(int listId,String tableName){
+        List<Music> list=new ArrayList<>();
         db= getSQLiteDB();
         Cursor cursor = db.query(tableName,null,"list_id=?",new String[]{String.valueOf(listId)},null,null,null);
         if(cursor.moveToFirst()){
@@ -74,9 +74,7 @@ public class MyDao {
                 music.setSongSize(cursor.getInt(cursor.getColumnIndexOrThrow("song_size")));
                 music.setFlag(cursor.getInt(cursor.getColumnIndexOrThrow("flag")));
                 music.setLove(cursor.getInt(cursor.getColumnIndexOrThrow("love")));
-                int songId = cursor.getInt(cursor.getColumnIndexOrThrow("song_id"));
-                SongIdBean idBean=new SongIdBean(songId,music);
-                list.add(idBean);
+                list.add(music);
             }while (cursor.moveToNext());
         }
         //关闭数据库连接
@@ -118,11 +116,9 @@ public class MyDao {
 
 
     //自定义歌单，插入信息的方法,线程安全的
-    public synchronized long insertMusic(int listId, SongIdBean bean, String tableName){
+    public synchronized long insertMusic(int listId, Music music, String tableName){
         db = getSQLiteDB();
-        Music music=bean.getMusic();
         ContentValues values=new ContentValues();
-        values.put("song_id",bean.getId());
         values.put("list_id",listId);
         values.put("song_name",music.getSongName());
         values.put("song_author",music.getSongAuthor());
@@ -147,7 +143,16 @@ public class MyDao {
         }
         return row;
     }
-
+    //删除歌单的一个歌曲
+    public long deleteMusic(Music music, String tableName, SongListBean bean){
+        db = getSQLiteDB();
+        int listId = bean.getListId();
+        long row = db.delete(tableName,"list_id=? and song_name=? and song_author=?",new String[]{String.valueOf(listId),music.getSongName(),music.getSongAuthor()});
+        if(db.isOpen()){
+            db.close();
+        }
+        return row;
+    }
     public List<Music> findMusicByKeyword(String word){
         List<Music> musicList=new ArrayList<>();
         db = getSQLiteDB();

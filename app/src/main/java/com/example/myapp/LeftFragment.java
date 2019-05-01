@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -22,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +28,6 @@ import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.MyLogin;
 import com.example.myapp.self.SelfSongBean;
-import com.example.myapp.self.SongIdBean;
 import com.example.myapp.self.SongListBean;
 import com.example.myapp.self.UserBean;
 import com.google.gson.Gson;
@@ -164,8 +161,6 @@ public class LeftFragment extends Fragment{
             userImage.setImageResource(R.mipmap.ic_login_64);
             userNameTv.setText("立即登录");
         }
-
-
         return view;
     }
 
@@ -241,8 +236,7 @@ public class LeftFragment extends Fragment{
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String js = response.body().string();
-//                List<Music> musicList=new ArrayList<>();
-                List<SongIdBean> songIdBeans=new ArrayList<>();
+                List<Music> musicList=new ArrayList<>();
                 if(!js.equals("null")){
                     JsonParser jsonParser=new JsonParser();
                     JsonArray array=jsonParser.parse(js).getAsJsonArray();
@@ -282,13 +276,11 @@ public class LeftFragment extends Fragment{
                                 music.setFlag(-1);
                             }
                         }
-//                        musicList.add(music);
-                        SongIdBean songIdBean=new SongIdBean(bean.getId(),music);
-                        songIdBeans.add(songIdBean);
+                        musicList.add(music);
                     }
 
                 }
-                NewBean newBean=new NewBean(songIdBeans,beans);
+                NewBean newBean=new NewBean(musicList,beans);
                 Message msg = new Message();
                 msg.what=200;
                 msg.obj = newBean;
@@ -300,20 +292,20 @@ public class LeftFragment extends Fragment{
     public class NewBean implements Serializable{
 
         private static final long serialVersionUID = 9147966199655146746L;
-        private List<SongIdBean> songIdBeans;
+        private List<Music> musicList;
         private SongListBean bean;
 
-        public NewBean(List<SongIdBean> songIdBeans, SongListBean bean) {
-            this.songIdBeans = songIdBeans;
+        public NewBean(List<Music> musicList, SongListBean bean) {
+            this.musicList = musicList;
             this.bean = bean;
         }
 
-        public List<SongIdBean> getSongIdBeans() {
-            return songIdBeans;
+        public List<Music> getMusicList() {
+            return musicList;
         }
 
-        public void setSongIdBeans(List<SongIdBean> songIdBeans) {
-            this.songIdBeans = songIdBeans;
+        public void setMusicList(List<Music> musicList) {
+            this.musicList = musicList;
         }
 
         public SongListBean getBean() {
@@ -428,20 +420,20 @@ public class MyHandler extends Handler{
             case 200:
                 System.out.println("保存歌单到本地");
                 NewBean newBean = (NewBean) msg.obj;
-                List<SongIdBean> songIdBeans=newBean.getSongIdBeans();
+                List<Music> musicList=newBean.getMusicList();
                 SongListBean bean=newBean.getBean();
                 if(bean.getListName().equals("我喜欢")){
                     myDao.clearTable("love_music_list");
-                    for (SongIdBean songIdBean:songIdBeans) {
-                        myDao.insertMusic(songIdBean.getMusic(),"love_music_list");
+                    for (Music music:musicList) {
+                        myDao.insertMusic(music,"love_music_list");
                     }
                 }else {
                     //将歌曲信息插入到数据库当中
-                    for (SongIdBean bean1:songIdBeans) {
-                        myDao.insertMusic(bean.getListId(), bean1, selfTable);
+                    for (Music music:musicList) {
+                        myDao.insertMusic(bean.getListId(), music, selfTable);
                     }
                 }
-                Log.i("获取到列表", songIdBeans.toString());
+                Log.i("获取到列表", musicList.toString());
                 break;
             case 400:
                 Toast.makeText(getActivity(),"获取列表异常",Toast.LENGTH_SHORT).show();

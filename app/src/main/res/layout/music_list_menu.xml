@@ -13,6 +13,19 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:background="@color/gray"
+        android:id="@+id/line1">
+
+    </View>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/base_color"
+        android:id="@+id/add_music_to_list"
+        android:text="加入到歌单"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
         android:background="@color/gray">
 
     </View>

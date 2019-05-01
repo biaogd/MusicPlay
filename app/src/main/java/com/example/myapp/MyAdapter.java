@@ -21,10 +21,12 @@ import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.MyLogin;
 import com.example.myapp.self.SongListBean;
@@ -49,6 +51,7 @@ public class MyAdapter extends BaseAdapter {
     private Fragment fragment;
     private SQLiteDatabase db;
     private Activity context;
+    private MyDao myDao;
     //正在播放的歌曲在列表中的位置
     private int nowPosition;
 
@@ -62,6 +65,7 @@ public class MyAdapter extends BaseAdapter {
         this.mList = list;
         this.context = context;
         this.fragment = fragment;
+        myDao=new MyDao(context);
     }
     private SQLiteDatabase getSQLiteDB(){
         return context.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
@@ -162,7 +166,7 @@ public class MyAdapter extends BaseAdapter {
         TextView name = (TextView) convertView.findViewById(R.id.songName);
         TextView author = (TextView)convertView.findViewById(R.id.songAuthor);
         final ImageButton loveBtn = (ImageButton)convertView.findViewById(R.id.loveImageButton);
-        ImageButton moreBtn = (ImageButton)convertView.findViewById(R.id.moreImageButton);
+        final ImageButton moreBtn = (ImageButton)convertView.findViewById(R.id.moreImageButton);
         //id等于-1000的是当前正在播放的歌曲对象，设置他的颜色为绿色，出现了第一屏正常显示，滑动之后出现每隔几行
         //字体颜色也为绿色的问题，主要原因是使用了convertView，这个是实现了缓存的
         //对于之前的多个歌曲都是显示绿色重复的问题，原因是ListView的复用问题，没有设置id不等于-1000的行的颜色，复用之前的
@@ -298,7 +302,14 @@ public class MyAdapter extends BaseAdapter {
                 TextView nameAuthor = (TextView)view.findViewById(R.id.name_author);
                 nameAuthor.setText(m.getSongName()+" - "+m.getSongAuthor());
                 final Button deleteBtn=(Button)view.findViewById(R.id.delete_btn);
-
+                Button addBtn = (Button)view.findViewById(R.id.add_music_to_list);
+                addBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        popupWindow.dismiss();
+                        showAddListWindow(context,moreBtn,m);
+                    }
+                });
                 deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -426,6 +437,69 @@ public class MyAdapter extends BaseAdapter {
             flagBtn.setImageResource(R.mipmap.ic_cloud_20);
         }
         return convertView;
+    }
+
+    public void showAddListWindow(final Activity context, View p, final Music music){
+        List<SongListBean> songListBeanList=MyLogin.getMyLogin().getBean().getSongList();
+        View views = LayoutInflater.from(context).inflate(R.layout.add_song_list,null);
+        LinearLayout body_layout = (LinearLayout)views.findViewById(R.id.song_list_body);
+        final PopupWindow popupWindow=new PopupWindow(views,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+        for(final SongListBean bean:songListBeanList){
+            if(bean.getListId()==MyLogin.getMyLogin().getLoveId()){
+                continue;
+            }
+            View view1=LayoutInflater.from(context).inflate(R.layout.button_layout,null);
+            Button button=(Button)view1.findViewById(R.id.self_button);
+            button.setText(bean.getListName());
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //获得这个歌单的所有歌曲
+                    List<Music> allMusic = myDao.findAll(bean.getListId(),"self_music_list");
+                    int i=0;
+                    for(i=0;i<allMusic.size();i++){
+                        Music mm = allMusic.get(i);
+                        if(mm.getSongName().equals(music.getSongName())&&mm.getSongAuthor().equals(music.getSongAuthor())){
+                            //歌曲已经在这个歌单中
+                            break;
+                        }
+                    }
+                    if(i>=allMusic.size()) {
+                        //歌曲不再这个歌单中
+                        int listId = bean.getListId();
+                        //将这个歌曲加入到本地数据库
+                        myDao.insertMusic(listId, music, "self_music_list");
+                        Log.i("歌曲" + music.getSongName(), "已加入到数据库中");
+                        //在把这个歌曲同步到服务器
+                        syncSongList(music, bean);
+                        Toast.makeText(context,"歌曲已加入歌单中",Toast.LENGTH_LONG).show();
+                    }else {
+                        Toast.makeText(context,"已存在",Toast.LENGTH_LONG).show();
+                    }
+                    popupWindow.dismiss();
+                }
+            });
+            body_layout.addView(view1);
+        }
+        popupWindow.setFocusable(true);
+        popupWindow.setTouchable(true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(0x000000));
+        popupWindow.setOutsideTouchable(true);
+        //设置弹出窗口背景变半透明，来高亮弹出窗口
+        WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+        lp.alpha=0.5f;
+        context.getWindow().setAttributes(lp);
+
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                //恢复透明度
+                WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+                lp.alpha=1f;
+                context.getWindow().setAttributes(lp);
+            }
+        });
+        popupWindow.showAtLocation(p,Gravity.BOTTOM,0,0);
     }
 
 
