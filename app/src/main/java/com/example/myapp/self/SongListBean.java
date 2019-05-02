@@ -1,11 +1,16 @@
 package com.example.myapp.self;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 public class SongListBean implements Serializable {
     private static final long serialVersionUID = 3933676773302656646L;
+    @SerializedName("ID")
     private int listId;
+    @SerializedName("SongListName")
     private String listName;
+    @SerializedName("Count")
     private int listCount;
 
     public SongListBean(int listId, String listName, int listCount) {

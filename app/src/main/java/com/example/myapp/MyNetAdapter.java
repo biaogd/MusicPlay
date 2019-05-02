@@ -127,7 +127,7 @@ public class MyNetAdapter extends BaseAdapter {
                         intent1.setAction("updatelove");
                         context.sendBroadcast(intent1);
                         updateLove(music,"near_music_list");
-                        syncSongList(music,new SongListBean(MyLogin.getMyLogin().getLoveId(),null,0));
+                        syncSongList(music,new SongListBean(MyLogin.loveId,null,0));
                         popupWindow.dismiss();
                     }
                 });
@@ -178,7 +178,7 @@ public class MyNetAdapter extends BaseAdapter {
     private void syncSongList(Music m, SongListBean bean) {
         OkHttpClient client = new OkHttpClient();
         //用户id
-        int userId = MyLogin.getMyLogin().getBean().getId();
+        int userId = MyLogin.bean.getId();
         int listId = bean.getListId();
         int mId = m.getFlag();
         RequestBody body = new FormBody.Builder().add("user_id", String.valueOf(userId))

@@ -2,6 +2,7 @@ package com.example.myapp;
 
 
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.KeyEvent;
@@ -19,6 +20,7 @@ import com.example.myapp.self.Music;
 import com.example.myapp.self.SongListBean;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -106,10 +108,24 @@ public class SelfFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                Music music=musicList.get(position);
+                Intent intent = new Intent();
+                intent.setAction("play_net_music");
+                Bundle bundle=new Bundle();
+                bundle.putInt("pos",position);
+                bundle.putSerializable("musicList",(ArrayList<Music>)musicList);
+                intent.putExtra("music_data",bundle);
+                getActivity().sendBroadcast(intent);
             }
         });
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(myDao.isConnection()){
+            myDao.closeConnect();
+        }
+    }
 }

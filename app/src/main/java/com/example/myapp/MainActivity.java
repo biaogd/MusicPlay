@@ -173,7 +173,7 @@ public class MainActivity extends Activity {
         this.count++;
         editor=getSharedPreferences("isFirst",MODE_PRIVATE).edit();
         editor.putInt("count",count);
-        editor.commit();
+        editor.apply();
 
         //创建程序目录
         File file=new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/downloadMusic");
@@ -193,6 +193,7 @@ public class MainActivity extends Activity {
         notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         handler = new MyHandler();
         myDao=new MyDao(this);
+        myDao.initConnect();
         if(checkNet(this)){
             updateApp();
         }else {
@@ -211,6 +212,7 @@ public class MainActivity extends Activity {
         filter.addAction("exitApp");
         filter.addAction("musicList");
         filter.addAction("nowMusic");
+        filter.addAction("login_in_success");
         registerReceiver(broadcast,filter);
         //0是暂停播放时显示，1是正在播放时显示
         playbtn=(ImageButton) findViewById(R.id.palybtn);
@@ -297,7 +299,7 @@ public class MainActivity extends Activity {
                 }
             }
         },0,1000);
-        if(!MyLogin.getMyLogin().isLogin()){
+        if(!MyLogin.logined){
             navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
         }else {
             navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用/注销登录");
@@ -460,7 +462,7 @@ public class MainActivity extends Activity {
                         View view1 = LayoutInflater.from(MainActivity.this).inflate(R.layout.exit_app,null);
                         Button exitBtn = (Button)view1.findViewById(R.id.exit_app_id);
                         Button outBtn = (Button)view1.findViewById(R.id.login_out_user_id);
-                        if(!MyLogin.getMyLogin().isLogin()){
+                        if(!MyLogin.logined){
                             outBtn.setVisibility(View.GONE);
                             navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
                         }else {
@@ -504,10 +506,18 @@ public class MainActivity extends Activity {
                                 SharedPreferences.Editor editor1=getSharedPreferences("self_list",MODE_PRIVATE).edit();
                                 editor1.clear();
                                 editor1.apply();
-                                MyLogin.getMyLogin().setLogin(false);
-                                MyLogin.getMyLogin().setBean(null);
+//                                MyLogin.getMyLogin().setLogin(false);
+//                                MyLogin.getMyLogin().setBean(null);
+
+                                MyLogin.logined=false;
+                                MyLogin.bean=null;
+                                MyLogin.loveId=0;
                                 myDao.clearTable("self_music_list");
-                                if(!MyLogin.getMyLogin().isLogin()){
+                                myDao.clearLove("love_music_list");
+                                myDao.clearLove("near_music_list");
+                                myDao.clearLove("download_music_list");
+
+                                if(!MyLogin.logined){
                                     navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
                                 }else {
                                     navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用/注销登录");
@@ -745,6 +755,10 @@ public class MainActivity extends Activity {
                 nameTv.setText(nowMusic.getSongName());
                 authorTv.setText(nowMusic.getSongAuthor());
             }
+            if(intent.getAction().equals("login_in_success")){
+                Log.i("在MainActivity","********************************");
+
+            }
         }
     }
 
@@ -755,7 +769,7 @@ public class MainActivity extends Activity {
         Intent intent1 = new Intent();
         intent1.setAction("updateActivity");
         sendBroadcast(intent1);
-        if(!MyLogin.getMyLogin().isLogin()){
+        if(!MyLogin.logined){
             navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
         }else {
             navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用/注销登录");
@@ -769,7 +783,13 @@ public class MainActivity extends Activity {
         //程序退出时停止服务
         Intent intent=new Intent(this,MyService.class);
         stopService(intent);
+        Intent intent1=new Intent(this,DownloadService.class);
+        stopService(intent1);
         unregisterReceiver(broadcast);
+        if(myDao.isConnection()){
+            myDao.closeConnect();
+        }
+
     }
 
     @Override

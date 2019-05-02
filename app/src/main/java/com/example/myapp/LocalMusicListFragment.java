@@ -31,6 +31,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapp.database.MyDao;
 import com.example.myapp.self.AllScannerSongs;
 import com.example.myapp.self.Music;
 
@@ -49,6 +50,7 @@ public class LocalMusicListFragment extends BaseFragment {
     private ProgressBar loading;
     private TextView textView;
     private Handler handler;
+    private MyDao myDao;
     public LocalMusicListFragment() {
     }
     @Override
@@ -70,9 +72,11 @@ public class LocalMusicListFragment extends BaseFragment {
         musicList = new ArrayList<>();
         options = (ImageButton)myview.findViewById(R.id.options);
         options.setOnClickListener(listener);
+        myDao=new MyDao(getActivity());
+        myDao.initConnect();
         //从数据库读出歌曲信息
         musicList.clear();
-        musicList = findAll(local_stable);
+        musicList = myDao.findAll(local_stable);
         adapter=new MyAdapter(getActivity(),musicList,LocalMusicListFragment.this);
         listView.setAdapter(adapter);
         ((TextView)(this.myview.findViewById(R.id.list_title))).setText("本地列表("+musicList.size()+")");
@@ -126,7 +130,7 @@ public class LocalMusicListFragment extends BaseFragment {
                 SQLiteDatabase db= getActivity().openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
                 db.delete(local_stable,null,null);
                 for (Music m:mylist){
-                    insertMusic(m,local_stable);
+                    myDao.insertMusic(m,local_stable);
                 }
                 handler.sendEmptyMessage(100);
             }
@@ -139,7 +143,7 @@ public class LocalMusicListFragment extends BaseFragment {
             super.handleMessage(msg);
             if(msg.what==100){
                 musicList.clear();
-                musicList = findAll(local_stable);
+                musicList = myDao.findAll(local_stable);
                 MyAdapter adapter=new MyAdapter(getActivity(),musicList,LocalMusicListFragment.this);
                 listView.setAdapter(adapter);
                 ((TextView)(myview.findViewById(R.id.list_title))).setText("本地列表("+musicList.size()+")");
@@ -154,5 +158,11 @@ public class LocalMusicListFragment extends BaseFragment {
         super.onActivityCreated(savedInstanceState);
     }
 
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(myDao.isConnection()){
+            myDao.closeConnect();
+        }
+    }
 }

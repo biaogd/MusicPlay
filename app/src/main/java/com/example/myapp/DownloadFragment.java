@@ -35,7 +35,6 @@ public class DownloadFragment extends Fragment {
     private List<DownloadBean> dList;
     private BroadcastReceiver broadcast;
     private BaseAdapter adapter;
-    private MyDao myDao;
     public DownloadFragment() {
         // Required empty public constructor
     }
@@ -85,7 +84,6 @@ public class DownloadFragment extends Fragment {
             }
         });
         dList=new ArrayList<>();
-        myDao=new MyDao(getActivity());
         broadcast=new DownloadBroadcast();
         IntentFilter filter=new IntentFilter();
         filter.addAction("update_dw_progress");

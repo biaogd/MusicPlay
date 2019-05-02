@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.MyLogin;
+import com.example.myapp.self.SelfFinal;
 import com.example.myapp.self.SongListBean;
 
 import java.io.IOException;
@@ -188,7 +189,7 @@ public class SelfAdapter extends BaseAdapter {
     }
 
     public void showAddListWindow(final Activity context, View p, final Music music){
-        List<SongListBean> songListBeanList=MyLogin.getMyLogin().getBean().getSongList();
+        List<SongListBean> songListBeanList=MyLogin.bean.getSongList();
         View views = LayoutInflater.from(context).inflate(R.layout.add_song_list,null);
         LinearLayout body_layout = (LinearLayout)views.findViewById(R.id.song_list_body);
         final PopupWindow popupWindow=new PopupWindow(views,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
@@ -201,7 +202,7 @@ public class SelfAdapter extends BaseAdapter {
                 public void onClick(View v) {
                     List<Music> allMusic;
                     //获得这个歌单的所有歌曲
-                    if(bean.getListId()==MyLogin.getMyLogin().getLoveId()) {
+                    if(bean.getListId()==MyLogin.loveId) {
                         allMusic = myDao.findAll("love_music_list");
                     }else {
                         allMusic = myDao.findAll(bean.getListId(),"self_music_list");
@@ -219,7 +220,7 @@ public class SelfAdapter extends BaseAdapter {
                             int listId = bean.getListId();
                             //将这个歌曲加入到本地数据库
                             long iii=0;
-                            if(bean.getListId()==MyLogin.getMyLogin().getLoveId()){
+                            if(bean.getListId()==MyLogin.loveId){
                                 iii=myDao.insertMusic(music,"love_music_list");
                             }else {
                                 iii = myDao.insertMusic(listId, music, "self_music_list");
@@ -262,7 +263,7 @@ public class SelfAdapter extends BaseAdapter {
     private void syncSongList(Music m, SongListBean bean) {
         OkHttpClient client = new OkHttpClient();
         //用户id
-        int userId = MyLogin.getMyLogin().getBean().getId();
+        int userId = MyLogin.bean.getId();
         int listId = bean.getListId();
         int mId = m.getFlag();
         RequestBody body = new FormBody.Builder().add("user_id", String.valueOf(userId))
@@ -271,8 +272,7 @@ public class SelfAdapter extends BaseAdapter {
                 .add("music_name", m.getSongName())
                 .add("music_author", m.getSongAuthor())
                 .add("music_path", m.getPath()).build();
-        String url = "http://www.mybiao.top:8000/music/user/syncAddMusic";
-        String urls = "http://192.168.43.119:8000/music/user/syncAddMusic";
+        String urls = SelfFinal.host+SelfFinal.port +"/music/user/syncAddMusic";
         Request request = new Request.Builder().post(body).url(urls).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -296,7 +296,7 @@ public class SelfAdapter extends BaseAdapter {
                 .add("songName",songName)
                 .add("songAuthor",songAuthor).build();
         String url = "http://www.mybiao.top:8000/music/user/syncDelMusic";
-        String urls = "http://192.168.43.119:8000/music/user/syncDelMusic";
+        String urls = "http://192.168.0.106:8000/music/user/syncDelMusic";
         Request request=new Request.Builder().url(urls).post(body).build();
         client.newCall(request).enqueue(new Callback() {
             @Override

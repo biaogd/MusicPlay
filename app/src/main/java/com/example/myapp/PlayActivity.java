@@ -253,14 +253,14 @@ public class PlayActivity extends Activity {
                     if(music.getLove()==1){
                         deleteLove(music,"love_music_list");
                     }else {
-                        insertMusic(music,"love_music_list");
+                        myDao.insertMusic(music,"love_music_list");
                     }
                 }else { //播放的是网络歌曲
                     updateLove(music,"near_music_list");
                     if(music.getLove()==1){
                         deleteLove(music,"love_music_list");
                     }else {
-                        insertMusic(music,"love_music_list");
+                        myDao.insertMusic(music,"love_music_list");
                     }
                 }
                 Intent intent1=new Intent();
@@ -411,23 +411,6 @@ public class PlayActivity extends Activity {
             db.close();
         }
         return j;
-    }
-
-    protected long insertMusic(Music music,String tableName){
-        SQLiteDatabase db = getSQLiteDB();
-        ContentValues values=new ContentValues();
-        values.put("song_name",music.getSongName());
-        values.put("song_author",music.getSongAuthor());
-        values.put("all_time",music.getAlltime());
-        values.put("path",music.getPath());
-        values.put("song_size",music.getSongSize());
-        values.put("flag",music.getFlag());
-        values.put("love",1);
-        long i=db.insert(tableName,null,values);
-        if(db.isOpen()){
-            db.close();
-        }
-        return i;
     }
 
     private void deleteLove(Music music,String tableName){
@@ -789,40 +772,6 @@ public class PlayActivity extends Activity {
                 if (lrcBeanList != null) {
                     Bundle bundle = intent.getBundleExtra("current");
                     int myPosition = bundle.getInt("position");
-//                    final int height = scrollView.getHeight();
-//                    final int h1 = getLrcY(1)-getLrcY(0);
-//                    final int width = lrcTextView.getMeasuredWidth();
-//                    for (int i = 0; i < lrcBeanList.size(); i++) {
-//                        if (i == lrcBeanList.size() - 1) {
-//                            if (myPosition >= lrcBeanList.get(i).getBeginTime()) {
-//                                line = i;
-//                                String lrcs = lrcBeanList.get(i).getLrc();
-//                                //获取到目前的总换行个数
-//                                final int allCount = getAllCount(width,i);
-//                                playingLrcColor(i+allCount);
-//                                scrollView.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
-//                                    }
-//                                });
-//                            }
-//                        } else {
-//                            if (myPosition >= lrcBeanList.get(i).getBeginTime() && myPosition <= lrcBeanList.get(i + 1).getBeginTime()) {
-//                                line = i;
-//                                String lrcs = lrcBeanList.get(i).getLrc();
-//                                //获取到目前的总换行个数
-//                                final int allCount = getAllCount(width,i);
-//                                playingLrcColor(line+allCount);
-//                                scrollView.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        scrollView.scrollTo(0, getLrcY(line+allCount)+h1/2-height%h1/2);
-//                                    }
-//                                });
-//                            }
-//                        }
-//                    }
                     scrollToY(myPosition,height);
                 }
             }
@@ -1015,6 +964,9 @@ public class PlayActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcast);
+        if (myDao.isConnection()){
+            myDao.closeConnect();
+        }
     }
 
     public class MyHandlers extends Handler {

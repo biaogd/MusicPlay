@@ -50,6 +50,7 @@ public class DownloadService extends Service {
         registerReceiver(broadcast,filter);
         downloadList = new ArrayList<>();
         myDao=new MyDao(getApplicationContext());
+        myDao.initConnect();
         listenThread();
     }
 
@@ -114,8 +115,9 @@ public class DownloadService extends Service {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcast);
-//        Intent intent=new Intent(getApplicationContext(),DownloadService.class);
-//        startService(intent);
+        if(myDao.isConnection()){
+            myDao.closeConnect();
+        }
     }
     public class MyThread extends Thread{
         private Music music;

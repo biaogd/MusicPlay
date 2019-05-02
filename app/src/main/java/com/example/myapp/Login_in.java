@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -17,7 +18,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.myapp.database.MyDao;
+import com.example.myapp.self.Music;
+import com.example.myapp.self.MyLogin;
+import com.example.myapp.self.SelfFinal;
+
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -55,7 +62,8 @@ public class Login_in extends Activity {
         registerTv.setOnClickListener(listener);
         errTv = (TextView)findViewById(R.id.login_err_tv);
         handler=new MyHandler();
-
+        List<Music> musicList = new MyDao(this).findAll("self_music_list");
+        System.out.println("歌曲列表:"+musicList.toString());
     }
 
     View.OnClickListener listener=new View.OnClickListener() {
@@ -76,8 +84,7 @@ public class Login_in extends Activity {
                         OkHttpClient client=new OkHttpClient();
                         RequestBody body=new FormBody.Builder().add("email",userId)
                                 .add("password",userPw).build();
-                        String url = "http://www.mybiao.top:8000/music/user/login";
-                        String urls="http://192.168.43.119:8000/music/user/login";
+                        String urls=  SelfFinal.host+SelfFinal.port+ "/music/user/login";
                         Request request=new Request.Builder().url(urls).post(body).build();
                         client.newCall(request).enqueue(new Callback() {
                             @Override
@@ -141,10 +148,11 @@ public class Login_in extends Activity {
                 case 200:
                     int id = msg.arg1;
                     String name = (String) msg.obj;
-                    Intent intent=new Intent("login_success");
+                    Intent intent=new Intent("login_in_success");
                     intent.putExtra("id",id);
                     intent.putExtra("name",name);
                     sendBroadcast(intent);
+                    Log.i("登录成功广播","已发出");
                     finish();
                     break;
                 case 101:

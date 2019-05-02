@@ -14,29 +14,35 @@ import java.util.List;
 
 public class MyDao {
     private Context context;
-    private SQLiteDatabase db;
+    private static SQLiteDatabase db;
     private static MyDao dao;
     public MyDao(Context context){
         this.context = context;
-    }
-    public MyDao getInstance(){
-        if(dao == null){
-            dao = new MyDao(context);
-            return dao;
-        }else {
-            return dao;
-        }
     }
 
     public SQLiteDatabase getSQLiteDB(){
         return context.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
     }
+
+    public void initConnect(){
+        db = context.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
+    }
+    public boolean isConnection(){
+        return db.isOpen();
+    }
+    public void closeConnect(){
+        if(isConnection()){
+            db.close();
+        }
+    }
     public List<Music> findAll(String tableName){
         List<Music> list=new ArrayList<>();
-        db= getSQLiteDB();
+//        db= getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         Cursor cursor = db.query(tableName,null,null,null,null,null,null);
-        if(cursor.moveToFirst()){
-            do {
+            while (cursor.moveToNext()){
                 Music music=new Music();
                 music.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
                 music.setSongName(cursor.getString(cursor.getColumnIndexOrThrow("song_name")));
@@ -47,24 +53,25 @@ public class MyDao {
                 music.setFlag(cursor.getInt(cursor.getColumnIndexOrThrow("flag")));
                 music.setLove(cursor.getInt(cursor.getColumnIndexOrThrow("love")));
                 list.add(music);
-            }while (cursor.moveToNext());
-        }
+            }
         //关闭数据库连接
         if(!cursor.isClosed()){
             cursor.close();
         }
-        if (db.isOpen()){
-            db.close();
-        }
+//        if (db.isOpen()){
+//            db.close();
+//        }
         return list;
     }
 
     public List<Music> findAll(int listId,String tableName){
         List<Music> list=new ArrayList<>();
-        db= getSQLiteDB();
+//        db= getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         Cursor cursor = db.query(tableName,null,"list_id=?",new String[]{String.valueOf(listId)},null,null,null);
-        if(cursor.moveToFirst()){
-            do {
+        while (cursor.moveToNext()){
                 Music music=new Music();
                 music.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
                 music.setSongName(cursor.getString(cursor.getColumnIndexOrThrow("song_name")));
@@ -75,30 +82,49 @@ public class MyDao {
                 music.setFlag(cursor.getInt(cursor.getColumnIndexOrThrow("flag")));
                 music.setLove(cursor.getInt(cursor.getColumnIndexOrThrow("love")));
                 list.add(music);
-            }while (cursor.moveToNext());
         }
         //关闭数据库连接
         if(!cursor.isClosed()){
             cursor.close();
         }
-        if (db.isOpen()){
-            db.close();
-        }
         return list;
+    }
+
+    //清空一个自定义歌单的歌曲
+    public void clearListSong(SongListBean bean){
+        if(!isConnection()){
+            initConnect();
+        }
+        db.delete("self_music_list","list_id=?",new String[]{String.valueOf(bean.getListId())});
     }
 
     //清空表
     public void clearTable(String tableName){
-        db = getSQLiteDB();
+//        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         int i=db.delete(tableName,null,null);
         Log.i("清空了表"+tableName,i+"条数据");
-        if(db.isOpen()){
-            db.close();
+    }
+
+    //清空音乐列表的喜欢标记,设置love=0
+    public int clearLove(String tableName){
+//        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
         }
+        ContentValues values=new ContentValues();
+        values.put("love",0);
+        int i = db.update(tableName,values,null,null);
+        return i;
     }
 
     public long insertMusic(Music music,String tableName){
-        db = getSQLiteDB();
+//        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         ContentValues values=new ContentValues();
         values.put("song_name",music.getSongName());
         values.put("song_author",music.getSongAuthor());
@@ -108,16 +134,16 @@ public class MyDao {
         values.put("flag",music.getFlag());
         values.put("love",music.getLove());
         long i=db.insert(tableName,null,values);
-        if(db.isOpen()){
-            db.close();
-        }
         return i;
     }
 
 
-    //自定义歌单，插入信息的方法,线程安全的
-    public synchronized long insertMusic(int listId, Music music, String tableName){
-        db = getSQLiteDB();
+    //自定义歌单，插入信息的方法
+    public long insertMusic(int listId, Music music, String tableName){
+//        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         ContentValues values=new ContentValues();
         values.put("list_id",listId);
         values.put("song_name",music.getSongName());
@@ -128,38 +154,35 @@ public class MyDao {
         values.put("flag",music.getFlag());
         values.put("love",music.getLove());
         long i=db.insert(tableName,null,values);
-        if(db.isOpen()){
-            db.close();
-        }
         return i;
     }
 
     public long deleteMusic(Music music, String tableName){
-        db = getSQLiteDB();
+//        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         String dpath = music.getPath();
         long row = db.delete(tableName,"path=?",new String[]{dpath});
-        if(db.isOpen()){
-            db.close();
-        }
         return row;
     }
     //删除歌单的一个歌曲
     public long deleteMusic(Music music, String tableName, SongListBean bean){
-        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         int listId = bean.getListId();
         long row = db.delete(tableName,"list_id=? and song_name=? and song_author=?",new String[]{String.valueOf(listId),music.getSongName(),music.getSongAuthor()});
-        if(db.isOpen()){
-            db.close();
-        }
         return row;
     }
     public List<Music> findMusicByKeyword(String word){
         List<Music> musicList=new ArrayList<>();
-        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         String sql = "select *from local_music_list where path like ?";
         Cursor cursor=db.rawQuery(sql,new String[]{"%"+word+"%"});
-        if(cursor.moveToFirst()) {
-            do {
+        while (cursor.moveToNext()) {
                 Music music = new Music();
                 music.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
                 music.setSongName(cursor.getString(cursor.getColumnIndexOrThrow("song_name")));
@@ -170,16 +193,17 @@ public class MyDao {
                 music.setFlag(cursor.getInt(cursor.getColumnIndexOrThrow("flag")));
                 music.setLove(cursor.getInt(cursor.getColumnIndexOrThrow("love")));
                 musicList.add(music);
-            } while (cursor.moveToNext());
         }
-        if(db.isOpen()){
-            db.close();
+        if(!cursor.isClosed()){
+            cursor.close();
         }
         return musicList;
     }
 
     public int allCount(String tableName,int listId){
-        db = getSQLiteDB();
+        if(!isConnection()){
+            initConnect();
+        }
         int count = 0;
         //固定的歌单
         if(listId==0){
@@ -188,18 +212,18 @@ public class MyDao {
             if(cursor.moveToFirst()){
                 count = cursor.getInt(cursor.getColumnIndexOrThrow("cou"));
             }
-            cursor.close();
+            if(!cursor.isClosed()){
+                cursor.close();
+            }
         }else {
             String sql= "select count(*) as cou from "+tableName+" where list_id= ?";
             Cursor cursor= db.rawQuery(sql,new String[]{String.valueOf(listId)});
             if(cursor.moveToFirst()){
                 count = cursor.getInt(cursor.getColumnIndexOrThrow("cou"));
             }
-            cursor.close();
-        }
-
-        if(db.isOpen()){
-            db.close();
+            if(!cursor.isClosed()){
+                cursor.close();
+            }
         }
         return count;
     }

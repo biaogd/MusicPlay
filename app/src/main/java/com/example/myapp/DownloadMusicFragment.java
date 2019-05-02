@@ -18,6 +18,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.myapp.database.MyDao;
+
 import java.util.ArrayList;
 
 
@@ -30,6 +32,7 @@ public class DownloadMusicFragment extends BaseFragment {
 
     private Button downloadBtn;
     private Fragment fragment;
+    private MyDao myDao;
     public DownloadMusicFragment() {
         // Required empty public constructor
     }
@@ -49,9 +52,11 @@ public class DownloadMusicFragment extends BaseFragment {
         listView = (ListView)myview.findViewById(R.id.download_list_view);
         myview.setId(R.id.downloadfragment);
         musicList = new ArrayList<>();
+        myDao=new MyDao(getActivity());
+        myDao.initConnect();
         //从数据库读出歌曲信息
         musicList.clear();
-        musicList = findAll(download_stable);
+        musicList = myDao.findAll(download_stable);
         adapter=new MyAdapter(getActivity(),musicList,DownloadMusicFragment.this);
         listView.setAdapter(adapter);
         ((TextView)(this.myview.findViewById(R.id.list_title))).setText("下载管理("+musicList.size()+")");
@@ -75,9 +80,17 @@ public class DownloadMusicFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         musicList.clear();
-        musicList = findAll(download_stable);
+        musicList = myDao.findAll(download_stable);
         adapter=new MyAdapter(getActivity(),musicList,DownloadMusicFragment.this);
         listView.setAdapter(adapter);
         ((TextView)(this.myview.findViewById(R.id.list_title))).setText("下载管理("+musicList.size()+")");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(myDao.isConnection()){
+            myDao.closeConnect();
+        }
     }
 }

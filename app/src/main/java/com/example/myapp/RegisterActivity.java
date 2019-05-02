@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapp.self.SelfFinal;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -69,8 +70,7 @@ public class RegisterActivity extends AppCompatActivity {
                             RequestBody body=new FormBody.Builder().add("userName",userName)
                                     .add("email",email).add("pw",pw1)
                                     .build();
-                            String urls = "http://192.168.0.106:8000/music/user/register";
-                            String url = "http://www.mybiao.top:8000/music/user/register";
+                            String urls = SelfFinal.host+SelfFinal.port +"/music/user/register";
                             Request request=new Request.Builder().post(body).url(urls).build();
                             client.newCall(request).enqueue(new Callback() {
                                 @Override

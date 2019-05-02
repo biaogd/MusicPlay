@@ -137,6 +137,15 @@ public class RankFragment extends Fragment {
         });
         return view;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(myDao.isConnection()){
+            myDao.closeConnect();
+        }
+    }
+
     public boolean checkNet(Context context){
         if(context!=null){
             ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);

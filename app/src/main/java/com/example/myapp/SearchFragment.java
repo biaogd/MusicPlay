@@ -267,4 +267,12 @@ public class SearchFragment extends Fragment {
             }
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(myDao.isConnection()){
+            myDao.closeConnect();
+        }
+    }
 }

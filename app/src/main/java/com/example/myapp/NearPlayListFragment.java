@@ -15,6 +15,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myapp.database.MyDao;
+
 import java.util.ArrayList;
 
 
@@ -25,6 +27,7 @@ import java.util.ArrayList;
 public class NearPlayListFragment extends BaseFragment{
     private static final long serialVersionUID = -3002111685436173611L;
     private ImageButton options;
+    private MyDao myDao;
     public NearPlayListFragment(){
 
     }
@@ -42,8 +45,10 @@ public class NearPlayListFragment extends BaseFragment{
         listView = (ListView)myview.findViewById(R.id.near_list_view);
         myview.setId(R.id.nearfragment);
         musicList = new ArrayList<>();
+        myDao=new MyDao(getActivity());
+        myDao.initConnect();
         musicList.clear();
-        musicList = findAll(near_stable);
+        musicList = myDao.findAll(near_stable);
         musicList=reSort(musicList);
         adapter = new MyAdapter(getActivity(),musicList,NearPlayListFragment.this);
         listView.setAdapter(adapter);
@@ -68,7 +73,7 @@ public class NearPlayListFragment extends BaseFragment{
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()){
                     case R.id.clear_near_music:
-                        deleteAll(near_stable);
+                        myDao.clearTable(near_stable);
                         musicList.clear();
                         adapter.notifyDataSetChanged();
                         Toast.makeText(getActivity(),"清空成功",Toast.LENGTH_LONG).show();
@@ -77,5 +82,13 @@ public class NearPlayListFragment extends BaseFragment{
             }
         });
         menu.show();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (myDao.isConnection()){
+            myDao.closeConnect();
+        }
     }
 }

@@ -23,6 +23,16 @@ public class UserBean implements Serializable {
         this.songList = songList;
     }
 
+    @Override
+    public String toString() {
+        return "UserBean{" +
+                "id=" + id +
+                ", userName='" + userName + '\'' +
+                ", imageName=" + imageName +
+                ", songList=" + songList +
+                '}';
+    }
+
     public int getId() {
         return id;
     }
