@@ -536,7 +536,7 @@ public class LeftFragment extends Fragment{
     }
 
     public void showWindow(final View myview, View view, View parent, final SongListBean bean){
-        PopupWindow window=new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+        final PopupWindow window=new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
         window.setFocusable(true);
         window.setTouchable(true);
         window.setBackgroundDrawable(new ColorDrawable(0x000000));
@@ -557,7 +557,7 @@ public class LeftFragment extends Fragment{
         });
         window.showAtLocation(parent, Gravity.BOTTOM,0,0);
         TextView songListNameTv = (TextView)view.findViewById(R.id.song_list_name_tv);
-        songListNameTv.setText(bean.getListName());
+        songListNameTv.setText("歌单："+bean.getListName());
         Button button=(Button)view.findViewById(R.id.delete_song_list);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -583,6 +583,7 @@ public class LeftFragment extends Fragment{
                 deleteSongList(bean);
                 //修改ui
                 layout1.removeView(myview);
+                window.dismiss();
             }
         });
     }
@@ -596,7 +597,7 @@ public class LeftFragment extends Fragment{
                 .add("listId",String.valueOf(listId))
                 .build();
         String url = SelfFinal.host+SelfFinal.port+"/music/user/deleteSongList";
-        Request request=new Request.Builder().post(body).url("").build();
+        Request request=new Request.Builder().post(body).url(url).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -645,8 +646,9 @@ public class MyHandler extends Handler{
             case 20:
                 //更新新添加歌单的id,并且写入到本地
                 SongListBean listBean1 = (SongListBean)msg.obj;
-                List<SongListBean> beans = MyLogin.bean.getSongList();
+                final List<SongListBean> beans = MyLogin.bean.getSongList();
                 for(int i=0;i<beans.size();i++){
+                    final SongListBean songListBean=beans.get(i);
                     if(listBean1.getListName().equals(beans.get(i).getListName())){
                         //找到这个新添加的歌单
                         beans.get(i).setListId(listBean1.getListId());
@@ -654,11 +656,24 @@ public class MyHandler extends Handler{
                         String beanJson = gson.toJson(beans);
                         editor.putString("song_bean_list",beanJson);
                         editor.apply();
-                        View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list,null);
+                        final View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list,null);
                         TextView tv=(TextView)myView.findViewById(R.id.song_list_name);
                         tv.setText(listBean1.getListName());
                         TextView tv1=(TextView)myView.findViewById(R.id.song_list_count);
                         tv1.setText(listBean1.getListCount()+"首");
+                        final ImageButton songListManagerBtn = (ImageButton)myView.findViewById(R.id.song_list_manager_btn);
+                        songListManagerBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (!checkNet(getActivity())) {
+                                    //网络无连接
+                                    Toast.makeText(getActivity(),"未连接到网络",Toast.LENGTH_LONG).show();
+                                } else {
+                                    View view1 = LayoutInflater.from(getActivity()).inflate(R.layout.song_list_menu_window,null);
+                                    showWindow(myView,view1,songListManagerBtn,songListBean);
+                                }
+                            }
+                        });
                         layout1.addView(myView);
                         Log.i("更新歌单id","成功");
                         break;

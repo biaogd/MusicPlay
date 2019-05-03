@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Gravity;
@@ -16,12 +17,15 @@ import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.Music;
 import com.example.myapp.self.MyLogin;
+import com.example.myapp.self.SelfFinal;
 import com.example.myapp.self.SongListBean;
 
 import java.io.FileOutputStream;
@@ -110,7 +114,7 @@ public class MyNetAdapter extends BaseAdapter {
                 popupWindow.showAtLocation(finalConvertView.findViewById(R.id.menu_music_net), Gravity.BOTTOM,0,0);
                 TextView songNameAndAuthor = (TextView)myView.findViewById(R.id.on_song_about);
                 songNameAndAuthor.setText("歌曲："+music.getSongName()+" - "+music.getSongAuthor());
-                Button comeToLove= (Button)myView.findViewById(R.id.come_to_love);
+                final Button comeToLove= (Button)myView.findViewById(R.id.come_to_love);
                 List<Music> music1=new MyDao(context).findAll("love_music_list");
                 for (Music m:music1){
                     if(m.getPath().equals(music.getPath())){
@@ -121,14 +125,15 @@ public class MyNetAdapter extends BaseAdapter {
                 comeToLove.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        music.setLove(1);
-                        new MyDao(context).insertMusic(music,"love_music_list");
-                        Intent intent1=new Intent();
-                        intent1.setAction("updatelove");
-                        context.sendBroadcast(intent1);
-                        updateLove(music,"near_music_list");
-                        syncSongList(music,new SongListBean(MyLogin.loveId,null,0));
+//                        music.setLove(1);
+//                        new MyDao(context).insertMusic(music,"love_music_list");
+//                        Intent intent1=new Intent();
+//                        intent1.setAction("updatelove");
+//                        context.sendBroadcast(intent1);
+//                        updateLove(music,"near_music_list");
+//                        syncSongList(music,new SongListBean(MyLogin.loveId,null,0));
                         popupWindow.dismiss();
+                        showAddListWindow(context,comeToLove,music);
                     }
                 });
                 Button cancel = (Button)myView.findViewById(R.id.cancel_btn_net);
@@ -174,7 +179,77 @@ public class MyNetAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public void showAddListWindow(final Activity context, View p, final Music music){
+        List<SongListBean> songListBeanList=MyLogin.bean.getSongList();
+        View views = LayoutInflater.from(context).inflate(R.layout.add_song_list,null);
+        LinearLayout body_layout = (LinearLayout)views.findViewById(R.id.song_list_body);
+        final PopupWindow popupWindow=new PopupWindow(views,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+        for(final SongListBean bean:songListBeanList){
+            View view1=LayoutInflater.from(context).inflate(R.layout.button_layout,null);
+            Button button=(Button)view1.findViewById(R.id.self_button);
+            button.setText(bean.getListName());
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    List<Music> allMusic;
+                    //获得这个歌单的所有歌曲
+                    if(bean.getListId()==MyLogin.loveId) {
+                        allMusic = myDao.findAll("love_music_list");
+                    }else {
+                        allMusic = myDao.findAll(bean.getListId(),"self_music_list");
+                    }
+                    int i=0;
+                    for(i=0;i<allMusic.size();i++){
+                        Music mm = allMusic.get(i);
+                        if(mm.getSongName().equals(music.getSongName())&&mm.getSongAuthor().equals(music.getSongAuthor())){
+                            //歌曲已经在这个歌单中
+                            break;
+                        }
+                    }
+                    if(i>=allMusic.size()) {
+                        //歌曲不再这个歌单中
+                        int listId = bean.getListId();
+                        //将这个歌曲加入到本地数据库
+                        long iii=0;
+                        if(bean.getListId()==MyLogin.loveId){
+                            iii=myDao.insertMusic(music,"love_music_list");
+                        }else {
+                            iii = myDao.insertMusic(listId, music, "self_music_list");
+                        }
+                        if(iii>0) {
+                            Log.i("歌曲" + music.getSongName(), "已加入到数据库中");
+                            //在把这个歌曲同步到服务器
+                            syncSongList(music, bean);
+                            Toast.makeText(context, "歌曲已加入歌单中", Toast.LENGTH_LONG).show();
+                        }
+                    }else {
+                        Toast.makeText(context,"已存在",Toast.LENGTH_LONG).show();
+                    }
+                    popupWindow.dismiss();
+                }
+            });
+            body_layout.addView(view1);
+        }
+        popupWindow.setFocusable(true);
+        popupWindow.setTouchable(true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(0x000000));
+        popupWindow.setOutsideTouchable(true);
+        //设置弹出窗口背景变半透明，来高亮弹出窗口
+        WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+        lp.alpha=0.5f;
+        context.getWindow().setAttributes(lp);
 
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                //恢复透明度
+                WindowManager.LayoutParams lp =context.getWindow().getAttributes();
+                lp.alpha=1f;
+                context.getWindow().setAttributes(lp);
+            }
+        });
+        popupWindow.showAtLocation(p,Gravity.BOTTOM,0,0);
+    }
     private void syncSongList(Music m, SongListBean bean) {
         OkHttpClient client = new OkHttpClient();
         //用户id
@@ -187,9 +262,8 @@ public class MyNetAdapter extends BaseAdapter {
                 .add("music_name", m.getSongName())
                 .add("music_author", m.getSongAuthor())
                 .add("music_path", m.getPath()).build();
-        String url = "http://www.mybiao.top:8000/music/user/syncAddMusic";
-        String urls = "http://192.168.43.119:8000/music/user/syncAddMusic";
-        Request request = new Request.Builder().post(body).url(urls).build();
+        String url = SelfFinal.host+SelfFinal.port +"/music/user/syncAddMusic";
+        Request request = new Request.Builder().post(body).url(url).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
