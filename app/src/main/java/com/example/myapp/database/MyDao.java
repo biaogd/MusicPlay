@@ -35,6 +35,7 @@ public class MyDao {
             db.close();
         }
     }
+
     public List<Music> findAll(String tableName){
         List<Music> list=new ArrayList<>();
 //        db= getSQLiteDB();

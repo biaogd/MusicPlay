@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -18,13 +19,19 @@ import android.app.Fragment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -135,11 +142,11 @@ public class LeftFragment extends Fragment{
             List<SongListBean> songBeanList=new ArrayList<>();
             if(str!=null){
                 songBeanList = gson.fromJson(str,new TypeToken<List<SongListBean>>(){}.getType());
-                for(SongListBean bean:songBeanList){
+                for(final SongListBean bean:songBeanList){
                     if(bean.getListName().equals("我喜欢")){
                         continue;
                     }
-                    View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list,null);
+                    final View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list,null);
                     TextView tv=(TextView)myView.findViewById(R.id.song_list_name);
                     tv.setText(bean.getListName());
                     TextView tv1=(TextView)myView.findViewById(R.id.song_list_count);
@@ -155,6 +162,19 @@ public class LeftFragment extends Fragment{
                             }
                             transaction.replace(R.id.other_frag,fragment);
                             transaction.commit();
+                        }
+                    });
+                    final ImageButton songListManagerBtn = (ImageButton)myView.findViewById(R.id.song_list_manager_btn);
+                    songListManagerBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!checkNet(getActivity())) {
+                                //网络无连接
+                                Toast.makeText(getActivity(),"未连接到网络",Toast.LENGTH_LONG).show();
+                            } else {
+                                View view1 = LayoutInflater.from(getActivity()).inflate(R.layout.song_list_menu_window,null);
+                                showWindow(myView,view1,songListManagerBtn,bean);
+                            }
                         }
                     });
                     layout1.addView(myView);
@@ -435,7 +455,7 @@ public class LeftFragment extends Fragment{
                         String name = strs[0];
                         String[] songList = strs[1].split(";");
                         Log.i("歌单", strs[1]);
-                        List<SongListBean> songBeanList = new ArrayList<>();
+                        final List<SongListBean> songBeanList = new ArrayList<>();
                         for (String s : songList) {
                             String[] ss = s.split("\\*");
                             if (ss[1].equals("我喜欢")) {
@@ -445,7 +465,7 @@ public class LeftFragment extends Fragment{
                                 continue;
                             }
                             System.out.println("添加歌单:"+ss[1]);
-                            View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list, null);
+                            final View myView = LayoutInflater.from(getActivity()).inflate(R.layout.song_list, null);
                             TextView tv = (TextView) myView.findViewById(R.id.song_list_name);
                             tv.setText(ss[1]);
                             TextView tv1 = (TextView) myView.findViewById(R.id.song_list_count);
@@ -461,6 +481,19 @@ public class LeftFragment extends Fragment{
                                     }
                                     transaction.replace(R.id.other_frag, fragment);
                                     transaction.commit();
+                                }
+                            });
+                            final ImageButton songListManagerBtn = (ImageButton)myView.findViewById(R.id.song_list_manager_btn);
+                            songListManagerBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    if (!checkNet(getActivity())) {
+                                        //网络无连接
+                                        Toast.makeText(getActivity(),"未连接到网络",Toast.LENGTH_LONG).show();
+                                    } else {
+                                        View view1 = LayoutInflater.from(getActivity()).inflate(R.layout.song_list_menu_window,null);
+                                        showWindow(myView,view1,songListManagerBtn,bean);
+                                    }
                                 }
                             });
                             layout1.addView(myView);
@@ -501,6 +534,87 @@ public class LeftFragment extends Fragment{
             }
         }
     }
+
+    public void showWindow(final View myview, View view, View parent, final SongListBean bean){
+        PopupWindow window=new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setFocusable(true);
+        window.setTouchable(true);
+        window.setBackgroundDrawable(new ColorDrawable(0x000000));
+        window.setOutsideTouchable(true);
+        //设置弹出窗口背景变半透明，来高亮弹出窗口
+        WindowManager.LayoutParams lp =getActivity().getWindow().getAttributes();
+        lp.alpha=0.5f;
+        getActivity().getWindow().setAttributes(lp);
+
+        window.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                //恢复透明度
+                WindowManager.LayoutParams lp =getActivity().getWindow().getAttributes();
+                lp.alpha=1f;
+                getActivity().getWindow().setAttributes(lp);
+            }
+        });
+        window.showAtLocation(parent, Gravity.BOTTOM,0,0);
+        TextView songListNameTv = (TextView)view.findViewById(R.id.song_list_name_tv);
+        songListNameTv.setText(bean.getListName());
+        Button button=(Button)view.findViewById(R.id.delete_song_list);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //删除歌单
+                //删除本地对应歌曲
+                myDao.clearListSong(bean);
+                //修改MyLogin
+                List<SongListBean> listBeans=MyLogin.bean.getSongList();
+                for (int i=0;i<listBeans.size();i++){
+                    if (listBeans.get(i).getListId()==bean.getListId()){
+                        listBeans.remove(i);
+                        break;
+                    }
+                }
+                MyLogin.bean.setSongList(listBeans);
+                //修改本地歌单列表
+                SharedPreferences.Editor editor=getActivity().getSharedPreferences("user_data",Context.MODE_PRIVATE).edit();
+                String listJson = gson.toJson(listBeans);
+                editor.putString("song_bean_list",listJson);
+                editor.apply();
+                //同时删除服务器歌曲和歌单
+                deleteSongList(bean);
+                //修改ui
+                layout1.removeView(myview);
+            }
+        });
+    }
+
+
+    private void deleteSongList(SongListBean bean){
+        int listId = bean.getListId();
+        int userId = MyLogin.bean.getId();
+        OkHttpClient client=new OkHttpClient();
+        RequestBody body=new FormBody.Builder()
+                .add("listId",String.valueOf(listId))
+                .build();
+        String url = SelfFinal.host+SelfFinal.port+"/music/user/deleteSongList";
+        Request request=new Request.Builder().post(body).url("").build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                handler.sendEmptyMessage(223);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String str=response.body().string();
+                if(str.equals("success")){
+                    //服务器歌单同步成功
+                    handler.sendEmptyMessage(222);
+                }
+            }
+        });
+    }
+
+
 public class MyHandler extends Handler{
     @Override
     public void handleMessage(Message msg) {
@@ -550,6 +664,12 @@ public class MyHandler extends Handler{
                         break;
                     }
                 }
+                break;
+            case 222:
+                Toast.makeText(getActivity(),"歌单删除成功",Toast.LENGTH_SHORT).show();
+                break;
+            case 223:
+                Toast.makeText(getActivity(),"服务器异常",Toast.LENGTH_SHORT).show();
                 break;
         }
     }

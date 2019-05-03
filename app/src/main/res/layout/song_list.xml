@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:src="@mipmap/ic_menu_48"
             android:layout_alignParentRight="true"
-
+            android:id="@+id/song_list_manager_btn"
             android:background="@color/touming"/>
     </RelativeLayout>
 </LinearLayout>
