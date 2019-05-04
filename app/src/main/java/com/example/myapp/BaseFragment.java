@@ -76,13 +76,11 @@ public class BaseFragment extends Fragment implements Serializable {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater,container,savedInstanceState);
-        Log.i("建立碎片","重新创建一个Fragment");
         this.myview=inflater.inflate(R.layout.basetab,container,false);
         backButton=(ImageButton)myview.findViewById(R.id.backButton);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("back_button","the button press********************");
                 FragmentManager manager=getFragmentManager();
                 FragmentTransaction transaction=manager.beginTransaction();
                 if(fragment == null){
@@ -98,14 +96,11 @@ public class BaseFragment extends Fragment implements Serializable {
         myview.setFocusable(true);
         myview.setFocusableInTouchMode(true);
         myview.requestFocus();
-        Log.i("焦点","得到了焦点");
         myview.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                Log.i("onkey","方法执行了");
                 if(event.getAction() == KeyEvent.ACTION_DOWN){
                     if (keyCode == KeyEvent.KEYCODE_BACK){
-                        Log.i("返回键","点击了返回键");
                         FragmentManager manager=getFragmentManager();
                         FragmentTransaction transaction=manager.beginTransaction();
                         if(fragment == null){

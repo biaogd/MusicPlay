@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.myapp.database.MyDao;
+import com.example.myapp.self.MyLogin;
 
 import java.util.ArrayList;
 
