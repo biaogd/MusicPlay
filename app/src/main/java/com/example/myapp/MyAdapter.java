@@ -81,15 +81,11 @@ public class MyAdapter extends BaseAdapter {
     private int selectByPath(Music music,String tableName){
         db = myDao.newDB();
         Cursor cursor=db.query(tableName,new String[]{"love"},"path=?",new String[]{music.getPath()},null,null,null);
-        int size = cursor.getCount();
         int love=0;
-        if(size >0) {
-            cursor.moveToFirst();
+        if(cursor.moveToNext()){
             love = cursor.getInt(cursor.getColumnIndexOrThrow("love"));
-        }
-
-        if(size==0){
-            return -1;
+        }else {
+            love = -1;
         }
         if(!cursor.isClosed()){
             cursor.close();
@@ -97,46 +93,23 @@ public class MyAdapter extends BaseAdapter {
         return love;
     }
 
-    /**
-     * 更新一个数据库中的love列，并且在喜欢和不喜欢之间自由转化
-     * @param music 要更新的歌曲
-     * @param tableName 数据库表名
-     */
-    private int updateLove(Music music,String tableName){
-        db = myDao.newDB();
-        int i=selectByPath(music,tableName);
-        int j=0;
-        if(i>-1) {
-            j = i>0?0:1;
-            ContentValues values = new ContentValues();
-            values.put("love",j);
-            db.update(tableName,values,"path=?",new String[]{music.getPath()} );
-        }
-        return j;
-    }
-
-
-    private void deleteLove(Music music,String tableName){
-        db = myDao.newDB();
-        db.delete(tableName,"path=?",new String[]{music.getPath()});
-    }
-    private void addlocalLove(Music music,String tableName){
+    private void updatelocalLove(Music music,String tableName,int loved){
         db = myDao.newDB();
         ContentValues values=new ContentValues();
-        values.put("love",1);
+        values.put("love",loved);
         db.update(tableName,values,"path=?",new String[]{music.getPath()});
     }
 
-    private void addAllLove(Music music){
+    //修改数据库love的值为1
+    private void updateAllLove(Music music,int loved){
         //把本地歌单love修改为1
-        addlocalLove(music,local_stable);
-        addlocalLove(music,near_stable);
-        addlocalLove(music,download_stable);
-        addlocalLove(music,love_stable);
+        updatelocalLove(music,local_stable,loved);
+        updatelocalLove(music,near_stable,loved);
+        updatelocalLove(music,download_stable,loved);
+        updatelocalLove(music,love_stable,loved);
         //把自定义歌单love改为1
-        addlocalLove(music,"self_music_list");
+        updatelocalLove(music,"self_music_list",loved);
     }
-
 
     @Override
     public int getCount() {
@@ -195,71 +168,32 @@ public class MyAdapter extends BaseAdapter {
                         Intent intents = new Intent(context, Login_in.class);
                         context.startActivity(intents);
                     }else {
-                        Intent intent = new Intent("update_service_love");
                         SongListBean bean=new SongListBean(MyLogin.loveId,null,0);
-                        if (fragment instanceof LoveMusicFragment) {
-                            updateLove(m, near_stable);
-                            deleteLove(m, love_stable);
-                            updateLove(m, local_stable);
-                            updateLove(m, download_stable);
-                            mList.remove(position);
-                            notifyDataSetChanged();
-                        } else if (fragment instanceof LocalMusicListFragment) {
-                                int i = updateLove(m, local_stable);
-                                loveBtn.setImageResource(images[i]);
-                                updateLove(m, near_stable);
-                                updateLove(m, download_stable);
-                                if (m.getLove() == 0) {
-                                    m.setLove(1);
-                                } else {
-                                    m.setLove(0);
-                                }
-                                if (i == 0) {
-                                    deleteLove(m, love_stable);
-                                    syncNetDelMusicFromSongList(m,bean);
-                                }
-                                if (i == 1) {
-                                    myDao.insertMusic(m, love_stable);
-                                    syncSongList(m,bean);
-                                }
-//                   intent.putExtra("fragment","localFragment");
-                        } else if (fragment instanceof NearPlayListFragment) {
-                            int i = updateLove(m, near_stable);
-                            loveBtn.setImageResource(images[i]);
-                            updateLove(m, download_stable);
-                            if (i == 0) {
-                                deleteLove(m, love_stable);
-                                syncNetDelMusicFromSongList(m,bean);
+//                        if (fragment instanceof LocalMusicListFragment) {
+                           int j = selectByPath(m,local_stable);
+                        System.out.println("j="+j+"---------------------");
+                        if(j == 1){
+                            m.setLove(0);
+                            if (myDao.deleteMusic(m,love_stable)>0){
+                                Log.i("删除策划嗯公","dsfdsf");
                             }
-                            if (i == 1) {
-                                myDao.insertMusic(m, love_stable);
-                                syncSongList(m,bean);
+                            loveBtn.setImageResource(images[0]);
+                            updateAllLove(m,0);
+                            syncNetDelMusicFromSongList(m,bean);
+
+                        }else {
+                            m.setLove(1);
+                            if(myDao.insertMusic(m,love_stable)>0){
+                                Log.i("插入策划嗯公","dsfdsf");
                             }
-                            if (m.getLove() == 0) {
-                                m.setLove(1);
-                            } else {
-                                m.setLove(0);
-                            }
-                            updateLove(m, local_stable);
-                        } else {
-                            int i = updateLove(m, download_stable);
-                            loveBtn.setImageResource(images[i]);
-                            updateLove(m, local_stable);
-                            updateLove(m, near_stable);
-                            if (i == 0) {
-                                deleteLove(m, love_stable);
-                                syncNetDelMusicFromSongList(m,bean);
-                            }
-                            if (i == 1) {
-                                myDao.insertMusic(m, love_stable);
-                                syncSongList(m,bean);
-                            }
-                            if (m.getLove() == 0) {
-                                m.setLove(1);
-                            } else {
-                                m.setLove(0);
-                            }
+                            loveBtn.setImageResource(images[1]);
+                            updateAllLove(m,1);
+                            syncSongList(m,bean);
+
+//                           }
                         }
+                        Intent intent = new Intent("update_service_love");
+                        intent.putExtra("loved",j);
                         intent.putExtra("music", m);
                         context.sendBroadcast(intent);
                     }
@@ -326,7 +260,7 @@ public class MyAdapter extends BaseAdapter {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         if (index == 0) {
-                                            deleteLove(m, local_stable);
+                                            myDao.deleteMusic(m, local_stable);
                                             mList.remove(position);
                                             notifyDataSetChanged();
                                             Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
@@ -340,7 +274,7 @@ public class MyAdapter extends BaseAdapter {
                                                 file1.delete();
                                             }
                                         } else {
-                                            deleteLove(m, local_stable);
+                                            myDao.deleteMusic(m, local_stable);
                                             mList.remove(position);
                                             notifyDataSetChanged();
                                         }
@@ -348,13 +282,13 @@ public class MyAdapter extends BaseAdapter {
                                 }).setNegativeButton("取消", null);
                                 builder.create().show();
                             } else if (fragment instanceof NearPlayListFragment) {
-                                deleteLove(m, near_stable);
+                                myDao.deleteMusic(m, near_stable);
                                 popupWindow.dismiss();
                                 mList.remove(position);
                                 notifyDataSetChanged();
                                 Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
                             } else if (fragment instanceof DownloadMusicFragment) {
-                                deleteLove(m, download_stable);
+                                myDao.deleteMusic(m, download_stable);
                                 popupWindow.dismiss();
                                 mList.remove(position);
                                 notifyDataSetChanged();
@@ -366,12 +300,10 @@ public class MyAdapter extends BaseAdapter {
                                         Intent intent=new Intent(context,Login_in.class);
                                         context.startActivity(intent);
                                     }else {
-                                        updateLove(m, near_stable);
-                                        deleteLove(m, love_stable);
+                                        myDao.deleteMusic(m, love_stable);
                                         //同时删除网络歌曲
                                         syncNetDelMusicFromSongList(m,new SongListBean(MyLogin.loveId,null,0));
-                                        updateLove(m, local_stable);
-                                        updateLove(m, download_stable);
+                                        updateAllLove(m,0);
                                         mList.remove(position);
                                         notifyDataSetChanged();
                                         Intent intent = new Intent("update_service_love");
@@ -470,10 +402,12 @@ public class MyAdapter extends BaseAdapter {
                         //将这个歌曲加入到本地数据库
                         long iii=0;
                         if(bean.getListId()==MyLogin.loveId){
-                            iii=myDao.insertMusic(music,"love_music_list");
-                            updateLove(music,local_stable);
+                            iii=myDao.insertMusic(music,love_stable);
+//                            updateLove(music,local_stable);
                             music.setLove(1);
+                            updateAllLove(music,1);
                             notifyDataSetChanged();
+
                         }else {
                             iii = myDao.insertMusic(listId, music, "self_music_list");
                         }

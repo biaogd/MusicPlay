@@ -649,25 +649,25 @@ public class MyService extends Service {
                     playByIndex(pos);
                 }
             }
-            if (intent.getAction().equals("updatelove")) {
-                if (music != null) {
-                    int i = music.getLove();
-                    int j = i == 0 ? 1 : 0;
-                    music.setLove(j);
-                    Log.i("在service中", "j=" + j);
-                }
-            }
+//            if (intent.getAction().equals("updatelove")) {
+//                if (music != null) {
+//                    int i = music.getLove();
+//                    int j = i == 0 ? 1 : 0;
+//                    music.setLove(j);
+//                    Log.i("在service中", "j=" + j);
+//                }
+//            }
             if (intent.getAction().equals("update_service_love")) {
                 Music ms = (Music) intent.getSerializableExtra("music");
-                int i = 0;
-                if(mList!=null) {
-                    for (i = 0; i < mList.size(); i++) {
+                int j = intent.getIntExtra("loved",-1);
+                if(mList!=null&&j!=-1){
+                    for (int i = 0; i < mList.size(); i++) {
                         if (mList.get(i).getPath().equals(ms.getPath())) {
-                            int mm = music.getLove();
-                            Log.i("mm", mm + "");
-                            int nn = mm == 0 ? 1 : 0;
-                            Log.i("nn", nn + "");
-                            mList.get(i).setLove(nn);
+                            if(j==0){
+                                mList.get(i).setLove(1);
+                            }else {
+                                mList.get(i).setLove(0);
+                            }
                             break;
                         }
                     }

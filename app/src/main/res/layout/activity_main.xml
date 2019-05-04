@@ -90,14 +90,6 @@
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
-    <!--<LinearLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:fitsSystemWindows="true"-->
-        <!--android:layout_gravity="start"-->
-        <!--android:background="@color/base_color"-->
-        <!--android:orientation="vertical"-->
-        <!--&gt;-->
 
         <android.support.design.widget.NavigationView
             android:layout_width="match_parent"

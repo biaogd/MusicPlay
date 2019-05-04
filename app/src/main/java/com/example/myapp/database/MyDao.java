@@ -129,7 +129,6 @@ public class MyDao {
     }
 
     public long insertMusic(Music music,String tableName){
-//        db = getSQLiteDB();
         if(!isConnection()){
             initConnect();
         }
@@ -142,6 +141,7 @@ public class MyDao {
         values.put("flag",music.getFlag());
         values.put("love",music.getLove());
         long i=db.insert(tableName,null,values);
+        System.out.println("歌曲:"+music.getSongName()+";插入"+tableName+"表成功");
         return i;
     }
 

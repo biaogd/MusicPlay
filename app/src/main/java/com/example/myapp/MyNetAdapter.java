@@ -48,10 +48,32 @@ public class MyNetAdapter extends BaseAdapter {
     private List<Music> musicList;
     private ViewHolder holder;
     private MyDao myDao;
+    private static final String local_stable = "local_music_list";
+    private static final String near_stable = "near_music_list";
+    private static final String download_stable = "download_music_list";
+    private static final String love_stable = "love_music_list";
     public MyNetAdapter(Activity context,List<Music> list){
         this.context=context;
         this.musicList=list;
         myDao = new MyDao(this.context);
+    }
+
+
+    private void updatelocalLove(Music music,String tableName,int loved){
+        ContentValues values=new ContentValues();
+        values.put("love",loved);
+        myDao.newDB().update(tableName,values,"path=?",new String[]{music.getPath()});
+    }
+
+    //修改数据库love的值为1
+    private void updateAllLove(Music music,int loved){
+        //把本地歌单love修改为1
+        updatelocalLove(music,local_stable,loved);
+        updatelocalLove(music,near_stable,loved);
+        updatelocalLove(music,download_stable,loved);
+        updatelocalLove(music,love_stable,loved);
+        //把自定义歌单love改为1
+        updatelocalLove(music,"self_music_list",loved);
     }
     @Override
     public int getCount() {
@@ -198,7 +220,9 @@ public class MyNetAdapter extends BaseAdapter {
                         //将这个歌曲加入到本地数据库
                         long iii=0;
                         if(bean.getListId()==MyLogin.loveId){
+                            music.setLove(1);
                             iii=myDao.insertMusic(music,"love_music_list");
+                            updateAllLove(music,1);
                         }else {
                             iii = myDao.insertMusic(listId, music, "self_music_list");
                         }

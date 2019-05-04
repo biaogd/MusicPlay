@@ -75,7 +75,7 @@ public class Login_in extends Activity {
                     break;
                 case R.id.login_in_btn:
                     errTv.setVisibility(View.GONE);
-                    String userId = userIdEditText.getText().toString().trim();
+                    final String userId = userIdEditText.getText().toString().trim();
                     String userPw = userPwEditText.getText().toString().trim();
                     if(userId.length()==0||userPw.length()==0){
                         errTv.setText("用户名或密码为空");
@@ -107,6 +107,7 @@ public class Login_in extends Activity {
                                     message.arg1 = Integer.parseInt(strs[1]);
                                     //获取用户名称
                                     message.obj=new String(strs[2]+"-"+strs[3]);
+                                    MyLogin.userEmail = userId;
                                     handler.sendMessage(message);
                                 }else if(str.equals("noPassword")){
                                     handler.sendEmptyMessage(101);

@@ -1,7 +1,9 @@
 package com.example.myapp;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
 import android.view.Gravity;
@@ -40,6 +42,11 @@ public class SelfAdapter extends BaseAdapter {
     private MyDao myDao;
     private ViewHolder holder;
     private SongListBean songListBean;
+    private SQLiteDatabase db;
+    private static final String local_stable = "local_music_list";
+    private static final String near_stable = "near_music_list";
+    private static final String download_stable = "download_music_list";
+    private static final String love_stable = "love_music_list";
     public SelfAdapter(Activity activity,List<Music> musicList,SongListBean songListBean){
         this.context = activity;
         this.musicList = musicList;
@@ -204,7 +211,23 @@ public class SelfAdapter extends BaseAdapter {
         });
         return convertView;
     }
+    private void updatelocalLove(Music music,String tableName,int loved){
+        db = myDao.newDB();
+        ContentValues values=new ContentValues();
+        values.put("love",loved);
+        db.update(tableName,values,"path=?",new String[]{music.getPath()});
+    }
 
+    //修改数据库love的值为1
+    private void updateAllLove(Music music,int loved){
+        //把本地歌单love修改为1
+        updatelocalLove(music,local_stable,loved);
+        updatelocalLove(music,near_stable,loved);
+        updatelocalLove(music,download_stable,loved);
+        updatelocalLove(music,love_stable,loved);
+        //把自定义歌单love改为1
+        updatelocalLove(music,"self_music_list",loved);
+    }
     public void showAddListWindow(final Activity context, View p, final Music music){
         List<SongListBean> songListBeanList=MyLogin.bean.getSongList();
         View views = LayoutInflater.from(context).inflate(R.layout.add_song_list,null);
@@ -238,7 +261,9 @@ public class SelfAdapter extends BaseAdapter {
                             //将这个歌曲加入到本地数据库
                             long iii=0;
                             if(bean.getListId()==MyLogin.loveId){
+                                music.setLove(1);
                                 iii=myDao.insertMusic(music,"love_music_list");
+                                updateAllLove(music,1);
                             }else {
                                 iii = myDao.insertMusic(listId, music, "self_music_list");
                             }

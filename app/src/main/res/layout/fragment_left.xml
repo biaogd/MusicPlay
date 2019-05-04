@@ -171,7 +171,7 @@
                 <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@mipmap/ic_right_32"
+                    android:src="@mipmap/ic_bottom_32"
                     android:layout_gravity="center_vertical"
                     android:id="@+id/image_down_forward"
                     android:background="@color/touming"/>
@@ -179,6 +179,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:text="建立的歌单"
                     android:layout_gravity="center_vertical"
                     android:textColor="@color/color1"

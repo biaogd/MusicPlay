@@ -16,9 +16,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".RegisterActivity"
-            android:parentActivityName=".Login_in"
-            android:label="用户注册"/>
+        <activity android:name=".ReportActivity" android:parentActivityName=".MainActivity"
+            android:label="错误反馈"></activity>
+        <activity
+            android:name=".RegisterActivity"
+            android:label="用户注册"
+            android:parentActivityName=".Login_in" />
         <activity android:name=".Login_in" />
         <activity
             android:name=".AboutActivity"

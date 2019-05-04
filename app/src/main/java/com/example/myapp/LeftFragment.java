@@ -155,7 +155,6 @@ public class LeftFragment extends Fragment{
                     myView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            System.out.println("正在启动一个新的页面");
                             FragmentTransaction transaction=getFragmentManager().beginTransaction();
                             if(fragment==null){
                                 fragment=SelfFragment.newInstance(bean1);

@@ -512,6 +512,7 @@ public class MainActivity extends Activity {
                                 MyLogin.logined=false;
                                 MyLogin.bean=null;
                                 MyLogin.loveId=0;
+                                MyLogin.userEmail=null;
                                 myDao.clearTable("self_music_list");
                                 myDao.clearLove("love_music_list");
                                 myDao.clearLove("near_music_list");
@@ -558,6 +559,13 @@ public class MainActivity extends Activity {
                                         Toast.makeText(MainActivity.this, "清理缓存成功", Toast.LENGTH_LONG).show();
                                     }
                                 }).setNegativeButton("取消",null).show();
+                        break;
+                    case R.id.report_error:
+                        if(drawerLayout.isDrawerOpen(navigationView)){
+                            drawerLayout.closeDrawer(navigationView);
+                        }
+                        Intent intent2=new Intent(MainActivity.this,ReportActivity.class);
+                        startActivity(intent2);
                         break;
                 }
                 return false;

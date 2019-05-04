@@ -73,9 +73,6 @@ import okhttp3.Response;
 public class PlayActivity extends Activity {
 
     private Music music;
-
-    private boolean playing;
-
     private MyBroadcast broadcast;
     private SeekBar seekBar;
     private TextView nowTime;
@@ -115,6 +112,11 @@ public class PlayActivity extends Activity {
 
     private int spaces=0;
     private int noewpos=0;
+
+    private static final String local_stable = "local_music_list";
+    private static final String near_stable = "near_music_list";
+    private static final String download_stable = "download_music_list";
+    private static final String love_stable = "love_music_list";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -246,32 +248,23 @@ public class PlayActivity extends Activity {
         loveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(music.getFlag()==0){         //本地歌曲或已经下载的歌曲
-                    updateLove(music,"local_music_list");
-                    updateLove(music,"near_music_list");
-                    updateLove(music,"download_music_list");
-                    if(music.getLove()==1){
-                        deleteLove(music,"love_music_list");
-                    }else {
-                        myDao.insertMusic(music,"love_music_list");
-                    }
-                }else { //播放的是网络歌曲
-                    updateLove(music,"near_music_list");
-                    if(music.getLove()==1){
-                        deleteLove(music,"love_music_list");
-                    }else {
-                        myDao.insertMusic(music,"love_music_list");
-                    }
+                int j = music.getLove();
+                if(j==1){
+                    music.setLove(0);
+                    myDao.deleteMusic(music,"love_music_list");
+                    updateAllLove(music,0);
+                }else {
+                    music.setLove(1);
+                    myDao.insertMusic(music,"love_music_list");
+                    updateAllLove(music,1);
                 }
                 Intent intent1=new Intent();
-                intent1.setAction("updatelove");
+                intent1.setAction("update_service_love");
+                intent1.putExtra("loved",j);
+                intent1.putExtra("music",music);
                 sendBroadcast(intent1);
-                int i = music.getLove();
-                Log.i("i的值",i+"");
-                int j = i==0?1:0;
-                Log.i("j的值",j+"");
-                music.setLove(j);
-                loveBtn.setImageResource(images[j]);
+                int i = j==0?1:0;
+                loveBtn.setImageResource(images[i]);
             }
         });
         final ImageButton lrcMenuBtn=(ImageButton)findViewById(R.id.play_lrc_btn);
@@ -361,64 +354,21 @@ public class PlayActivity extends Activity {
 //        getMusicLrc();
     }
 
-    private SQLiteDatabase getSQLiteDB(){
-        return this.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
+    private void updatelocalLove(Music music,String tableName,int loved){
+        ContentValues values=new ContentValues();
+        values.put("love",loved);
+        myDao.newDB().update(tableName,values,"path=?",new String[]{music.getPath()});
     }
 
-    /**
-     * 获取一个数据库当中是否包含正在操作的歌曲
-     * @param music 正在操作的歌曲对象
-     * @param tableName 要查询的数据库
-     * @return  -1，数据库中不包含这个歌曲；0，包含，但该歌曲不是我喜欢的；1，这个歌曲在，并且是我喜欢的
-     */
-    private int selectByPath(Music music,String tableName){
-        SQLiteDatabase db = getSQLiteDB();
-        Cursor cursor=db.query(tableName,new String[]{"love"},"path=?",new String[]{music.getPath()},null,null,null);
-        int size = cursor.getCount();
-        Log.i(tableName,"size = "+size);
-        int love=0;
-        if(size >0) {
-            cursor.moveToFirst();
-            love = cursor.getInt(cursor.getColumnIndexOrThrow("love"));
-        }
-        if(db.isOpen()) {
-            db.close();
-        }
-        if(size==0){
-            return -1;
-        }
-        Log.i(tableName,"love="+love);
-        return love;
-    }
-
-    /**
-     * 更新一个数据库中的love列，并且在喜欢和不喜欢之间自由转化
-     * @param music 要更新的歌曲
-     * @param tableName 数据库表名
-     */
-    private int updateLove(Music music,String tableName){
-        SQLiteDatabase db = getSQLiteDB();
-        int i=selectByPath(music,tableName);
-        int j=0;
-        if(i>-1) {
-            j = i>0?0:1;
-            Log.i(tableName,""+j);
-            ContentValues values = new ContentValues();
-            values.put("love",j);
-            db.update(tableName,values,"path=?",new String[]{music.getPath()} );
-        }
-        if(db.isOpen()) {
-            db.close();
-        }
-        return j;
-    }
-
-    private void deleteLove(Music music,String tableName){
-        SQLiteDatabase db=getSQLiteDB();
-        db.delete(tableName,"path=?",new String[]{music.getPath()});
-        if(db.isOpen()){
-            db.close();
-        }
+    //修改数据库love的值为1
+    private void updateAllLove(Music music,int loved){
+        //把本地歌单love修改为1
+        updatelocalLove(music,local_stable,loved);
+        updatelocalLove(music,near_stable,loved);
+        updatelocalLove(music,download_stable,loved);
+        updatelocalLove(music,love_stable,loved);
+        //把自定义歌单love改为1
+        updatelocalLove(music,"self_music_list",loved);
     }
 
     //md5算法加密
