@@ -1,7 +1,6 @@
 package com.example.myapp.self;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class Music implements Serializable {
 

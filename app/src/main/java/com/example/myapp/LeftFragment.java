@@ -368,12 +368,11 @@ public class LeftFragment extends Fragment{
                             }
                         }
 
-                        music.setFlag(bean.getSongId());
                         if(bean.getSongId()==0){
                             int j = 0;
                             for(j=0;j<localList.size();j++){
-                                Music music1=localList.get(j);
-                                if(music.getSongName().equals(music1.getSongName())&&music.getSongAuthor().equals(music1.getSongAuthor())){
+                                Music m1=localList.get(j);
+                                if(music.getSongName().equals(m1.getSongName())&&music.getSongAuthor().equals(m1.getSongAuthor())){
                                     music.setFlag(0);
                                     break;
                                 }
@@ -382,6 +381,8 @@ public class LeftFragment extends Fragment{
                             if(j>=localList.size()){
                                 music.setFlag(-1);
                             }
+                        }else {
+                            music.setFlag(bean.getSongId());
                         }
                         musicList.add(music);
                     }

@@ -689,7 +689,6 @@ public class MainActivity extends Activity {
                     for(i=0;i<list1.size();i++){
                         Music m=list1.get(i);
                         if(m.getPath().equals(music.getPath())){      //列表中已经有这个歌曲
-                            Log.i("在MainActivity","updateMusic 之ixng了");
                             myDao.deleteMusic(music,
                                     "near_music_list");     //从数据库中删除
                             myDao.insertMusic(music,"near_music_list");

@@ -50,7 +50,7 @@ public class MyAdapter extends BaseAdapter {
     private List<Music> mList;
     private LayoutInflater inflater;
     private Fragment fragment;
-    private SQLiteDatabase db;
+    private  static SQLiteDatabase db;
     private Activity context;
     private MyDao myDao;
     //正在播放的歌曲在列表中的位置
@@ -79,7 +79,7 @@ public class MyAdapter extends BaseAdapter {
      * @return  -1，数据库中不包含这个歌曲；0，包含，但该歌曲不是我喜欢的；1，这个歌曲在，并且是我喜欢的
      */
     private int selectByPath(Music music,String tableName){
-        SQLiteDatabase db = getSQLiteDB();
+        db = myDao.newDB();
         Cursor cursor=db.query(tableName,new String[]{"love"},"path=?",new String[]{music.getPath()},null,null,null);
         int size = cursor.getCount();
         int love=0;
@@ -87,11 +87,12 @@ public class MyAdapter extends BaseAdapter {
             cursor.moveToFirst();
             love = cursor.getInt(cursor.getColumnIndexOrThrow("love"));
         }
-        if(db.isOpen()) {
-            db.close();
-        }
+
         if(size==0){
             return -1;
+        }
+        if(!cursor.isClosed()){
+            cursor.close();
         }
         return love;
     }
@@ -102,7 +103,7 @@ public class MyAdapter extends BaseAdapter {
      * @param tableName 数据库表名
      */
     private int updateLove(Music music,String tableName){
-        SQLiteDatabase db = getSQLiteDB();
+        db = myDao.newDB();
         int i=selectByPath(music,tableName);
         int j=0;
         if(i>-1) {
@@ -111,36 +112,31 @@ public class MyAdapter extends BaseAdapter {
             values.put("love",j);
             db.update(tableName,values,"path=?",new String[]{music.getPath()} );
         }
-        if(db.isOpen()) {
-            db.close();
-        }
         return j;
     }
 
-    protected long insertMusic(Music music,String tableName){
-        SQLiteDatabase db = getSQLiteDB();
-        ContentValues values=new ContentValues();
-        values.put("song_name",music.getSongName());
-        values.put("song_author",music.getSongAuthor());
-        values.put("all_time",music.getAlltime());
-        values.put("path",music.getPath());
-        values.put("song_size",music.getSongSize());
-        values.put("flag",music.getFlag());
-        values.put("love",1);
-        long i=db.insert(tableName,null,values);
-        if(db.isOpen()){
-            db.close();
-        }
-        return i;
-    }
 
     private void deleteLove(Music music,String tableName){
-        SQLiteDatabase db=getSQLiteDB();
+        db = myDao.newDB();
         db.delete(tableName,"path=?",new String[]{music.getPath()});
-        if(db.isOpen()){
-            db.close();
-        }
     }
+    private void addlocalLove(Music music,String tableName){
+        db = myDao.newDB();
+        ContentValues values=new ContentValues();
+        values.put("love",1);
+        db.update(tableName,values,"path=?",new String[]{music.getPath()});
+    }
+
+    private void addAllLove(Music music){
+        //把本地歌单love修改为1
+        addlocalLove(music,local_stable);
+        addlocalLove(music,near_stable);
+        addlocalLove(music,download_stable);
+        addlocalLove(music,love_stable);
+        //把自定义歌单love改为1
+        addlocalLove(music,"self_music_list");
+    }
+
 
     @Override
     public int getCount() {
@@ -187,7 +183,7 @@ public class MyAdapter extends BaseAdapter {
             author.setTextColor(context.getResources().getColor(R.color.black));
         }
         //在我喜欢的音乐列表中隐藏按钮
-        if(fragment instanceof LoveMusicFragment){
+        if(fragment instanceof LoveMusicFragment||fragment instanceof NearPlayListFragment||fragment instanceof DownloadMusicFragment){
             loveBtn.setVisibility(View.GONE);
         }
         loveBtn.setOnClickListener(new View.OnClickListener() {
@@ -223,7 +219,7 @@ public class MyAdapter extends BaseAdapter {
                                     syncNetDelMusicFromSongList(m,bean);
                                 }
                                 if (i == 1) {
-                                    insertMusic(m, love_stable);
+                                    myDao.insertMusic(m, love_stable);
                                     syncSongList(m,bean);
                                 }
 //                   intent.putExtra("fragment","localFragment");
@@ -236,7 +232,7 @@ public class MyAdapter extends BaseAdapter {
                                 syncNetDelMusicFromSongList(m,bean);
                             }
                             if (i == 1) {
-                                insertMusic(m, love_stable);
+                                myDao.insertMusic(m, love_stable);
                                 syncSongList(m,bean);
                             }
                             if (m.getLove() == 0) {
@@ -255,7 +251,7 @@ public class MyAdapter extends BaseAdapter {
                                 syncNetDelMusicFromSongList(m,bean);
                             }
                             if (i == 1) {
-                                insertMusic(m, love_stable);
+                                myDao.insertMusic(m, love_stable);
                                 syncSongList(m,bean);
                             }
                             if (m.getLove() == 0) {
@@ -345,7 +341,6 @@ public class MyAdapter extends BaseAdapter {
                                             }
                                         } else {
                                             deleteLove(m, local_stable);
-//                                        popupWindow.dismiss();
                                             mList.remove(position);
                                             notifyDataSetChanged();
                                         }
@@ -446,9 +441,9 @@ public class MyAdapter extends BaseAdapter {
         LinearLayout body_layout = (LinearLayout)views.findViewById(R.id.song_list_body);
         final PopupWindow popupWindow=new PopupWindow(views,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
         for(final SongListBean bean:songListBeanList){
-            if(bean.getListId()==MyLogin.loveId){
-                continue;
-            }
+//            if(bean.getListId()==MyLogin.loveId){
+//                continue;
+//            }
             View view1=LayoutInflater.from(context).inflate(R.layout.button_layout,null);
             Button button=(Button)view1.findViewById(R.id.self_button);
             button.setText(bean.getListName());
@@ -456,7 +451,12 @@ public class MyAdapter extends BaseAdapter {
                 @Override
                 public void onClick(View v) {
                     //获得这个歌单的所有歌曲
-                    List<Music> allMusic = myDao.findAll(bean.getListId(),"self_music_list");
+                    List<Music> allMusic;
+                    if(bean.getListId()==MyLogin.loveId){
+                        allMusic = myDao.findAll("love_music_list");
+                    }else {
+                        allMusic = myDao.findAll(bean.getListId(),"self_music_list");
+                    }
                     int i=0;
                     for(i=0;i<allMusic.size();i++){
                         Music mm = allMusic.get(i);
@@ -466,14 +466,23 @@ public class MyAdapter extends BaseAdapter {
                         }
                     }
                     if(i>=allMusic.size()) {
-                        //歌曲不再这个歌单中
                         int listId = bean.getListId();
                         //将这个歌曲加入到本地数据库
-                        myDao.insertMusic(listId, music, "self_music_list");
-                        Log.i("歌曲" + music.getSongName(), "已加入到数据库中");
-                        //在把这个歌曲同步到服务器
-                        syncSongList(music, bean);
-                        Toast.makeText(context,"歌曲已加入歌单中",Toast.LENGTH_LONG).show();
+                        long iii=0;
+                        if(bean.getListId()==MyLogin.loveId){
+                            iii=myDao.insertMusic(music,"love_music_list");
+                            updateLove(music,local_stable);
+                            music.setLove(1);
+                            notifyDataSetChanged();
+                        }else {
+                            iii = myDao.insertMusic(listId, music, "self_music_list");
+                        }
+                        if(iii>0) {
+                            Log.i("歌曲" + music.getSongName(), "已加入到数据库中");
+                            //在把这个歌曲同步到服务器
+                            syncSongList(music, bean);
+                            Toast.makeText(context, "歌曲已加入歌单中", Toast.LENGTH_LONG).show();
+                        }
                     }else {
                         Toast.makeText(context,"已存在",Toast.LENGTH_LONG).show();
                     }
@@ -565,43 +574,6 @@ public class MyAdapter extends BaseAdapter {
             }
         }
         return false;
-    }
-    public void showDialog(final Music music, final int pos, final PopupWindow popup){
-        index=-1;
-        String []arr={"同时删除本地歌曲文件，包括歌词"};
-        AlertDialog.Builder builder=new AlertDialog.Builder(context);
-        builder.setTitle("确定删除歌曲?");
-        builder.setSingleChoiceItems(arr, index, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                index = which;
-            }
-        });
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if(index==0){
-                    deleteLove(music,local_stable);
-                    mList.remove(pos);
-                    notifyDataSetChanged();
-                    Toast.makeText(context,"删除成功",Toast.LENGTH_SHORT).show();
-                    File file=new File(music.getPath());
-                    if(file.exists()){
-                        file.delete();
-                    }
-                    File file1=new File(music.getPath().split(".")[0]+".lrc");
-                    if(file1.exists()){
-                        file1.delete();
-                    }
-                }else{
-                    deleteLove(music,local_stable);
-//                    popup.dismiss();
-                    mList.remove(pos);
-                    notifyDataSetChanged();
-                }
-            }
-        }).setNegativeButton("取消",null);
-        builder.create().show();
     }
 
     /**

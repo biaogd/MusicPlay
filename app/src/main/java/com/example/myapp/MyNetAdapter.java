@@ -115,23 +115,9 @@ public class MyNetAdapter extends BaseAdapter {
                 TextView songNameAndAuthor = (TextView)myView.findViewById(R.id.on_song_about);
                 songNameAndAuthor.setText("歌曲："+music.getSongName()+" - "+music.getSongAuthor());
                 final Button comeToLove= (Button)myView.findViewById(R.id.come_to_love);
-                List<Music> music1=new MyDao(context).findAll("love_music_list");
-                for (Music m:music1){
-                    if(m.getPath().equals(music.getPath())){
-                        comeToLove.setEnabled(false);
-                        break;
-                    }
-                }
                 comeToLove.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        music.setLove(1);
-//                        new MyDao(context).insertMusic(music,"love_music_list");
-//                        Intent intent1=new Intent();
-//                        intent1.setAction("updatelove");
-//                        context.sendBroadcast(intent1);
-//                        updateLove(music,"near_music_list");
-//                        syncSongList(music,new SongListBean(MyLogin.loveId,null,0));
                         popupWindow.dismiss();
                         showAddListWindow(context,comeToLove,music);
                     }
