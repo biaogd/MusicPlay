@@ -118,7 +118,6 @@ public class MyDao {
 
     //清空音乐列表的喜欢标记,设置love=0
     public int clearLove(String tableName){
-//        db = getSQLiteDB();
         if(!isConnection()){
             initConnect();
         }
@@ -234,5 +233,29 @@ public class MyDao {
             }
         }
         return count;
+    }
+
+    public void setFlagWithDeleteMusic(Music music, int flag){
+        if(!isConnection()){
+            initConnect();
+        }
+        ContentValues values=new ContentValues();
+        values.put("flag",flag);
+        db.update("near_music_list",values,"path=?",new String[]{music.getPath()});
+        db.update("download_music_list",values,"path=?",new String[]{music.getPath()});
+        db.update("love_music_list",values,"path=?",new String[]{music.getPath()});
+        db.update("self_music_list",values,"path=?",new String[]{music.getPath()});
+    }
+
+    public void updateFlagWithLogin(Music music,int love){
+        if(!isConnection()){
+            initConnect();
+        }
+        ContentValues values=new ContentValues();
+        values.put("love",love);
+        db.update("near_music_list",values,"path=?",new String[]{music.getPath()});
+        db.update("download_music_list",values,"path=?",new String[]{music.getPath()});
+        db.update("local_music_list",values,"path=?",new String[]{music.getPath()});
+        db.update("self_music_list",values,"path=?",new String[]{music.getPath()});
     }
 }

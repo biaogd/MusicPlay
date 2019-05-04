@@ -143,17 +143,32 @@ public class MyAdapter extends BaseAdapter {
         //行就可能会出现复用了刚好是绿色的哪一个View，所以出现多个“正在播放”
         //在第一屏之后会复用前面已经渲染的View，之前在这个if语句中没有加入else条件，造成滑动后颜色重复问题
         //对于解决这个问题，就是对所有的条件重写，解决复用的问题，加入else条件即可
-        if(m!=null && m.getId()==-1000){
-            Log.i("在适配器当中","执行了更新颜色操作"+m.getPath());
-            name.setTextColor(context.getResources().getColor(R.color.beautiful));
-            author.setTextColor(context.getResources().getColor(R.color.beautiful));
+        if(m.getId()==-1000){
+            if(m.getFlag()!=-1) {
+                name.setTextColor(context.getResources().getColor(R.color.beautiful));
+                author.setTextColor(context.getResources().getColor(R.color.beautiful));
+            }else {
+//                holder.flagBtn.setImageResource(R.mipmap.ic_phone_20);
+                name.setTextColor(context.getResources().getColor(R.color.gray));
+               author.setTextColor(context.getResources().getColor(R.color.gray));
+            }
         }else {
-            name.setTextColor(context.getResources().getColor(R.color.color1));
-            author.setTextColor(context.getResources().getColor(R.color.black));
+            if(m.getFlag()!=-1) {
+                name.setTextColor(context.getResources().getColor(R.color.color1));
+                author.setTextColor(context.getResources().getColor(R.color.black));
+            }else {
+                name.setTextColor(context.getResources().getColor(R.color.gray));
+                author.setTextColor(context.getResources().getColor(R.color.gray));
+            }
         }
-        if(m!=null && m.getId() == -1){
-            name.setTextColor(context.getResources().getColor(R.color.color1));
-            author.setTextColor(context.getResources().getColor(R.color.black));
+        if(m.getId() == -1){
+            if(m.getFlag()!=-1) {
+                name.setTextColor(context.getResources().getColor(R.color.color1));
+                author.setTextColor(context.getResources().getColor(R.color.black));
+            }else {
+                name.setTextColor(context.getResources().getColor(R.color.gray));
+                author.setTextColor(context.getResources().getColor(R.color.gray));
+            }
         }
         //在我喜欢的音乐列表中隐藏按钮
         if(fragment instanceof LoveMusicFragment||fragment instanceof NearPlayListFragment||fragment instanceof DownloadMusicFragment){
@@ -174,18 +189,14 @@ public class MyAdapter extends BaseAdapter {
                         System.out.println("j="+j+"---------------------");
                         if(j == 1){
                             m.setLove(0);
-                            if (myDao.deleteMusic(m,love_stable)>0){
-                                Log.i("删除策划嗯公","dsfdsf");
-                            }
+                            myDao.deleteMusic(m,love_stable);
                             loveBtn.setImageResource(images[0]);
                             updateAllLove(m,0);
                             syncNetDelMusicFromSongList(m,bean);
 
                         }else {
                             m.setLove(1);
-                            if(myDao.insertMusic(m,love_stable)>0){
-                                Log.i("插入策划嗯公","dsfdsf");
-                            }
+                            myDao.insertMusic(m,love_stable);
                             loveBtn.setImageResource(images[1]);
                             updateAllLove(m,1);
                             syncSongList(m,bean);
@@ -268,11 +279,11 @@ public class MyAdapter extends BaseAdapter {
                                             if (file.exists()) {
                                                 file.delete();
                                             }
-                                            System.out.println(m.getPath());
                                             File file1 = new File(m.getPath().split("\\.")[0] + ".lrc");
                                             if (file1.exists()) {
                                                 file1.delete();
                                             }
+                                            myDao.setFlagWithDeleteMusic(m,-1);
                                         } else {
                                             myDao.deleteMusic(m, local_stable);
                                             mList.remove(position);
@@ -368,14 +379,21 @@ public class MyAdapter extends BaseAdapter {
     }
 
     private void showAddListWindow(final Activity context, View p, final Music music){
+        if(!checkNet(context)) {
+            Toast.makeText(context,"未连接到网络",Toast.LENGTH_LONG).show();
+            return;
+        }else {
+            if (!MyLogin.logined) {
+                Intent intent = new Intent(context, Login_in.class);
+                context.startActivity(intent);
+                return;
+            }
+        }
         List<SongListBean> songListBeanList=MyLogin.bean.getSongList();
         View views = LayoutInflater.from(context).inflate(R.layout.add_song_list,null);
         LinearLayout body_layout = (LinearLayout)views.findViewById(R.id.song_list_body);
         final PopupWindow popupWindow=new PopupWindow(views,WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT);
         for(final SongListBean bean:songListBeanList){
-//            if(bean.getListId()==MyLogin.loveId){
-//                continue;
-//            }
             View view1=LayoutInflater.from(context).inflate(R.layout.button_layout,null);
             Button button=(Button)view1.findViewById(R.id.self_button);
             button.setText(bean.getListName());

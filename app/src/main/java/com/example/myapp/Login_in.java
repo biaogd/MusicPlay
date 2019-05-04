@@ -40,6 +40,7 @@ public class Login_in extends Activity {
     private EditText userIdEditText,userPwEditText;
     private TextView losePwTv,registerTv,errTv;
     private Handler handler;
+    private String email;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,8 +75,10 @@ public class Login_in extends Activity {
                     finish();
                     break;
                 case R.id.login_in_btn:
+                    loginInBtn.setEnabled(false);
                     errTv.setVisibility(View.GONE);
                     final String userId = userIdEditText.getText().toString().trim();
+                    email = userId;
                     String userPw = userPwEditText.getText().toString().trim();
                     if(userId.length()==0||userPw.length()==0){
                         errTv.setText("用户名或密码为空");
@@ -107,7 +110,7 @@ public class Login_in extends Activity {
                                     message.arg1 = Integer.parseInt(strs[1]);
                                     //获取用户名称
                                     message.obj=new String(strs[2]+"-"+strs[3]);
-                                    MyLogin.userEmail = userId;
+//                                    MyLogin.userEmail = userId;
                                     handler.sendMessage(message);
                                 }else if(str.equals("noPassword")){
                                     handler.sendEmptyMessage(101);
@@ -141,10 +144,12 @@ public class Login_in extends Activity {
                 case 400:
                     errTv.setText("用户登录异常,稍后重试");
                     errTv.setVisibility(View.VISIBLE);
+                    loginInBtn.setEnabled(true);
                     break;
                 case 100:
                     errTv.setText("用户已注册，但未激活");
                     errTv.setVisibility(View.VISIBLE);
+                    loginInBtn.setEnabled(true);
                     break;
                 case 200:
                     int id = msg.arg1;
@@ -152,22 +157,25 @@ public class Login_in extends Activity {
                     Intent intent=new Intent("login_in_success");
                     intent.putExtra("id",id);
                     intent.putExtra("name",name);
+                    intent.putExtra("email",email);
                     sendBroadcast(intent);
-                    Log.i("登录成功广播","已发出");
                     finish();
                     break;
                 case 101:
                     errTv.setText("密码错误");
                     errTv.setVisibility(View.VISIBLE);
                     userPwEditText.setText("");
+                    loginInBtn.setEnabled(true);
                     break;
                 case 102:
                     errTv.setText("用户不存在");
                     errTv.setVisibility(View.VISIBLE);
+                    loginInBtn.setEnabled(true);
                     break;
                 case 404:
                     errTv.setText("有未知的异常");
                     errTv.setVisibility(View.VISIBLE);
+                    loginInBtn.setEnabled(true);
                     break;
             }
         }

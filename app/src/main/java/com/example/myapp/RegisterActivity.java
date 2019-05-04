@@ -28,7 +28,6 @@ public class RegisterActivity extends AppCompatActivity {
 
     private EditText userNameEdit,emailEdit,passwordEdit1,passwordEdit2;
     private Button submit;
-    private OkHttpClient client;
     private Handler handler;
     private TextView promptTv,successTv;
     private LinearLayout linearLayout;
@@ -53,6 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
         public void onClick(View v) {
             switch (v.getId()){
                 case R.id.register_submit:
+                    submit.setEnabled(false);
                     promptTv.setVisibility(View.GONE);
                     if(userNameEdit.length()==0||emailEdit.length()==0||passwordEdit1.length()==0||passwordEdit2.length()==0){
                         Toast.makeText(RegisterActivity.this,"有字段为空，填写完整",Toast.LENGTH_SHORT).show();
@@ -65,32 +65,35 @@ public class RegisterActivity extends AppCompatActivity {
                         if(!pw1.equals(pw2)){
                             Toast.makeText(RegisterActivity.this,"两次输入的密码不同",Toast.LENGTH_SHORT).show();
                         }else {
-                            //与后端通信
-                            client = new OkHttpClient();
-                            RequestBody body=new FormBody.Builder().add("userName",userName)
-                                    .add("email",email).add("pw",pw1)
-                                    .build();
-                            String urls = SelfFinal.host+SelfFinal.port +"/music/user/register";
-                            Request request=new Request.Builder().post(body).url(urls).build();
-                            client.newCall(request).enqueue(new Callback() {
-                                @Override
-                                public void onFailure(Call call, IOException e) {
-                                    handler.sendEmptyMessage(400);
-                                }
-
-                                @Override
-                                public void onResponse(Call call, Response response) throws IOException {
-                                    String status = response.body().string();
-                                    if(status.equals("failed")){
-                                        handler.sendEmptyMessage(401);
-                                    }else if(status.equals("successed")){
-                                        handler.sendEmptyMessage(200);
-                                    }else {
-                                        handler.sendEmptyMessage(400);
+                            if(userName.contains("-")||userName.contains("*")||userName.contains(";")){
+                                Toast.makeText(RegisterActivity.this,"名称不能含有特殊符号",Toast.LENGTH_SHORT).show();
+                            }else {
+                                //与后端通信
+                                OkHttpClient client = new OkHttpClient();
+                                RequestBody body = new FormBody.Builder().add("userName", userName)
+                                        .add("email", email).add("pw", pw1)
+                                        .build();
+                                String urls = SelfFinal.host + SelfFinal.port + "/music/user/register";
+                                Request request = new Request.Builder().post(body).url(urls).build();
+                                client.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        handler.sendEmptyMessage(402);
                                     }
-                                }
-                            });
 
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        String status = response.body().string();
+                                        if (status.equals("failed")) {
+                                            handler.sendEmptyMessage(401);
+                                        } else if (status.equals("successed")) {
+                                            handler.sendEmptyMessage(200);
+                                        } else {
+                                            handler.sendEmptyMessage(400);
+                                        }
+                                    }
+                                });
+                            }
                         }
                     }
 
@@ -105,14 +108,21 @@ public class RegisterActivity extends AppCompatActivity {
                 case 400:
                     promptTv.setText("请求服务器错误，请重试");
                     promptTv.setVisibility(View.VISIBLE);
+                    submit.setEnabled(true);
                     break;
                 case 401:
                     promptTv.setText("该邮箱已经被注册，直接登录");
                     promptTv.setVisibility(View.VISIBLE);
+                    submit.setEnabled(true);
                     break;
                 case 200:
                     linearLayout.setVisibility(View.GONE);
                     successTv.setVisibility(View.VISIBLE);
+                    break;
+                case 402:
+                    promptTv.setText("请求异常");
+                    successTv.setVisibility(View.VISIBLE);
+                    submit.setEnabled(true);
                     break;
             }
         }

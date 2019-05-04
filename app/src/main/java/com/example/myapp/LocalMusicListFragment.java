@@ -125,12 +125,18 @@ public class LocalMusicListFragment extends BaseFragment {
             @Override
             public void run() {
                 mylist = null;
-//                            mylist=AllScannerSongs.getAllMusicFromSdcard(getActivity());
                 mylist=AllScannerSongs.getMusicFromSdcard(getActivity());
-                SQLiteDatabase db= getActivity().openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
-                db.delete(local_stable,null,null);
+                List<Music> loveMusic = myDao.findAll(love_stable);
+                myDao.newDB().delete(local_stable,null,null);
                 for (Music m:mylist){
+                    for (Music ms : loveMusic){
+                        if(ms.getPath().equals(m.getPath())){
+                            m.setLove(1);
+                        }
+                    }
                     myDao.insertMusic(m,local_stable);
+                    myDao.setFlagWithDeleteMusic(m,0);
+
                 }
                 handler.sendEmptyMessage(100);
             }

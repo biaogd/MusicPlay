@@ -139,7 +139,6 @@ public class BaseFragment extends Fragment implements Serializable {
                 File file = new File(music.getPath());
                 String tname="";
                 if(music.getFlag()==0) {
-                    if (file.exists()) {
                         Intent intent = new Intent();
                         intent.setAction("startMusic");
                         Bundle bundle = new Bundle();
@@ -165,50 +164,37 @@ public class BaseFragment extends Fragment implements Serializable {
                             adapter.notifyDataSetChanged();
                             myDao.insertMusic(music, near_stable);
                         }
-                    } else {
-                        //这个本地音乐文件不存在时
-                        Toast.makeText(getActivity(), "音乐文件不存在，无法播放", Toast.LENGTH_SHORT).show();
-//                        String paths = musicList.get(position).getPath();
-//                        getSQLiteDB().delete(local_stable, "path=?", new String[]{paths});
-                        if(getFragment() instanceof LocalMusicListFragment){
-                            tname = local_stable;
-                        }else if(getFragment() instanceof DownloadMusicFragment){
-                            tname = download_stable;
-                        }else if(getFragment() instanceof NearPlayListFragment){
-                            tname = near_stable;
-                        }else {
-                            tname = love_stable;
-                        }
-                        myDao.deleteMusic(music,tname);
-                        musicList.remove(position);
-                        adapter.notifyDataSetChanged();
-                    }
+
                 }else {
-                    //播放的是网络歌曲
-                    Intent intent = new Intent();
-                    intent.setAction("startMusic");
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("position", position);
-                    String whichFragment;
-                    if (getFragment() instanceof LocalMusicListFragment) {
-                        whichFragment = "localFragment";
-                    } else if (getFragment() instanceof NearPlayListFragment) {
-                        whichFragment = "nearFragment";
-                    } else if (getFragment() instanceof DownloadMusicFragment) {
-                        whichFragment = "downloadFragment";
-                    } else {
-                        whichFragment = "loveFragment";
-                    }
-                    bundle.putString("whichFragment", whichFragment);
-                    bundle.putSerializable("musicList", (ArrayList<Music>) musicList);
-                    intent.putExtra("mList", bundle);
-                    getActivity().sendBroadcast(intent);
-                    if (getFragment() instanceof NearPlayListFragment) {
-                        myDao.deleteMusic(music, near_stable);
-                        musicList.remove(position);
-                        musicList.add(0, music);
-                        adapter.notifyDataSetChanged();
-                        myDao.insertMusic(music, near_stable);
+                    if(music.getFlag()==-1){
+                        Toast.makeText(getActivity(),"该歌曲暂时无法播放",Toast.LENGTH_LONG).show();
+                    }else {
+                        //播放的是网络歌曲
+                        Intent intent = new Intent();
+                        intent.setAction("startMusic");
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("position", position);
+                        String whichFragment;
+                        if (getFragment() instanceof LocalMusicListFragment) {
+                            whichFragment = "localFragment";
+                        } else if (getFragment() instanceof NearPlayListFragment) {
+                            whichFragment = "nearFragment";
+                        } else if (getFragment() instanceof DownloadMusicFragment) {
+                            whichFragment = "downloadFragment";
+                        } else {
+                            whichFragment = "loveFragment";
+                        }
+                        bundle.putString("whichFragment", whichFragment);
+                        bundle.putSerializable("musicList", (ArrayList<Music>) musicList);
+                        intent.putExtra("mList", bundle);
+                        getActivity().sendBroadcast(intent);
+                        if (getFragment() instanceof NearPlayListFragment) {
+                            myDao.deleteMusic(music, near_stable);
+                            musicList.remove(position);
+                            musicList.add(0, music);
+                            adapter.notifyDataSetChanged();
+                            myDao.insertMusic(music, near_stable);
+                        }
                     }
                 }
             }

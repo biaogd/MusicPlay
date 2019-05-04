@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Gravity;
@@ -187,7 +189,27 @@ public class MyNetAdapter extends BaseAdapter {
         return convertView;
     }
 
+    public boolean checkNet(Context context){
+        if(context!=null){
+            ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo info=manager.getActiveNetworkInfo();
+            if(info!=null){
+                return info.isConnected();
+            }
+        }
+        return false;
+    }
     public void showAddListWindow(final Activity context, View p, final Music music){
+        if(!checkNet(context)) {
+            Toast.makeText(context,"未连接到网络",Toast.LENGTH_LONG).show();
+            return;
+        }else {
+            if (!MyLogin.logined) {
+                Intent intent = new Intent(context, Login_in.class);
+                context.startActivity(intent);
+                return;
+            }
+        }
         List<SongListBean> songListBeanList=MyLogin.bean.getSongList();
         View views = LayoutInflater.from(context).inflate(R.layout.add_song_list,null);
         LinearLayout body_layout = (LinearLayout)views.findViewById(R.id.song_list_body);

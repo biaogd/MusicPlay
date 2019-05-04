@@ -514,9 +514,9 @@ public class MainActivity extends Activity {
                                 MyLogin.loveId=0;
                                 MyLogin.userEmail=null;
                                 myDao.clearTable("self_music_list");
-                                myDao.clearLove("love_music_list");
-                                myDao.clearLove("near_music_list");
-                                myDao.clearLove("download_music_list");
+//                                myDao.clearLove("local_music_list");
+//                                myDao.clearLove("near_music_list");
+//                                myDao.clearLove("download_music_list");
 
                                 if(!MyLogin.logined){
                                     navigationView.getMenu().findItem(R.id.exit).setTitle("关闭应用");
