@@ -81,6 +81,33 @@ public class SelfAdapter extends BaseAdapter {
             holder=(ViewHolder)convertView.getTag();
         }
         final Music music=musicList.get(position);
+        if(music.getId()==-1000){
+            if(music.getFlag()!=-1) {
+                holder.songName.setTextColor(context.getResources().getColor(R.color.beautiful));
+                holder.songAuthor.setTextColor(context.getResources().getColor(R.color.beautiful));
+            }else {
+//                holder.flagBtn.setImageResource(R.mipmap.ic_phone_20);
+                holder.songName.setTextColor(context.getResources().getColor(R.color.gray));
+                holder.songAuthor.setTextColor(context.getResources().getColor(R.color.gray));
+            }
+        }else {
+            if(music.getFlag()!=-1) {
+                holder.songName.setTextColor(context.getResources().getColor(R.color.color1));
+                holder.songAuthor.setTextColor(context.getResources().getColor(R.color.black));
+            }else {
+                holder.songName.setTextColor(context.getResources().getColor(R.color.gray));
+                holder.songAuthor.setTextColor(context.getResources().getColor(R.color.gray));
+            }
+        }
+        if(music.getId() == -1){
+            if(music.getFlag()!=-1) {
+                holder.songName.setTextColor(context.getResources().getColor(R.color.color1));
+                holder.songAuthor.setTextColor(context.getResources().getColor(R.color.black));
+            }else {
+                holder.songName.setTextColor(context.getResources().getColor(R.color.gray));
+                holder.songAuthor.setTextColor(context.getResources().getColor(R.color.gray));
+            }
+        }
         holder.songName.setText(music.getSongName());
         holder.songAuthor.setText(music.getSongAuthor());
         final View finalConvertView = convertView;
@@ -163,6 +190,9 @@ public class SelfAdapter extends BaseAdapter {
                     }
                 });
                 final Button comeToList=(Button)view.findViewById(R.id.come_to_list);
+                if(music.getFlag()==-1){
+                    comeToList.setEnabled(false);
+                }
                 comeToList.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -172,19 +202,6 @@ public class SelfAdapter extends BaseAdapter {
                 });
             }
         });
-        if(music.getFlag()==0){
-            holder.flagBtn.setImageResource(R.mipmap.ic_phone_20);
-            holder.songName.setTextColor(context.getResources().getColor(R.color.color1));
-            holder.songAuthor.setTextColor(context.getResources().getColor(R.color.color1));
-        }else if(music.getFlag()==1){
-            holder.flagBtn.setImageResource(R.mipmap.ic_cloud_20);
-            holder.songName.setTextColor(context.getResources().getColor(R.color.color1));
-            holder.songAuthor.setTextColor(context.getResources().getColor(R.color.color1));
-        }else {
-            holder.flagBtn.setImageResource(R.mipmap.ic_phone_20);
-            holder.songName.setTextColor(context.getResources().getColor(R.color.gray));
-            holder.songAuthor.setTextColor(context.getResources().getColor(R.color.gray));
-        }
         return convertView;
     }
 

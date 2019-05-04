@@ -485,6 +485,17 @@ public class MyService extends Service {
                 Bundle bundle = intent.getBundleExtra("music_data");
                 listp = bundle.getInt("pos");
                 mList = (ArrayList<Music>) bundle.getSerializable("musicList");
+                int i = 0;
+                if(mList!=null) {
+                    for (i = 0; i < mList.size(); i++) {
+                        if(mList.get(i).getFlag()==-1){
+                            mList.remove(i);
+                            if(i<listp){
+                                listp--;
+                            }
+                        }
+                    }
+                }
                 music = mList.get(listp);
                 player.reset();
                 play();

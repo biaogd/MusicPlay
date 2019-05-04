@@ -109,6 +109,13 @@ public class MyDao {
         Log.i("清空了表"+tableName,i+"条数据");
     }
 
+    public SQLiteDatabase newDB(){
+        if(!isConnection()){
+            initConnect();
+        }
+        return db;
+    }
+
     //清空音乐列表的喜欢标记,设置love=0
     public int clearLove(String tableName){
 //        db = getSQLiteDB();

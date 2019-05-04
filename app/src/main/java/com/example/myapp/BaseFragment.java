@@ -266,34 +266,7 @@ public class BaseFragment extends Fragment implements Serializable {
         }
         return myList;
     }
-//
-//    public void updateNearList(Music music) {
-//        List<Music> list1=myDao.findAll(near_stable);
-//        list1 = reSort(list1);
-//        int i;
-//        for(i=0;i<list1.size();i++){
-//            Music m=list1.get(i);
-//            if(m.getPath().equals(music.getPath())){      //列表中已经有这个歌曲
-//                deleteMusic(music,near_stable);     //从数据库中删除
-//                if(getFragment() instanceof NearPlayListFragment){
-//                    musicList.remove(i);
-//                    musicList.add(0,music);
-//                    adapter.notifyDataSetChanged();
-//                }
-//                insertMusic(music,near_stable);
-//
-//                break;
-//            }
-//        }
-//        if(i>=list1.size()){     //这首歌不再数据库当中，也就是不再最近播放列表中
-//            insertMusic(music,near_stable);
-//            if(getFragment() instanceof NearPlayListFragment) {
-//                musicList.add(0, music);
-//                adapter.notifyDataSetChanged();
-//            }
-//        }
-//        Log.i("music:", music.toString());
-//    }
+
 }
 
 
