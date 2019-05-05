@@ -68,9 +68,6 @@ public class RightFragment extends Fragment {
         view =inflater.inflate(R.layout.fragment_right, container, false);
         handler = new MyHandler();
         list = new ArrayList<>();
-//        Bundle bundle=getArguments();
-//        mainFrag = (MainFragment)bundle.getSerializable("fragment");
-//        mList=new ArrayList<>();
         client=new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
         popularLayout = (LinearLayout)view.findViewById(R.id.popular_song_layout);
         newLayout = (LinearLayout)view.findViewById(R.id.new_song_layout);

@@ -220,143 +220,168 @@ public class MyAdapter extends BaseAdapter {
         moreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            final View view=LayoutInflater.from(context).inflate(R.layout.music_list_menu,null);
-                final PopupWindow popupWindow=new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT,true);
+                final View view = LayoutInflater.from(context).inflate(R.layout.music_list_menu, null);
+                final PopupWindow popupWindow = new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
                 popupWindow.setFocusable(true);
                 popupWindow.setTouchable(true);
                 popupWindow.setBackgroundDrawable(new ColorDrawable(0x000000));
                 popupWindow.setOutsideTouchable(true);
                 //设置弹出窗口背景变半透明，来高亮弹出窗口
-                WindowManager.LayoutParams lp =context.getWindow().getAttributes();
-                lp.alpha=0.5f;
+                WindowManager.LayoutParams lp = context.getWindow().getAttributes();
+                lp.alpha = 0.5f;
                 context.getWindow().setAttributes(lp);
 
                 popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
                     @Override
                     public void onDismiss() {
                         //恢复透明度
-                        WindowManager.LayoutParams lp =context.getWindow().getAttributes();
-                        lp.alpha=1f;
+                        WindowManager.LayoutParams lp = context.getWindow().getAttributes();
+                        lp.alpha = 1f;
                         context.getWindow().setAttributes(lp);
                     }
                 });
-                popupWindow.showAtLocation(finalConvertView.findViewById(R.id.moreImageButton), Gravity.BOTTOM,0,0);
-                TextView nameAuthor = (TextView)view.findViewById(R.id.name_author);
-                nameAuthor.setText(m.getSongName()+" - "+m.getSongAuthor());
-                final Button deleteBtn=(Button)view.findViewById(R.id.delete_btn);
-                Button addBtn = (Button)view.findViewById(R.id.add_music_to_list);
+                popupWindow.showAtLocation(finalConvertView.findViewById(R.id.moreImageButton), Gravity.BOTTOM, 0, 0);
+                TextView nameAuthor = (TextView) view.findViewById(R.id.name_author);
+                nameAuthor.setText(m.getSongName() + " - " + m.getSongAuthor());
+                final Button deleteBtn = (Button) view.findViewById(R.id.delete_btn);
+                Button addBtn = (Button) view.findViewById(R.id.add_music_to_list);
                 addBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         popupWindow.dismiss();
-                        showAddListWindow(context,moreBtn,m);
+                        showAddListWindow(context, moreBtn, m);
+                    }
+                });
+
+
+                Button downloadBtn = (Button)view.findViewById(R.id.local_download_btn);
+                if(fragment instanceof LocalMusicListFragment||m.getFlag()!=1){
+                    downloadBtn.setEnabled(false);
+                }else {
+                    downloadBtn.setEnabled(true);
+                    List<Music> mList = myDao.findAll("local_music_list");
+                    //查找本地歌曲有没有这首歌
+                    for (Music ms:mList){
+                        if(ms.getSongName().equals(m.getSongName())&&ms.getSongAuthor().equals(m.getSongAuthor())){
+                            downloadBtn.setEnabled(false);
+                            break;
+                        }
+                    }
+                }
+                downloadBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent=new Intent("download_music");
+                        intent.putExtra("music",m);
+                        context.sendBroadcast(intent);
+                        popupWindow.dismiss();
                     }
                 });
                 deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                            if (fragment instanceof LocalMusicListFragment) {
-                                popupWindow.dismiss();
-                                index = -1;
-                                String[] arr = {"同时删除本地歌曲文件"};
-                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                                builder.setTitle("确定删除歌曲?");
-                                builder.setSingleChoiceItems(arr, index, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        index = which;
-                                    }
-                                });
-                                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        if (index == 0) {
-                                            myDao.deleteMusic(m, local_stable);
-                                            mList.remove(position);
-                                            notifyDataSetChanged();
-                                            Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
-                                            File file = new File(m.getPath());
-                                            if (file.exists()) {
-                                                file.delete();
-                                            }
-                                            File file1 = new File(m.getPath().split("\\.")[0] + ".lrc");
-                                            if (file1.exists()) {
-                                                file1.delete();
-                                            }
-                                            myDao.setFlagWithDeleteMusic(m,-1);
-                                        } else {
-                                            myDao.deleteMusic(m, local_stable);
-                                            mList.remove(position);
-                                            notifyDataSetChanged();
-                                        }
-                                    }
-                                }).setNegativeButton("取消", null);
-                                builder.create().show();
-                            } else if (fragment instanceof NearPlayListFragment) {
-                                myDao.deleteMusic(m, near_stable);
-                                popupWindow.dismiss();
-                                mList.remove(position);
-                                notifyDataSetChanged();
-                                Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
-                            } else if (fragment instanceof DownloadMusicFragment) {
-                                myDao.deleteMusic(m, download_stable);
-                                popupWindow.dismiss();
-                                mList.remove(position);
-                                notifyDataSetChanged();
-                                Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
-                            } else {
-                                popupWindow.dismiss();
-                                if(checkNet(context)) {
-                                    if (!MyLogin.logined){
-                                        Intent intent=new Intent(context,Login_in.class);
-                                        context.startActivity(intent);
-                                    }else {
-                                        myDao.deleteMusic(m, love_stable);
-                                        //同时删除网络歌曲
-                                        syncNetDelMusicFromSongList(m,new SongListBean(MyLogin.loveId,null,0));
-                                        updateAllLove(m,0);
+                        if (fragment instanceof LocalMusicListFragment) {
+                            popupWindow.dismiss();
+                            index = -1;
+                            String[] arr = {"同时删除本地歌曲文件"};
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setTitle("确定删除歌曲?");
+                            builder.setSingleChoiceItems(arr, index, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    index = which;
+                                }
+                            });
+                            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if (index == 0) {
+                                        myDao.deleteMusic(m, local_stable);
                                         mList.remove(position);
                                         notifyDataSetChanged();
-                                        Intent intent = new Intent("update_service_love");
-                                        intent.putExtra("music", m);
-                                        context.sendBroadcast(intent);
                                         Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                                        File file = new File(m.getPath());
+                                        if (file.exists()) {
+                                            file.delete();
+                                        }
+                                        File file1 = new File(m.getPath().split("\\.")[0] + ".lrc");
+                                        if (file1.exists()) {
+                                            file1.delete();
+                                        }
+                                        myDao.setFlagWithDeleteMusic(m, -1);
+                                    } else {
+                                        myDao.deleteMusic(m, local_stable);
+                                        mList.remove(position);
+                                        notifyDataSetChanged();
                                     }
-                                }else {
-                                    Toast.makeText(context, "未连接到网络", Toast.LENGTH_SHORT).show();
-
                                 }
+                            }).setNegativeButton("取消", null);
+                            builder.create().show();
+                        } else if (fragment instanceof NearPlayListFragment) {
+                            myDao.deleteMusic(m, near_stable);
+                            popupWindow.dismiss();
+                            mList.remove(position);
+                            notifyDataSetChanged();
+                            Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                        } else if (fragment instanceof DownloadMusicFragment) {
+                            myDao.deleteMusic(m, download_stable);
+                            popupWindow.dismiss();
+                            mList.remove(position);
+                            notifyDataSetChanged();
+                            Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                        } else {
+                            popupWindow.dismiss();
+                            if (checkNet(context)) {
+                                if (!MyLogin.logined) {
+                                    Intent intent = new Intent(context, Login_in.class);
+                                    context.startActivity(intent);
+                                } else {
+                                    myDao.deleteMusic(m, love_stable);
+                                    //同时删除网络歌曲
+                                    syncNetDelMusicFromSongList(m, new SongListBean(MyLogin.loveId, null, 0));
+                                    updateAllLove(m, 0);
+                                    mList.remove(position);
+                                    notifyDataSetChanged();
+                                    Intent intent = new Intent("update_service_love");
+                                    intent.putExtra("music", m);
+                                    context.sendBroadcast(intent);
+                                    Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                Toast.makeText(context, "未连接到网络", Toast.LENGTH_SHORT).show();
+
                             }
+                        }
                     }
                 });
-                Button cancelBtn =(Button)view.findViewById(R.id.cancelBtn);
+                Button cancelBtn = (Button) view.findViewById(R.id.cancelBtn);
                 cancelBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         popupWindow.dismiss();
                     }
                 });
-                Button aboutBtn = (Button)view.findViewById(R.id.about_btn);
+                Button aboutBtn = (Button) view.findViewById(R.id.about_btn);
                 aboutBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         popupWindow.dismiss();
-                        View mv = LayoutInflater.from(context).inflate(R.layout.music_about,null);
-                        final PopupWindow pw=showPopupWindow(mv,view.findViewById(R.id.about_btn));
-                        TextView name=(TextView)mv.findViewById(R.id.about_song_name);
-                        name.setText("歌名："+m.getSongName());
-                        TextView author = (TextView)mv.findViewById(R.id.about_song_author);
-                        author.setText("歌手："+m.getSongAuthor());
-                        TextView time = (TextView)mv.findViewById(R.id.about_song_all_time);
-                        time.setText("时长："+transforTime(m.getAlltime()));
-                        TextView size = (TextView)mv.findViewById(R.id.about_song_size);
-                        double sizes = (double)m.getSongSize()/(1024*1024);
-                        Log.i("文件大小:",sizes+"");
-                        DecimalFormat format=new DecimalFormat("#.00");
-                        size.setText("大小："+format.format(sizes)+"M");
-                        TextView path = (TextView)mv.findViewById(R.id.about_song_path);
-                        path.setText("路径："+m.getPath());
-                        Button sureBtn = (Button)mv.findViewById(R.id.sureBtn);
+                        View mv = LayoutInflater.from(context).inflate(R.layout.music_about, null);
+                        final PopupWindow pw = showPopupWindow(mv, view.findViewById(R.id.about_btn));
+                        TextView name = (TextView) mv.findViewById(R.id.about_song_name);
+                        name.setText("歌名：" + m.getSongName());
+                        TextView author = (TextView) mv.findViewById(R.id.about_song_author);
+                        author.setText("歌手：" + m.getSongAuthor());
+                        TextView time = (TextView) mv.findViewById(R.id.about_song_all_time);
+                        time.setText("时长：" + transforTime(m.getAlltime()));
+                        TextView size = (TextView) mv.findViewById(R.id.about_song_size);
+                        double sizes = (double) m.getSongSize() / (1024 * 1024);
+                        Log.i("文件大小:", sizes + "");
+                        DecimalFormat format = new DecimalFormat("#.00");
+                        size.setText("大小：" + format.format(sizes) + "M");
+                        TextView path = (TextView) mv.findViewById(R.id.about_song_path);
+                        path.setText("路径：" + m.getPath());
+                        Button sureBtn = (Button) mv.findViewById(R.id.sureBtn);
                         sureBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -370,10 +395,10 @@ public class MyAdapter extends BaseAdapter {
             }
         });
         ImageButton flagBtn = (ImageButton)convertView.findViewById(R.id.music_flag_btn);
-        if(m.getFlag()==0){
-            flagBtn.setImageResource(R.mipmap.ic_phone_20);
-        }else {
+        if(m.getFlag()==1){
             flagBtn.setImageResource(R.mipmap.ic_cloud_20);
+        }else{
+            flagBtn.setImageResource(R.mipmap.ic_phone_20);
         }
         return convertView;
     }

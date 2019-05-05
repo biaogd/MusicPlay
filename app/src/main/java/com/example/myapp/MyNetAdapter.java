@@ -231,7 +231,7 @@ public class MyNetAdapter extends BaseAdapter {
                     int i=0;
                     for(i=0;i<allMusic.size();i++){
                         Music mm = allMusic.get(i);
-                        if(mm.getSongName().equals(music.getSongName())&&mm.getSongAuthor().equals(music.getSongAuthor())){
+                        if(mm.getPath().equals(music.getPath())){
                             //歌曲已经在这个歌单中
                             break;
                         }
@@ -240,7 +240,7 @@ public class MyNetAdapter extends BaseAdapter {
                         //歌曲不再这个歌单中
                         int listId = bean.getListId();
                         //将这个歌曲加入到本地数据库
-                        long iii=0;
+                        long iii;
                         if(bean.getListId()==MyLogin.loveId){
                             music.setLove(1);
                             iii=myDao.insertMusic(music,"love_music_list");
@@ -249,7 +249,7 @@ public class MyNetAdapter extends BaseAdapter {
                             iii = myDao.insertMusic(listId, music, "self_music_list");
                         }
                         if(iii>0) {
-                            Log.i("歌曲" + music.getSongName(), "已加入到数据库中");
+                            Log.i("歌曲" + music.getSongName()+"flag:"+music.getFlag(), "已加入到数据库中");
                             //在把这个歌曲同步到服务器
                             syncSongList(music, bean);
                             Toast.makeText(context, "歌曲已加入歌单中", Toast.LENGTH_LONG).show();
