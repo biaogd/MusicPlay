@@ -231,7 +231,7 @@ public class MyNetAdapter extends BaseAdapter {
                     int i=0;
                     for(i=0;i<allMusic.size();i++){
                         Music mm = allMusic.get(i);
-                        if(mm.getPath().equals(music.getPath())){
+                        if(mm.getSongName().equals(music.getSongName())&&mm.getSongAuthor().equals(music.getSongAuthor())){
                             //歌曲已经在这个歌单中
                             break;
                         }

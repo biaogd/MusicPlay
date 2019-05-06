@@ -343,9 +343,8 @@ public class SelfAdapter extends BaseAdapter {
         RequestBody body=new FormBody.Builder().add("listId",String.valueOf(listId))
                 .add("songName",songName)
                 .add("songAuthor",songAuthor).build();
-        String url = "http://www.mybiao.top:8000/music/user/syncDelMusic";
-        String urls = "http://192.168.0.106:8000/music/user/syncDelMusic";
-        Request request=new Request.Builder().url(urls).post(body).build();
+        String url = SelfFinal.host+SelfFinal.port+"/music/user/syncDelMusic";
+        Request request=new Request.Builder().url(url).post(body).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
