@@ -19,6 +19,15 @@ public class SongListBean implements Serializable {
         this.listCount = listCount;
     }
 
+    @Override
+    public String toString() {
+        return "SongListBean{" +
+                "listId=" + listId +
+                ", listName='" + listName + '\'' +
+                ", listCount=" + listCount +
+                '}';
+    }
+
     public int getListId() {
         return listId;
     }

@@ -59,6 +59,14 @@ public class Login_in extends Activity {
         loginInBtn=(Button)findViewById(R.id.login_in_btn);
         loginInBtn.setOnClickListener(listener);
 
+        losePwTv = (TextView)findViewById(R.id.lose_pw_tv);
+        losePwTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent  intent=new Intent(Login_in.this,LoseActivity.class);
+                startActivity(intent);
+            }
+        });
         registerTv = (TextView)findViewById(R.id.user_register_tv);
         registerTv.setOnClickListener(listener);
         errTv = (TextView)findViewById(R.id.login_err_tv);

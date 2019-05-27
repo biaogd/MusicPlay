@@ -15,13 +15,8 @@ import java.util.List;
 public class MyDao {
     private Context context;
     private static SQLiteDatabase db;
-    private static MyDao dao;
     public MyDao(Context context){
         this.context = context;
-    }
-
-    public SQLiteDatabase getSQLiteDB(){
-        return context.openOrCreateDatabase("mydb.db", Context.MODE_PRIVATE,null);
     }
 
     public void initConnect(){
@@ -38,7 +33,6 @@ public class MyDao {
 
     public List<Music> findAll(String tableName){
         List<Music> list=new ArrayList<>();
-//        db= getSQLiteDB();
         if(!isConnection()){
             initConnect();
         }
@@ -187,8 +181,8 @@ public class MyDao {
         if(!isConnection()){
             initConnect();
         }
-        String sql = "select *from local_music_list where path like ?";
-        Cursor cursor=db.rawQuery(sql,new String[]{"%"+word+"%"});
+        String sql = "select *from local_music_list where song_name like ? or song_author like ?";
+        Cursor cursor=db.rawQuery(sql,new String[]{"%"+word+"%","%"+word+"%"});
         while (cursor.moveToNext()) {
                 Music music = new Music();
                 music.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
