@@ -55,7 +55,6 @@ public class DownloadService extends Service {
     }
 
     public class DownloadBroadcastReceiver extends BroadcastReceiver{
-
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals("download_music")) {

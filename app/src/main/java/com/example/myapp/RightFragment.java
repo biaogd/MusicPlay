@@ -162,7 +162,6 @@ public class RightFragment extends Fragment {
                             }
                             res.close();
                         }
-
                     } catch (Exception e) {
                         handler.sendEmptyMessage(404);
                     }

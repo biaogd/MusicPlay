@@ -351,7 +351,7 @@ public class MyService extends Service {
         }
     };
 
-
+    //初始化通知栏
     private void initNotification(){
         remoteViews = new RemoteViews(getPackageName(),R.layout.notification_layout);
         //播放暂停按钮的点击事件
@@ -367,12 +367,12 @@ public class MyService extends Service {
         PendingIntent pIntent4=PendingIntent.getBroadcast(getApplicationContext(),4,new Intent("exitApp"),PendingIntent.FLAG_UPDATE_CURRENT);
         remoteViews.setOnClickPendingIntent(R.id.exitMusic,pIntent4);
         Intent intent1=new Intent();
-        if(music==null) {
-            intent1.setClass(this,MainActivity.class);
-            intent1.putExtra("notifi_music", music);
-        }else {
+//        if(music==null) {
+//            intent1.setClass(this,MainActivity.class);
+//            intent1.putExtra("notifi_music", music);
+//        }else {
             intent1.setClass(this,PlayActivity.class);
-        }
+//        }
         PendingIntent pendingIntent=PendingIntent.getActivity(getApplicationContext(),0,intent1,PendingIntent.FLAG_UPDATE_CURRENT);
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
             builder = new NotificationCompat.Builder(this, "fore_service");

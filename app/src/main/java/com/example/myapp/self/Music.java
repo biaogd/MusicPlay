@@ -75,13 +75,6 @@ public class Music implements Serializable {
         Music music = (Music) o;
         return this.path.equals(music.path);
     }
-
-//    @Override
-//    public int hashCode() {
-//        return Objects.hash(path);
-//    }
-
-
     public int getId() {
         return id;
     }

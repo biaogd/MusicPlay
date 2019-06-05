@@ -450,7 +450,6 @@ public class PlayActivity extends Activity {
      * 如果缓存中不存在，就从服务其中查找
      */
     public void getMusicLrc(){
-
         new Thread(new Runnable() {
             @Override
             public void run() {

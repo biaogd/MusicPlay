@@ -68,7 +68,6 @@ public class MainFragment extends Fragment {
         }
         view.setId(R.id.mainfragment);
         ImageButton searchBtn=(ImageButton)view.findViewById(R.id.main_search_btn);
-//        LinearLayout layout=(LinearLayout)view.findViewById(R.id.linear_search);
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -131,8 +130,7 @@ public class MainFragment extends Fragment {
                     left_fragment = new LeftFragment();
                     transaction.add(R.id.container,left_fragment);
                 }
-               hide(transaction);
-//                transaction.replace(R.id.container,left_fragment);
+                hide(transaction);
                 transaction.show(left_fragment);
                 break;
             case 1:
@@ -146,8 +144,6 @@ public class MainFragment extends Fragment {
                 transaction.show(right_fragment);
 //                transaction.replace(R.id.container,right_fragment);
                 break;
-            default:break;
-
         }
         transaction.commit();
     }
@@ -158,10 +154,5 @@ public class MainFragment extends Fragment {
         if(right_fragment!=null){
             transaction.hide(right_fragment);
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
     }
 }
