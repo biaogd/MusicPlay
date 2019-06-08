@@ -193,7 +193,6 @@ public class MyAdapter extends BaseAdapter {
                             loveBtn.setImageResource(images[0]);
                             updateAllLove(m,0);
                             syncNetDelMusicFromSongList(m,bean);
-
                         }else {
                             m.setLove(1);
                             myDao.insertMusic(m,love_stable);
@@ -421,7 +420,7 @@ public class MyAdapter extends BaseAdapter {
         for(final SongListBean bean:songListBeanList){
             View view1=LayoutInflater.from(context).inflate(R.layout.button_layout,null);
             Button button=(Button)view1.findViewById(R.id.self_button);
-            button.setText(bean.getListName());
+            button.setText(bean.getListName().toLowerCase());
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

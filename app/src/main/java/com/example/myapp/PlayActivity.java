@@ -10,6 +10,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,12 +38,16 @@ import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.myapp.database.MyDao;
 import com.example.myapp.self.DealLrc;
 import com.example.myapp.self.LrcBean;
 import com.example.myapp.self.Music;
+import com.example.myapp.self.MyLogin;
 import com.example.myapp.self.NetMusicBean;
+import com.example.myapp.self.SelfFinal;
+import com.example.myapp.self.SongListBean;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -66,8 +72,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class PlayActivity extends Activity {
@@ -248,23 +258,36 @@ public class PlayActivity extends Activity {
         loveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int j = music.getLove();
-                if(j==1){
-                    music.setLove(0);
-                    myDao.deleteMusic(music,"love_music_list");
-                    updateAllLove(music,0);
+                if(checkNet(PlayActivity.this)) {
+                    if (!MyLogin.logined) {
+                        //如果没有用户登录，直接跳转到用户登录界面
+                        Intent intents = new Intent(PlayActivity.this, Login_in.class);
+                        startActivity(intents);
+                    }else {
+                        int j = music.getLove();
+                        SongListBean bean = new SongListBean(MyLogin.loveId, null, 0);
+                        if (j == 1) {
+                            music.setLove(0);
+                            myDao.deleteMusic(music, "love_music_list");
+                            updateAllLove(music, 0);
+                            syncNetDelMusicFromSongList(music,bean);
+                        } else {
+                            music.setLove(1);
+                            myDao.insertMusic(music, "love_music_list");
+                            updateAllLove(music, 1);
+                            syncSongList(music,bean);
+                        }
+                        Intent intent1 = new Intent();
+                        intent1.setAction("update_service_love");
+                        intent1.putExtra("loved", j);
+                        intent1.putExtra("music", music);
+                        sendBroadcast(intent1);
+                        int i = j == 0 ? 1 : 0;
+                        loveBtn.setImageResource(images[i]);
+                    }
                 }else {
-                    music.setLove(1);
-                    myDao.insertMusic(music,"love_music_list");
-                    updateAllLove(music,1);
+                    Toast.makeText(PlayActivity.this,"网络无法连接",Toast.LENGTH_SHORT).show();
                 }
-                Intent intent1=new Intent();
-                intent1.setAction("update_service_love");
-                intent1.putExtra("loved",j);
-                intent1.putExtra("music",music);
-                sendBroadcast(intent1);
-                int i = j==0?1:0;
-                loveBtn.setImageResource(images[i]);
             }
         });
         final ImageButton lrcMenuBtn=(ImageButton)findViewById(R.id.play_lrc_btn);
@@ -352,6 +375,69 @@ public class PlayActivity extends Activity {
         Intent intent=new Intent("update_play_message");
         sendBroadcast(intent);
 //        getMusicLrc();
+    }
+
+    public boolean checkNet(Context context){
+        if(context!=null){
+            ConnectivityManager manager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo info=manager.getActiveNetworkInfo();
+            if(info!=null){
+                return info.isConnected();
+            }
+        }
+        return false;
+    }
+
+    private void syncSongList(Music m, SongListBean bean) {
+        OkHttpClient client = new OkHttpClient();
+        //用户id
+        int userId = MyLogin.bean.getId();
+        int listId = bean.getListId();
+        int mId = m.getFlag();
+        RequestBody body = new FormBody.Builder().add("user_id", String.valueOf(userId))
+                .add("song_list_id", String.valueOf(listId))
+                .add("music_id", String.valueOf(mId))
+                .add("music_name", m.getSongName())
+                .add("music_author", m.getSongAuthor())
+                .add("music_path", m.getPath()).build();
+        String url =  SelfFinal.host+SelfFinal.port+ "/music/user/syncAddMusic";
+        String urls =  SelfFinal.host+SelfFinal.port+ "/music/user/syncAddMusic";
+        Request request = new Request.Builder().post(body).url(urls).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.i("上传新的歌曲","成功");
+            }
+        });
+    }
+    private void syncNetDelMusicFromSongList(Music music,SongListBean bean){
+        OkHttpClient client=new OkHttpClient();
+        int listId = bean.getListId();
+        String songName = music.getSongName();
+        String songAuthor = music.getSongAuthor();
+        RequestBody body=new FormBody.Builder().add("listId",String.valueOf(listId))
+                .add("songName",songName)
+                .add("songAuthor",songAuthor).build();
+        String url = SelfFinal.host+SelfFinal.port+ "/music/user/syncDelMusic";
+        String urls = SelfFinal.host+SelfFinal.port+"/music/user/syncDelMusic";
+        Request request=new Request.Builder().url(urls).post(body).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+            }
+        });
+
     }
 
     private void updatelocalLove(Music music,String tableName,int loved){
